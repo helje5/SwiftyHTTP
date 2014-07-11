@@ -122,7 +122,7 @@ Great httpd server - great in counting the requests it got sent. This is not
 actually serving any files ;-) It is actually a Cocoa app. Compile it, run it,
 then connect to it in the browser via http://127.0.0.1:1337/Awesome-O!
 
-![](http://imgur.com/4ShGZXS)
+![](http://i.imgur.com/4ShGZXS.png)
 
 ####SwiftyClient
 
@@ -132,7 +132,7 @@ decoding and such.
 Again: You do NOT want to use it in a real iOS/OSX app! Use NSURLSession and
 companions - it gives you plenty of extra features you want to have for realz.
 
-![](http://imgur.com/ny0PSKH)
+![](http://i.imgur.com/ny0PSKH.png)
 
 ###Goals
 
