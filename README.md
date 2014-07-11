@@ -122,6 +122,8 @@ Great httpd server - great in counting the requests it got sent. This is not
 actually serving any files ;-) It is actually a Cocoa app. Compile it, run it,
 then connect to it in the browser via http://127.0.0.1:1337/Awesome-O!
 
+![](http://imgur.com/4ShGZXS)
+
 ####SwiftyClient
 
 Just a demo on how to do HTTP requests via SwiftyHTTP. No, it doesn't do JSON
@@ -129,6 +131,8 @@ decoding and such.
 
 Again: You do NOT want to use it in a real iOS/OSX app! Use NSURLSession and
 companions - it gives you plenty of extra features you want to have for realz.
+
+![](http://imgur.com/ny0PSKH)
 
 ###Goals
 
