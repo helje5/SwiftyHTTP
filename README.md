@@ -119,7 +119,7 @@ Finally there is a tiny HTTP client, use it like this:
 ####SwiftyServer
 
 Great httpd server - great in counting the requests it got sent. This is not
-actually serving any files ;-) It is actually a Cocoa app. Compile it, run it,
+actually serving any files ;-) Comes along as a Cocoa app. Compile it, run it,
 then connect to it in the browser via http://127.0.0.1:1337/Awesome-O!
 
 ![](http://i.imgur.com/4ShGZXS.png)
