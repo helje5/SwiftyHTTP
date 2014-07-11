@@ -1,0 +1,342 @@
+//
+//  HTTPCall.swift
+//  SwiftyHTTP
+//
+//  Created by Helge Heß on 7/7/14.
+//  Copyright (c) 2014 Always Right Institute. All rights reserved.
+//
+
+
+/**
+ * Sample:
+ *   GET("http://www.apple.com/")
+ *     .done   { println("got \($0): \($1)")     }
+ *     .fail   { println("failed \($0): \($1)")  }
+ *     .always { println("we are done here ...") }
+ */
+func GET(url: URL, headers: Dictionary<String, String> = [:],
+         version: ( Int, Int ) = HTTPv11) -> HTTPCall
+{
+  func isURLOK(url: URL) -> Bool {
+    if url.scheme == nil || url.scheme != "http" {
+      println("url has no http scheme?")
+      return false
+    }
+    if url.host == nil {
+      println("url has no host?")
+      return false
+    }
+    
+    return true
+  }
+  
+  /* check URL */
+  if !isURLOK(url) {
+    let rq   = HTTPRequest(method: HTTPMethod.GET, url: "/")
+    var call = HTTPCall(url: url, request: rq)
+    call.stopWithError(.URLMalformed)
+    return call
+  }
+  
+  /* prepare request */
+  var request = HTTPRequest(method:  HTTPMethod.GET,
+                            url:     url.pathWithQueryAndFragment,
+                            version: version, headers: headers)
+  if let hp = url.hostAndPort {
+    request["Host"]          = hp
+  }
+  request["User-Agent"]      = userAgent
+  request["X-Q-AlwaysRight"] = "Yes, indeed"
+  request["Content-Length"]  = "0"
+  request["Connection"]      = "Close" // until we have a pool
+  
+  /* and go! */
+  let call = HTTPCall(url: url, request: request)
+  call.run()
+  return call
+}
+func GET(url: String, headers: Dictionary<String, String> = [:],
+         version: ( Int, Int ) = HTTPv11) -> HTTPCall
+{
+  return GET(parse_url(url), headers: headers, version: version)
+}
+
+
+
+let dnsQueue     = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)
+let lockQueue    = dispatch_queue_create("com.ari.SwiftyHTTPCall", nil)!
+var runningCalls = [HTTPCall]()
+let userAgent    = "AlwaysRightInstitute-SwiftyHTTP/0.42 (Macintozh) (Roxx)"
+
+var callCounter  = 0
+
+class HTTPCall : Equatable {
+  
+  enum Error : Printable {
+    case DNSLookup, Connect, URLMalformed
+    
+    var description : String {
+      switch self {
+        case DNSLookup:    return "DNS lookup failed"
+        case Connect:      return "Could not connect to server"
+        case URLMalformed: return "Given URL cannot be processed"
+      }
+    }
+  }
+  enum State {
+    case Idle
+    case DNSLookup, Connect, Send, Receive
+    // case Fail(Error) // didn't quite get this to work right
+    // eg, this doesn't work anymore: assert(state == .Idle)?
+    case Fail
+    case Done // case Done(HTTPResponse)
+    
+    var isFinished : Bool {
+      return self == .Fail || self == .Done
+    }
+  }
+  
+  let url        : URL
+  let request    : HTTPRequest
+  let debugOn    = true
+  let callID     = 0
+  
+  var state      : State  = .Idle
+  var error      : Error? = nil // FIXME: should be an associated value
+  var connection : HTTPConnection?
+  var response   : HTTPResponse?
+  
+  init(url: URL, request: HTTPRequest) {
+    self.url     = url
+    self.request = request
+    
+    var nextID = 0
+    dispatch_sync(lockQueue) {
+      callCounter++
+      nextID = callCounter // cannot use self.callID in here
+    }
+    callID = nextID
+  }
+  deinit {
+    if debugOn {
+      println("HC(\(callID)): deinit HTTPCall ...")
+    }
+  }
+  
+  
+  /* callbacks (check for incorrect locking) */
+  
+  func done(cb: ( HTTPRequest, HTTPResponse ) -> Void) -> Self {
+    if state == .Done {
+      cb(request, response!)
+    }
+    else if state == .Fail {
+      // noop
+    }
+    else {
+      successCB = cb
+    }
+    return self
+  }
+  func fail(cb: ( HTTPRequest, Error ) -> Void) -> Self {
+    if state == .Fail {
+      cb(request, error!)
+    }
+    else if state == .Done {
+      // noop
+    }
+    else {
+      failCB = cb
+    }
+    return self
+  }
+  func always(cb: ( HTTPRequest, HTTPResponse?, Error? ) -> Void) -> Self {
+    if state.isFinished {
+      cb(request, response, error)
+    }
+    else {
+      alwaysCB = cb
+    }
+    return self
+  }
+  
+  var successCB : (( HTTPRequest, HTTPResponse ) -> Void)? = nil
+  var failCB    : (( HTTPRequest, Error )        -> Void)? = nil
+  var alwaysCB  : (( HTTPRequest, HTTPResponse?, Error? ) -> Void)? = nil
+  
+  
+  /* convenience callbacks with less arguments */
+  
+  func done(cb: ( HTTPResponse ) -> Void) -> Self {
+    return done { _, res in cb(res) }
+  }
+  func fail(cb: ( Error ) -> Void) -> Self {
+    return fail { _, res in cb(res) }
+  }
+  func always(cb: ( HTTPResponse?, Error? ) -> Void) -> Self {
+    return always { _, res, error in cb(res, error) }
+  }
+  func always(cb: () -> Void) -> Self {
+    return always { _, _, _ in cb() }
+  }
+  
+  
+  /* main runner */
+  
+  func run() {
+    assert(state == State.Idle)
+    
+    /* keep reference around, even if the caller does not */
+    dispatch_async(lockQueue) {
+      runningCalls.append(self)
+    }
+    
+    /* start the twisting */
+    doLookup()
+  }
+  
+  func unregister() {
+    if self.debugOn {
+      println("HC(\(callID)) unregister ...")
+    }
+    dispatch_async(lockQueue) {
+      let idxOrNot = find(runningCalls, self)
+      // assert(idxOrNot != nil)
+      if let idx = idxOrNot {
+        runningCalls.removeAtIndex(idx)
+      }
+      else {
+        println("HC(\(self.callID)) ERROR: did not find call \(self)")
+      }
+    }
+  }
+  
+  func stopWithError(error: Error) {
+    if self.debugOn {
+      println("HC(\(callID)) stop on error \(self.error)")
+    }
+    
+    // would like: state = .Fail(error)
+    self.error = error
+    self.state = .Fail
+    
+    if let cb = failCB {
+      cb(request, error)
+      failCB = nil
+    }
+    if let cb = alwaysCB {
+      cb(request, nil, error)
+      alwaysCB = nil
+    }
+    
+    /* always close connection on errors */
+    if let con = connection {
+      con.close()
+    }
+    
+    unregister()
+  }
+  
+  
+  /* sub-operations */
+  
+  func doLookup() {
+    assert(state == .Idle)
+    state = .DNSLookup
+    
+    dispatch_async(dnsQueue) { () -> Void in
+      gethoztbyname(self.url.host!, flags: AI_CANONNAME) {
+        ( name, _, address : sockaddr_in? ) -> Void in
+        if address != nil {
+          var addr = address!
+          addr.port = self.url.portOrDefault!
+          if self.debugOn {
+            println("HC(\(self.callID)) resolved host \(name): \(address)")
+          }
+          self.doConnect(addr)
+        }
+        else {
+          self.stopWithError(Error.DNSLookup)
+        }
+      }
+    }
+  }
+  
+  func doConnect(address: sockaddr_in) {
+    assert(state == .DNSLookup)
+    state = .Connect
+    
+    // FIXME: keep pool
+    let socket = ActiveSocket<sockaddr_in>()
+    
+    // this callback setup is not quite right yet, we need to pass over errors
+    let ok = socket.connect(address) {
+      if self.debugOn {
+        println("HC(\(self.callID)) connected to \(socket.remoteAddress)")
+      }
+      
+      self.connection = HTTPConnection(socket)
+        .onResponse(self.handleResponse)
+        .onClose(self.handleClose)
+      
+      /* send HTTP request */
+      self.state = .Send
+      
+      self.connection!.sendRequest(self.request) {
+        // TBD: is the timing of this quite right?
+        self.state = .Receive
+        if self.debugOn {
+          println("HC(\(self.callID)) did send request \(self.request)")
+        }
+      }
+      
+      // OK, now the stack rewinds, the response is coming in as a separate
+      // callback
+    }
+    
+    if !ok {
+      stopWithError(.DNSLookup)
+    }
+  }
+  
+  func handleResponse(res: HTTPResponse, _ con: HTTPConnection) {
+    if self.debugOn {
+      println("HC(\(callID)) got response \(res): \(con)")
+    }
+    
+    self.state = .Done
+    
+    if let cb = successCB {
+      cb(request, res)
+      successCB = nil
+    }
+    if let cb = alwaysCB {
+      cb(request, res, nil)
+      alwaysCB = nil
+    }
+    
+    unregister()
+    
+    // In here we should put the socket into a pool, if it's still open.
+    /* close connection until we actually have a pool ... */
+    if let con = connection {
+      con.close()
+      connection = nil
+    }
+  }
+  
+  func handleClose(fd: Int32) {
+    if self.debugOn {
+      println("HC(\(callID)) close \(fd)")
+    }
+    
+    /* Nope, unregister happens at the end of the request */
+    // No: unregister()
+  }
+}
+
+func ==(lhs: HTTPCall, rhs: HTTPCall) -> Bool { // required for find() above
+  // hm, this is, well, a little bit questionable. But there is no 'find'
+  // which takes a predicate? (instead of requiring Equatable)
+  return lhs === rhs
+}
