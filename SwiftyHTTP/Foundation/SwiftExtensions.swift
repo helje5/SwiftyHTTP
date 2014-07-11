@@ -3,7 +3,7 @@
 //  TestSwiftyCocoa
 //
 //  Created by Helge Heß on 6/18/14.
-//  Copyright (c) 2014 Helge Hess. All rights reserved.
+//  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
 // This allows you to do: str[str.startIndex..idx+4]
