@@ -148,7 +148,7 @@ companions - it gives you plenty of extra features you want to have for realz.
   - [ ] Async connect()
 - [x] No NS'ism
 - [ ] Use as many language features Swift provides
-  - [ ] Generics (swiftc segfaults)
+  - [x] Generics
     - [x] Generic function
     - [x] typealias
   - [x] Closures
