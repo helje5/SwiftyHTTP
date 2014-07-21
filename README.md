@@ -164,6 +164,7 @@ companions - it gives you plenty of extra features you want to have for realz.
   - [ ] @Lazy
   - [x] Pure Swift weak delegates via @class
   - [x] Optionals
+    - [x] Implicitly unwrapped optionals
   - [x] Convenience initializers
   - [x] Class variables on structs
   - [x] CConstPointer, CConstVoidPointer
