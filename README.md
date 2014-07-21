@@ -11,6 +11,54 @@ project. In most real world Swift apps you have access to Cocoa, use it.
 project. Any suggestions on how to improve the code are welcome. I expect
 lots and lots :-)
 
+###First things first: Samples
+
+Server:
+```Swift
+let httpd = HTTPServer()
+  .onRequest {
+    rq, res, con in
+    res.bodyAsString = "<h2>Always Right, Never Wrong!</h2>"
+    con.sendResponse(res)
+  }
+  .listen(1337)
+```
+That's it.
+
+With Node.JS like Connect bonus class:
+```Swift
+let httpd = Connect()
+  .use { rq, res, _, next in
+    println("\(rq.method) \(rq.url) \(res.status)")
+    next()
+  }
+  .use("/hello") { rq, res, con, next in
+    res.bodyAsString = "Hello!"
+    con.sendResponse(res)
+  }
+  .use("/") { rq, res, con, next in
+    res.bodyAsString = "Always almost sometimes"
+    con.sendResponse(res)
+  }
+  .listen(1337)
+```
+
+Client (do not use this, use NSURLSession!):
+```Swift
+GET("http://www.apple.com/")
+  .done {
+    println()
+    println("request  \($0)")
+    println("response \($1)")
+    println("body:\n\($1.bodyAsString)")
+  }
+  .fail {
+    println("failed \($0): \($1)")
+  }
+  .always { println("---") }
+```
+
+
 ###Targets
 
 The project includes three targets:
@@ -65,56 +113,16 @@ either incoming or outgoing. The HTTPConnection sits on top of the SwiftSockets
 and manages one HTTP connection.
 
 HTTPServer is the server class. Uses the SwiftSockets to listen for incoming
-connections. Sample:
-```Swift
-let httpd = HTTPServer()
-  .onRequest {
-    rq, res, con in
-    res.bodyAsString = "<h2>Always Right, Never Wrong!</h2>"
-    con.sendResponse(res)
-  }
-  .listen(1337)
-```
-That's it.
+connections. See above for a sample.
 
 As a bonus - this also has a tiny Connect class - which is modelled after the
 Node.JS Connect thingy (which in turn is apparently modelled after RoR Rack).
 It allows you to hook up a set of blocks for request processing, instead of
 having just a single entry point.
 Not sure I like that stuff, but it seems to fit into Swift quite well.
+Find a sample above.
 
-It works like this:
-```Swift
-let httpd = Connect()
-  .use { rq, res, _, next in
-    println("\(rq.method) \(rq.url) \(res.status)")
-    next()
-  }
-  .use("/hello") { rq, res, con, next in
-    res.bodyAsString = "Hello!"
-    con.sendResponse(res)
-  }
-  .use("/") { rq, res, con, next in
-    res.bodyAsString = "Always almost sometimes"
-    con.sendResponse(res)
-  }
-  .listen(1337)
-```
-
-Finally there is a tiny HTTP client, use it like this:
-```Swift
-    GET("http://www.apple.com/")
-      .done {
-        println()
-        println("request  \($0)")
-        println("response \($1)")
-        println("body:\n\($1.bodyAsString)")
-      }
-      .fail {
-        println("failed \($0): \($1)")
-      }
-      .always { println("---") }
-```
+Finally there is a simple HTTP client. Doesn't do anything fancy.
 
 ####SwiftyServer
 
