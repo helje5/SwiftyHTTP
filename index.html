@@ -31,15 +31,63 @@
         <h1>
 <a name="swiftyhttp" class="anchor" href="#swiftyhttp"><span class="octicon octicon-link"></span></a>SwiftyHTTP</h1>
 
-<p>A simple GCD based HTTP library for Swift.</p>
+<p>A simple GCD based HTTP library for Swift. This project is 'pure' Swift/C,
+it does not use any bridged Objective-C classes.</p>
 
-<p>SwiftyHTTP is kind of a demo on how to integrate Swift with raw C APIs. More
+<p>SwiftyHTTP is a demo on how to integrate Swift with raw C APIs. More
 for stealing Swift coding ideas than for actually using the code in a real
 project. In most real world Swift apps you have access to Cocoa, use it.</p>
 
 <p><strong>Note</strong>: This is just my second <a href="https://developer.apple.com/swift/">Swift</a>
 project. Any suggestions on how to improve the code are welcome. I expect
 lots and lots :-)</p>
+
+<h3>
+<a name="first-things-first-samples" class="anchor" href="#first-things-first-samples"><span class="octicon octicon-link"></span></a>First things first: Samples</h3>
+
+<p>Server:</p>
+
+<div class="highlight highlight-Swift"><pre><span class="k">let</span> <span class="n">httpd</span> <span class="o">=</span> <span class="n">HTTPServer</span><span class="p">()</span>
+  <span class="p">.</span><span class="n">onRequest</span> <span class="p">{</span>
+    <span class="n">rq</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">con</span> <span class="k">in</span>
+    <span class="n">res</span><span class="p">.</span><span class="n">bodyAsString</span> <span class="o">=</span> <span class="s">"&lt;h2&gt;Always Right, Never Wrong!&lt;/h2&gt;"</span>
+    <span class="n">con</span><span class="p">.</span><span class="n">sendResponse</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="p">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">1337</span><span class="p">)</span>
+</pre></div>
+
+<p>Server using the Node.JS like Connect bonus class:</p>
+
+<div class="highlight highlight-Swift"><pre><span class="k">let</span> <span class="n">httpd</span> <span class="o">=</span> <span class="n">Connect</span><span class="p">()</span>
+  <span class="p">.</span><span class="n">use</span> <span class="p">{</span> <span class="n">rq</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">next</span> <span class="k">in</span>
+    <span class="n">println</span><span class="p">(</span><span class="s">"\(rq.method) \(rq.url) \(res.status)"</span><span class="p">)</span>
+    <span class="n">next</span><span class="p">()</span>
+  <span class="p">}</span>
+  <span class="p">.</span><span class="n">use</span><span class="p">(</span><span class="s">"/hello"</span><span class="p">)</span> <span class="p">{</span> <span class="n">rq</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">con</span><span class="p">,</span> <span class="n">next</span> <span class="k">in</span>
+    <span class="n">res</span><span class="p">.</span><span class="n">bodyAsString</span> <span class="o">=</span> <span class="s">"Hello!"</span>
+    <span class="n">con</span><span class="p">.</span><span class="n">sendResponse</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="p">.</span><span class="n">use</span><span class="p">(</span><span class="s">"/"</span><span class="p">)</span> <span class="p">{</span> <span class="n">rq</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">con</span><span class="p">,</span> <span class="n">next</span> <span class="k">in</span>
+    <span class="n">res</span><span class="p">.</span><span class="n">bodyAsString</span> <span class="o">=</span> <span class="s">"Always, almost sometimes."</span>
+    <span class="n">con</span><span class="p">.</span><span class="n">sendResponse</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="p">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">1337</span><span class="p">)</span>
+</pre></div>
+
+<p>Client (do not use this, use NSURLSession!):</p>
+
+<div class="highlight highlight-Swift"><pre><span class="n">GET</span><span class="p">(</span><span class="s">"http://www.apple.com/"</span><span class="p">)</span>
+  <span class="p">.</span><span class="n">done</span> <span class="p">{</span>
+    <span class="n">println</span><span class="p">()</span>
+    <span class="n">println</span><span class="p">(</span><span class="s">"request  \($0)"</span><span class="p">)</span>
+    <span class="n">println</span><span class="p">(</span><span class="s">"response \($1)"</span><span class="p">)</span>
+    <span class="n">println</span><span class="p">(</span><span class="s">"body:</span><span class="se">\n</span><span class="s">\($1.bodyAsString)"</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="p">.</span><span class="n">fail</span> <span class="p">{</span>
+    <span class="n">println</span><span class="p">(</span><span class="s">"failed \($0): \($1)"</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="p">.</span><span class="n">always</span> <span class="p">{</span> <span class="n">println</span><span class="p">(</span><span class="s">"---"</span><span class="p">)</span> <span class="p">}</span>
+</pre></div>
 
 <h3>
 <a name="targets" class="anchor" href="#targets"><span class="octicon octicon-link"></span></a>Targets</h3>
@@ -100,62 +148,23 @@ etc).</p>
 
 <p>HTTPConnectionPool is an abstract base class and manages open connections,
 either incoming or outgoing. The HTTPConnection sits on top of the SwiftSockets
-and manages one HTTP connection.</p>
+and manages one HTTP connection (it connects the socket to the parser).</p>
 
-<p>HTTPServer is the server class. Uses the SwiftSockets to listen for incoming
-connections. Sample:</p>
-
-<div class="highlight highlight-Swift"><pre><span class="k">let</span> <span class="n">httpd</span> <span class="o">=</span> <span class="n">HTTPServer</span><span class="p">()</span>
-  <span class="p">.</span><span class="n">onRequest</span> <span class="p">{</span>
-    <span class="n">rq</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">con</span> <span class="k">in</span>
-    <span class="n">res</span><span class="p">.</span><span class="n">bodyAsString</span> <span class="o">=</span> <span class="s">"&lt;h2&gt;Always Right, Never Wrong!&lt;/h2&gt;"</span>
-    <span class="n">con</span><span class="p">.</span><span class="n">sendResponse</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
-  <span class="p">}</span>
-  <span class="p">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">1337</span><span class="p">)</span>
-</pre></div>
-
-<p>That's it.</p>
+<p>HTTPServer is the server class. Uses SwiftSockets to listen for incoming
+connections. See above for a sample.</p>
 
 <p>As a bonus - this also has a tiny Connect class - which is modelled after the
 Node.JS Connect thingy (which in turn is apparently modelled after RoR Rack).
 It allows you to hook up a set of blocks for request processing, instead of
 having just a single entry point.
-Not sure I like that stuff, but it seems to fit into Swift quite well.</p>
+Not sure I like that stuff, but it seems to fit into Swift quite well.
+Find a sample above.</p>
 
-<p>It works like this:</p>
+<p>Finally there is a simple HTTP client. Doesn't do anything fancy. Do not - ever</p>
 
-<div class="highlight highlight-Swift"><pre><span class="k">let</span> <span class="n">httpd</span> <span class="o">=</span> <span class="n">Connect</span><span class="p">()</span>
-  <span class="p">.</span><span class="n">use</span> <span class="p">{</span> <span class="n">rq</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">next</span> <span class="k">in</span>
-    <span class="n">println</span><span class="p">(</span><span class="s">"\(rq.method) \(rq.url) \(res.status)"</span><span class="p">)</span>
-    <span class="n">next</span><span class="p">()</span>
-  <span class="p">}</span>
-  <span class="p">.</span><span class="n">use</span><span class="p">(</span><span class="s">"/hello"</span><span class="p">)</span> <span class="p">{</span> <span class="n">rq</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">con</span><span class="p">,</span> <span class="n">next</span> <span class="k">in</span>
-    <span class="n">res</span><span class="p">.</span><span class="n">bodyAsString</span> <span class="o">=</span> <span class="s">"Hello!"</span>
-    <span class="n">con</span><span class="p">.</span><span class="n">sendResponse</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
-  <span class="p">}</span>
-  <span class="p">.</span><span class="n">use</span><span class="p">(</span><span class="s">"/"</span><span class="p">)</span> <span class="p">{</span> <span class="n">rq</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">con</span><span class="p">,</span> <span class="n">next</span> <span class="k">in</span>
-    <span class="n">res</span><span class="p">.</span><span class="n">bodyAsString</span> <span class="o">=</span> <span class="s">"Always almost sometimes"</span>
-    <span class="n">con</span><span class="p">.</span><span class="n">sendResponse</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
-  <span class="p">}</span>
-  <span class="p">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">1337</span><span class="p">)</span>
-</pre></div>
-
-<p>Finally there is a tiny HTTP client, use it like this:</p>
-
-<div class="highlight highlight-Swift"><pre>    <span class="n">GET</span><span class="p">(</span><span class="s">"http://www.apple.com/"</span><span class="p">)</span>
-      <span class="p">.</span><span class="n">done</span> <span class="p">{</span>
-        <span class="n">println</span><span class="p">()</span>
-        <span class="n">println</span><span class="p">(</span><span class="s">"request  \($0)"</span><span class="p">)</span>
-        <span class="n">println</span><span class="p">(</span><span class="s">"response \($1)"</span><span class="p">)</span>
-        <span class="n">println</span><span class="p">(</span><span class="s">"body:</span><span class="se">\n</span><span class="s">\($1.bodyAsString)"</span><span class="p">)</span>
-      <span class="p">}</span>
-      <span class="p">.</span><span class="n">fail</span> <span class="p">{</span>
-        <span class="n">println</span><span class="p">(</span><span class="s">"failed \($0): \($1)"</span><span class="p">)</span>
-      <span class="p">}</span>
-      <span class="p">.</span><span class="n">always</span> <span class="p">{</span> <span class="n">println</span><span class="p">(</span><span class="s">"---"</span><span class="p">)</span> <span class="p">}</span>
-</pre></div>
-
-<h4>
+<ul>
+<li>use this. Use NSURLSession and companions.</li>
+</ul><h4>
 <a name="swiftyserver" class="anchor" href="#swiftyserver"><span class="octicon octicon-link"></span></a>SwiftyServer</h4>
 
 <p>Great httpd server - great in counting the requests it got sent. This is not
@@ -205,7 +214,7 @@ companions - it gives you plenty of extra features you want to have for realz.</
 <li>[ ] Use as many language features Swift provides
 
 <ul>
-<li>[ ] Generics (swiftc segfaults)
+<li>[x] Generics
 
 <ul>
 <li>[x] Generic function</li>
@@ -230,7 +239,12 @@ companions - it gives you plenty of extra features you want to have for realz.</
 </li>
 <li>[x] Pure Swift weak delegates via <a href="https://github.com/class" class="user-mention">@class</a>
 </li>
-<li>[x] Optionals</li>
+<li>[x] Optionals
+
+<ul>
+<li>[x] Implicitly unwrapped optionals</li>
+</ul>
+</li>
 <li>[x] Convenience initializers</li>
 <li>[x] Class variables on structs</li>
 <li>[x] CConstPointer, CConstVoidPointer
