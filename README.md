@@ -23,9 +23,8 @@ let httpd = HTTPServer()
   }
   .listen(1337)
 ```
-That's it.
 
-With Node.JS like Connect bonus class:
+Server using the Node.JS like Connect bonus class:
 ```Swift
 let httpd = Connect()
   .use { rq, res, _, next in
@@ -37,7 +36,7 @@ let httpd = Connect()
     con.sendResponse(res)
   }
   .use("/") { rq, res, con, next in
-    res.bodyAsString = "Always almost sometimes"
+    res.bodyAsString = "Always, almost sometimes."
     con.sendResponse(res)
   }
   .listen(1337)
