@@ -32,11 +32,12 @@ func -<T: BidirectionalIndex where T.DistanceType : SignedInteger>
 extension String {
   
   static func fromCString(cs: CString, length: Int?) -> String? {
-    if length == nil { // no length given, use \0 standard variant
+    if length == .None { // no length given, use \0 standard variant
       return String.fromCString(cs)
     }
     
     // hh: this is really lame, there must be a better way :-)
+    // Also: it could be a constant string! So we probably need to copy ...
     if let buf = cs.persist() {
       return buf.withUnsafePointerToElements {
         (p: UnsafePointer<CChar>) in

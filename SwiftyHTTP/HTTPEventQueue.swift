@@ -11,7 +11,7 @@
 struct HTTPEventQueue<T> {
   
   // unowned would be better, but this gives an init sequence issue?
-  weak var connection : HTTPConnection?
+  weak var connection : HTTPConnection!
   
   var queue = [T]()
   
@@ -27,7 +27,7 @@ struct HTTPEventQueue<T> {
         queue.removeAll(keepCapacity: true)
       
         for o in queueCopy {
-          cb(o, connection!)
+          cb(o, connection)
         }
       }
     }
@@ -36,7 +36,7 @@ struct HTTPEventQueue<T> {
   mutating func emit(o: T) {
     // locking
     if let cb = on {
-      cb(o, connection!)
+      cb(o, connection)
     }
     else {
       queue.append(o)

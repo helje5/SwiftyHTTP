@@ -1,15 +1,63 @@
 SwiftyHTTP
 ==========
 
-A simple GCD based HTTP library for Swift.
+A simple GCD based HTTP library for Swift. This project is 'pure' Swift/C,
+it does not use any bridged Objective-C classes.
 
-SwiftyHTTP is kind of a demo on how to integrate Swift with raw C APIs. More
+SwiftyHTTP is a demo on how to integrate Swift with raw C APIs. More
 for stealing Swift coding ideas than for actually using the code in a real
 project. In most real world Swift apps you have access to Cocoa, use it.
 
 **Note**: This is just my second [Swift](https://developer.apple.com/swift/)
 project. Any suggestions on how to improve the code are welcome. I expect
 lots and lots :-)
+
+###First things first: Samples
+
+Server:
+```Swift
+let httpd = HTTPServer()
+  .onRequest {
+    rq, res, con in
+    res.bodyAsString = "<h2>Always Right, Never Wrong!</h2>"
+    con.sendResponse(res)
+  }
+  .listen(1337)
+```
+
+Server using the Node.JS like Connect bonus class:
+```Swift
+let httpd = Connect()
+  .use { rq, res, _, next in
+    println("\(rq.method) \(rq.url) \(res.status)")
+    next()
+  }
+  .use("/hello") { rq, res, con, next in
+    res.bodyAsString = "Hello!"
+    con.sendResponse(res)
+  }
+  .use("/") { rq, res, con, next in
+    res.bodyAsString = "Always, almost sometimes."
+    con.sendResponse(res)
+  }
+  .listen(1337)
+```
+
+Client (do not use this, use NSURLSession!):
+```Swift
+GET("http://www.apple.com/")
+  .done {
+    println()
+    println("request  \($0)")
+    println("response \($1)")
+    println("body:\n\($1.bodyAsString)")
+  }
+  .fail {
+    println("failed \($0): \($1)")
+  }
+  .always { println("---") }
+```
+
 
 ###Targets
 
@@ -62,59 +110,20 @@ etc).
 
 HTTPConnectionPool is an abstract base class and manages open connections,
 either incoming or outgoing. The HTTPConnection sits on top of the SwiftSockets
-and manages one HTTP connection.
+and manages one HTTP connection (it connects the socket to the parser).
 
-HTTPServer is the server class. Uses the SwiftSockets to listen for incoming
-connections. Sample:
-```Swift
-let httpd = HTTPServer()
-  .onRequest {
-    rq, res, con in
-    res.bodyAsString = "<h2>Always Right, Never Wrong!</h2>"
-    con.sendResponse(res)
-  }
-  .listen(1337)
-```
-That's it.
+HTTPServer is the server class. Uses SwiftSockets to listen for incoming
+connections. See above for a sample.
 
 As a bonus - this also has a tiny Connect class - which is modelled after the
 Node.JS Connect thingy (which in turn is apparently modelled after RoR Rack).
 It allows you to hook up a set of blocks for request processing, instead of
 having just a single entry point.
 Not sure I like that stuff, but it seems to fit into Swift quite well.
+Find a sample above.
 
-It works like this:
-```Swift
-let httpd = Connect()
-  .use { rq, res, _, next in
-    println("\(rq.method) \(rq.url) \(res.status)")
-    next()
-  }
-  .use("/hello") { rq, res, con, next in
-    res.bodyAsString = "Hello!"
-    con.sendResponse(res)
-  }
-  .use("/") { rq, res, con, next in
-    res.bodyAsString = "Always almost sometimes"
-    con.sendResponse(res)
-  }
-  .listen(1337)
-```
-
-Finally there is a tiny HTTP client, use it like this:
-```Swift
-    GET("http://www.apple.com/")
-      .done {
-        println()
-        println("request  \($0)")
-        println("response \($1)")
-        println("body:\n\($1.bodyAsString)")
-      }
-      .fail {
-        println("failed \($0): \($1)")
-      }
-      .always { println("---") }
-```
+Finally there is a simple HTTP client. Doesn't do anything fancy. Do not - ever
+- use this. Use NSURLSession and companions.
 
 ####SwiftyServer
 
@@ -148,7 +157,7 @@ companions - it gives you plenty of extra features you want to have for realz.
   - [ ] Async connect()
 - [x] No NS'ism
 - [ ] Use as many language features Swift provides
-  - [ ] Generics (swiftc segfaults)
+  - [x] Generics
     - [x] Generic function
     - [x] typealias
   - [x] Closures
@@ -164,6 +173,7 @@ companions - it gives you plenty of extra features you want to have for realz.
   - [ ] @Lazy
   - [x] Pure Swift weak delegates via @class
   - [x] Optionals
+    - [x] Implicitly unwrapped optionals
   - [x] Convenience initializers
   - [x] Class variables on structs
   - [x] CConstPointer, CConstVoidPointer
