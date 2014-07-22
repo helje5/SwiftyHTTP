@@ -43,9 +43,7 @@ class RawByteBuffer {
       //   memcpy(UnsafePointer<Void>(a), buffer, UInt(self.count))
       // func memcpy(_: UnsafePointer<()>, _: ConstUnsafePointer<()>, _: UInt) -> UnsafePointer<()>
 
-      memcpy(UnsafePointer<Void>($0),
-             UnsafePointer<Void>(self.buffer),
-             UInt(self.count))
+      memcpy($0, self.buffer,  UInt(self.count))
     }
     
     return a
@@ -57,9 +55,7 @@ class RawByteBuffer {
       var newbuf  = UnsafePointer<RawByte>.alloc(newsize + extra)
       
       if (count > 0) {
-        memcpy(UnsafePointer<Void>(newbuf),
-               UnsafePointer<Void>(buffer),
-               UInt(count))
+        memcpy(newbuf, buffer, UInt(count))
       }
       
       buffer.dealloc(capacity + extra)
@@ -72,7 +68,7 @@ class RawByteBuffer {
     count = 0
   }
   
-  func add(src: UnsafePointer<Void>, length: Int) {
+  func addBytes(src: ConstUnsafePointer<Void>, length: Int) {
     // println("add \(length) count: \(count) capacity: \(capacity)")
     if length < 1 {
       println("NO LENGTH?")
@@ -81,27 +77,17 @@ class RawByteBuffer {
     ensureCapacity(count + length)
     
     let dest = buffer + count
-    memcpy(UnsafePointer<Void>(dest),
-           UnsafePointer<Void>(src),
-           UInt(length))
+    memcpy(UnsafePointer<Void>(dest), src, UInt(length))
     count += length
     // println("--- \(length) count: \(count) capacity: \(capacity)")
   }
   
-  func add(cs: CString, length: UInt? = nil) {
-    if length < 1 {
-      return
+  func add(cs: ConstUnsafePointer<CChar>, length: Int? = nil) {
+    if let len = length {
+      addBytes(cs, length: len)
     }
-    let csbuf : [CChar] = cs.persist()!
-    csbuf.withUnsafePointerToElements { ( p ) -> Void in
-      var len : Int
-      if let l = length {
-        len = Int(l)
-      }
-      else {
-        len = csbuf.count // w/ or w/o 0?
-      }
-      self.add(UnsafePointer<Void>(p), length: len)
+    else {
+      addBytes(cs, length: Int(strlen(cs)))
     }
   }
   
@@ -112,6 +98,6 @@ class RawByteBuffer {
     
     let cptr = UnsafePointer<CChar>(buffer)
     cptr[count] = 0 // null terminate, buffer is always bigger than it claims
-    return String.fromCString(CString(cptr))
+    return String.fromCString(cptr)
   }
 }
