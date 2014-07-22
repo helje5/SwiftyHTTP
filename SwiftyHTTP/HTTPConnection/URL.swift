@@ -9,24 +9,24 @@
 // Very simple URL class. Do not use ;-)
 // RFC 3986
 // https://joe:user@apple.com:443/path/elements#red?a=10&b=20
-struct URL {
+public struct URL {
   
   // all escaped values
-  var scheme   : String?
-  var host     : String?
-  var port     : Int?
-  var path     : String?
-  var query    : String?
-  var fragment : String?
-  var userInfo : String?
+  public var scheme   : String?
+  public var host     : String?
+  public var port     : Int?
+  public var path     : String?
+  public var query    : String?
+  public var fragment : String?
+  public var userInfo : String?
   
-  init() {
+  public init() {
   }
-  init(string: String) {
+  public init(string: String) {
     self = parse_url(string)
   }
   
-  var isEmpty : Bool {
+  public var isEmpty : Bool {
     if let s = scheme   { return false }
     if let s = userInfo { return false }
     if let s = host     { return false }
@@ -37,7 +37,7 @@ struct URL {
     return true
   }
   
-  var urlWithoutAuthority : URL { // nice name ;-)
+  public var urlWithoutAuthority : URL { // nice name ;-)
     var url = URL()
     url.path     = self.path
     url.query    = self.query
@@ -45,7 +45,7 @@ struct URL {
     return url
   }
   
-  var hostAndPort : String? {
+  public var hostAndPort : String? {
     if let h = host {
       if let p = port {
         return "\(h):\(p)"
@@ -55,7 +55,7 @@ struct URL {
     return nil
   }
   
-  var portOrDefault : Int? { // what's a nice name for this?
+  public var portOrDefault : Int? { // what's a nice name for this?
     if let p = port {
       return p
     }
@@ -65,7 +65,7 @@ struct URL {
     return nil
   }
   
-  var pathWithQueryAndFragment : String {
+  public var pathWithQueryAndFragment : String {
     if path == nil && query == nil && fragment == nil {
       return "/"
     }
@@ -84,7 +84,7 @@ struct URL {
     if userInfo != nil && userInfo! == "" { userInfo = nil }
   }
   
-  func toString() -> String? {
+  public func toString() -> String? {
     var us = ""
     
     var scheme = self.scheme
@@ -136,7 +136,7 @@ struct URL {
     return us
   }
   
-  static func schemeForPort(port: Int) -> String? {
+  public static func schemeForPort(port: Int) -> String? {
     // read /etc/services? but this doesn't have a proper 1337?
     switch port {
       case    7: return "echo"
@@ -151,7 +151,7 @@ struct URL {
       default:   return nil
     }
   }
-  static func portForScheme(scheme: String) -> Int? {
+  public static func portForScheme(scheme: String) -> Int? {
     // read /etc/services? but this doesn't have a proper 1337?
     switch scheme {
       case "echo":   return 7;
@@ -170,7 +170,7 @@ struct URL {
 
 extension URL : Printable {
   
-  var description : String {
+  public var description : String {
     if let s = toString() {
       return s
     }
@@ -183,11 +183,11 @@ extension URL : Printable {
 
 extension URL : StringLiteralConvertible {
   
-  static func convertFromStringLiteral(value:StringLiteralType) -> URL {
+  public static func convertFromStringLiteral(value:StringLiteralType) -> URL {
     return URL(string: value)
   }
   
-  static func convertFromExtendedGraphemeClusterLiteral
+  public static func convertFromExtendedGraphemeClusterLiteral
     (value: ExtendedGraphemeClusterType) -> URL
   {
     return URL(string: value)
@@ -197,13 +197,13 @@ extension URL : StringLiteralConvertible {
 
 extension String {
   
-  func toURL() -> URL {
+  public func toURL() -> URL {
     return parse_url(self)
   }
   
 }
 
-func parse_url(us: String) -> URL {
+public func parse_url(us: String) -> URL {
   // yes, yes, I know. Pleaze send me a proper version ;-)
   var url = URL()
   var s   = us

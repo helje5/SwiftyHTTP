@@ -9,7 +9,7 @@
 import Darwin
 import Dispatch
 
-typealias ActiveSocketIPv4 = ActiveSocket<sockaddr_in>
+public typealias ActiveSocketIPv4 = ActiveSocket<sockaddr_in>
 
 /**
  * Represents an active STREAM socket based on the standard Unix sockets
@@ -28,24 +28,23 @@ typealias ActiveSocketIPv4 = ActiveSocket<sockaddr_in>
  * closed.
  *
  * Sample:
- *   let socket = ActiveSocket()
- *
- *   socket.onRead {
- *     let (count, block) = $0.read()
- *     if count < 1 {
- *       println("EOF, or great error handling.")
- *       return
+ *   let socket = ActiveSocket<sockaddr_in>()
+ *     .onRead {
+ *       let (count, block) = $0.read()
+ *       if count < 1 {
+ *         println("EOF, or great error handling.")
+ *         return
+ *       }
+ *       println("Answer to ring,ring is: \(count) bytes: \(block)")
  *     }
- *     println("Answer to ring,ring is: \(count) bytes: \(block)")
- *   }
- *
  *   socket.connect(sockaddr_in(address:"127.0.0.1", port: 80))
  *   socket.write("Ring, ring!\r\n")
  */
-class ActiveSocket<T: SocketAddress>: Socket<T> {
+public class ActiveSocket<T: SocketAddress>: Socket<T> {
   
-  var remoteAddress  : T?                 = nil
-  var queue          : dispatch_queue_t?  = nil
+  public var remoteAddress  : T?                 = nil
+  public var queue          : dispatch_queue_t?  = nil
+  
   var readSource     : dispatch_source_t? = nil
   var sendCount      : Int                = 0
   var closeRequested : Bool               = false
@@ -63,7 +62,7 @@ class ActiveSocket<T: SocketAddress>: Socket<T> {
   }
   
   
-  var isConnected : Bool {
+  public var isConnected : Bool {
     // doesn't work: return isValid ? (remoteAddress != nil) : false
     if !isValid { return false }
     if let a = remoteAddress { return true } else { return false }
@@ -72,11 +71,13 @@ class ActiveSocket<T: SocketAddress>: Socket<T> {
   
   /* init */
   
-  init(fd: Int32?) { // required, otherwise the convenience one fails to compile
+  public init(fd: Int32?) {
+    // required, otherwise the convenience one fails to compile
     super.init(fd: fd)
   }
   
-  convenience init(fd: Int32?, remoteAddress: T?, queue: dispatch_queue_t? = nil)
+  public convenience init
+    (fd: Int32?, remoteAddress: T?, queue: dispatch_queue_t? = nil)
   {
     self.init(fd: fd)
     
@@ -91,7 +92,7 @@ class ActiveSocket<T: SocketAddress>: Socket<T> {
   
   /* close */
   
-  override func close() {
+  override public func close() {
     if debugClose { println("closing socket \(self)") }
     if !isValid { // already closed
       if debugClose { println("   already closed.") }
@@ -127,7 +128,7 @@ class ActiveSocket<T: SocketAddress>: Socket<T> {
   
   /* connect */
   
-  func connect(address: T, onConnect: () -> Void) -> Bool {
+  public func connect(address: T, onConnect: () -> Void) -> Bool {
     // FIXME: make connect() asynchronous via GCD
     if !isValid {
       return false
@@ -162,7 +163,7 @@ class ActiveSocket<T: SocketAddress>: Socket<T> {
   
   /* read */
   
-  func onRead(cb: ((ActiveSocket, Int) -> Void)?) -> Self {
+  public func onRead(cb: ((ActiveSocket, Int) -> Void)?) -> Self {
     var hadCB    = false // this doesn't work anymore: let hadCB = readCB != nil
     var hasNewCB = false // doesn't work anymore: if cb == nil
     if let cb  = readCB { hadCB    = true }
@@ -204,7 +205,7 @@ extension ActiveSocket : OutputStream { // writing
   // no let in extensions: let debugAsyncWrites = false
   var debugAsyncWrites : Bool { return false }
   
-  func asyncWrite<T>(buffer: [T], length: Int? = nil) -> Bool {
+  public var canWrite : Bool {
     if !isValid {
       assert(isValid, "Socket closed, can't do async writes anymore")
       return false
@@ -213,34 +214,21 @@ extension ActiveSocket : OutputStream { // writing
       assert(!closeRequested, "Socket is being shutdown already!")
       return false
     }
-    
-    let writelen = length ? UInt(length!) : UInt(buffer.count)
-    let bufsize  = writelen * UInt(sizeof(T))
-    if bufsize < 1 { // Nothing to write ..
-      return true
-    }
-    
-    if queue == nil {
-      println("No queue set, using main queue")
-      queue = dispatch_get_main_queue()
-    }
-    
-    // the default destructor is supposed to copy the data. Not good, but
-    // handling ownership is going to be messy
-    var asyncData  : dispatch_data_t? = nil
-    asyncData = dispatch_data_create(buffer, bufsize, queue, nil)
-    
+    return true
+  }
+  
+  public func write(data: dispatch_data_t) {
     sendCount++
     if debugAsyncWrites {
-      println("async send[\(sendCount)] size \(bufsize) \(buffer)")
+      println("async send[\(data)]")
     }
     
     // in here we capture self, which I think is right.
-    dispatch_write(fd!, asyncData, queue) {
+    dispatch_write(fd!, data, queue) {
       asyncData, error in
       
       if self.debugAsyncWrites {
-        println("did send[\(self.sendCount)] size \(bufsize) error \(error)")
+        println("did send[\(self.sendCount)] data \(data) error \(error)")
       }
       
       self.sendCount = self.sendCount - 1 // -- fails?
@@ -254,12 +242,56 @@ extension ActiveSocket : OutputStream { // writing
       }
     }
     
-    asyncData = nil
+  }
+  
+  public func asyncWrite<T>(buffer: [T]) -> Bool {
+    // While [T] seems to convert to ConstUnsafePointer<T>, this method
+    // has the added benefit of being able to derive the buffer length
+    if !canWrite { return false }
+    
+    let writelen = UInt(buffer.count)
+    let bufsize  = writelen * UInt(sizeof(T))
+    if bufsize < 1 { // Nothing to write ..
+      return true
+    }
+    
+    if queue == nil {
+      println("No queue set, using main queue")
+      queue = dispatch_get_main_queue()
+    }
+    
+    // the default destructor is supposed to copy the data. Not good, but
+    // handling ownership is going to be messy
+    let asyncData = dispatch_data_create(buffer, bufsize, queue, nil)
+    write(asyncData!)
     
     return true
   }
   
-  func send<T>(buffer: [T], length: Int? = nil) -> Int {
+  public func asyncWrite<T>(buffer: ConstUnsafePointer<T>, length:Int) -> Bool {
+    // FIXME: can we remove this dupe of the [T] version?
+    if !canWrite { return false }
+    
+    let writelen = UInt(length)
+    let bufsize  = writelen * UInt(sizeof(T))
+    if bufsize < 1 { // Nothing to write ..
+      return true
+    }
+    
+    if queue == nil {
+      println("No queue set, using main queue")
+      queue = dispatch_get_main_queue()
+    }
+    
+    // the default destructor is supposed to copy the data. Not good, but
+    // handling ownership is going to be messy
+    let asyncData = dispatch_data_create(buffer, bufsize, queue, nil)
+    write(asyncData!)
+    
+    return true
+  }
+  
+  public func send<T>(buffer: [T], length: Int? = nil) -> Int {
     var writeCount : Int = 0
     let bufsize    = length ? UInt(length!) : UInt(buffer.count)
     let fd         = self.fd!
@@ -271,17 +303,11 @@ extension ActiveSocket : OutputStream { // writing
     return writeCount
   }
   
-  func write(string: String) {
-    string.withCString { (p: CString) -> Void in
-      if let cstr = p.persist() {
-        let len = cstr.count - 1 // remove \0 terminator
-        if len > 0 {
-          self.asyncWrite(cstr, length: len)
-        }
-      }
-      else {
-        assert(false, "Could not persist cString")
-        println("FATAL: Could not persist cString?")
+  public func write(string: String) {
+    string.withCString { (cstr: ConstUnsafePointer<Int8>) -> Void in
+      let len = Int(strlen(cstr))
+      if len > 0 {
+        self.asyncWrite(cstr, length: len)
       }
     }
   }
@@ -293,7 +319,7 @@ extension ActiveSocket { // Reading
   
   // Note: Swift doesn't allow the readBuffer in here.
   
-  func read() -> ( size: Int, block: [CChar], error: Int32) {
+  public func read() -> ( size: Int, block: [CChar], error: Int32) {
     if !isValid {
       println("Called read() on closed socket \(self)")
       return ( -42, readBuffer, EBADF )

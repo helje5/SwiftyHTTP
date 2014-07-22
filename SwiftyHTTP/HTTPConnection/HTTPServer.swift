@@ -6,25 +6,29 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
-class HTTPServer : HTTPConnectionPool {
+import Dispatch
+
+public class HTTPServer : HTTPConnectionPool {
   
-  var port         : Int?           = nil
-  var socket       : PassiveSocketIPv4!
+  public var port         : Int?           = nil
+  public var socket       : PassiveSocketIPv4!
   
   var handler      : ((HTTPRequest, HTTPResponse, HTTPConnection)->Void)? = nil
   var handlerQueue : dispatch_queue_t? = nil
   
-  init() {
+  public init() {
     // If there is an init(), you don't have to provide default values for
     // all ivars?
     super.init()
   }
   
-  func onRequest(cb:(HTTPRequest, HTTPResponse, HTTPConnection)->Void) -> Self {
+  public func onRequest
+    (cb:(HTTPRequest, HTTPResponse, HTTPConnection)->Void) -> Self
+  {
     handler = cb
     return self
   }
-  func useQueue(queue: dispatch_queue_t) -> Self {
+  public func useQueue(queue: dispatch_queue_t) -> Self {
     handlerQueue = queue
     return self
   }
@@ -58,7 +62,7 @@ class HTTPServer : HTTPConnectionPool {
     }
   }
   
-  func listen(port: Int) -> HTTPServer {
+  public func listen(port: Int) -> HTTPServer {
     // using Self or Self? seems to crash the compiler
     
     socket = PassiveSocket(address: sockaddr_in(port: port))
@@ -92,7 +96,7 @@ class HTTPServer : HTTPConnectionPool {
     return self
   }
   
-  func stop() {
+  public func stop() {
     if let s = socket {
       s.close()
       socket = nil

@@ -6,12 +6,12 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
-class HTTPResponse : HTTPMessage {
+public class HTTPResponse : HTTPMessage {
   
-  var status : HTTPStatus
+  public var status : HTTPStatus
   
-  init(status: HTTPStatus, version: ( Int, Int ) = HTTPv11,
-    headers: Dictionary<String, String> = [:] )
+  public init(status: HTTPStatus, version: ( Int, Int ) = HTTPv11,
+              headers: Dictionary<String, String> = [:] )
   {
     self.status = status
     

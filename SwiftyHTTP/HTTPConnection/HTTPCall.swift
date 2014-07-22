@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
+import Dispatch
 
 /**
  * Sample:
@@ -14,8 +15,8 @@
  *     .fail   { println("failed \($0): \($1)")  }
  *     .always { println("we are done here ...") }
  */
-func GET(url: URL, headers: Dictionary<String, String> = [:],
-         version: ( Int, Int ) = HTTPv11) -> HTTPCall
+public func GET(url: URL, headers: Dictionary<String, String> = [:],
+                version: ( Int, Int ) = HTTPv11) -> HTTPCall
 {
   func isURLOK(url: URL) -> Bool {
     if url.scheme == nil || url.scheme != "http" {
@@ -55,8 +56,9 @@ func GET(url: URL, headers: Dictionary<String, String> = [:],
   call.run()
   return call
 }
-func GET(url: String, headers: Dictionary<String, String> = [:],
-         version: ( Int, Int ) = HTTPv11) -> HTTPCall
+
+public func GET(url: String, headers: Dictionary<String, String> = [:],
+                version: ( Int, Int ) = HTTPv11) -> HTTPCall
 {
   return GET(parse_url(url), headers: headers, version: version)
 }
@@ -70,12 +72,12 @@ let userAgent    = "AlwaysRightInstitute-SwiftyHTTP/0.42 (Macintozh) (Roxx)"
 
 var callCounter  = 0
 
-class HTTPCall : Equatable {
+public class HTTPCall : Equatable {
   
-  enum Error : Printable {
+  public enum Error : Printable {
     case DNSLookup, Connect, URLMalformed
     
-    var description : String {
+    public var description : String {
       switch self {
         case DNSLookup:    return "DNS lookup failed"
         case Connect:      return "Could not connect to server"
@@ -96,8 +98,8 @@ class HTTPCall : Equatable {
     }
   }
   
-  let url        : URL
-  let request    : HTTPRequest
+  public let url     : URL
+  public let request : HTTPRequest
   let debugOn    = true
   let callID     = 0
   
@@ -106,7 +108,7 @@ class HTTPCall : Equatable {
   var connection : HTTPConnection?
   var response   : HTTPResponse?
   
-  init(url: URL, request: HTTPRequest) {
+  public init(url: URL, request: HTTPRequest) {
     self.url     = url
     self.request = request
     
@@ -126,7 +128,7 @@ class HTTPCall : Equatable {
   
   /* callbacks (check for incorrect locking) */
   
-  func done(cb: ( HTTPRequest, HTTPResponse ) -> Void) -> Self {
+  public func done(cb: ( HTTPRequest, HTTPResponse ) -> Void) -> Self {
     if state == .Done {
       cb(request, response!)
     }
@@ -138,7 +140,7 @@ class HTTPCall : Equatable {
     }
     return self
   }
-  func fail(cb: ( HTTPRequest, Error ) -> Void) -> Self {
+  public func fail(cb: ( HTTPRequest, Error ) -> Void) -> Self {
     if state == .Fail {
       cb(request, error!)
     }
@@ -150,7 +152,7 @@ class HTTPCall : Equatable {
     }
     return self
   }
-  func always(cb: ( HTTPRequest, HTTPResponse?, Error? ) -> Void) -> Self {
+  public func always(cb: ( HTTPRequest, HTTPResponse?, Error? ) -> Void) -> Self {
     if state.isFinished {
       cb(request, response, error)
     }
@@ -167,23 +169,23 @@ class HTTPCall : Equatable {
   
   /* convenience callbacks with less arguments */
   
-  func done(cb: ( HTTPResponse ) -> Void) -> Self {
+  public func done(cb: ( HTTPResponse ) -> Void) -> Self {
     return done { _, res in cb(res) }
   }
-  func fail(cb: ( Error ) -> Void) -> Self {
+  public func fail(cb: ( Error ) -> Void) -> Self {
     return fail { _, res in cb(res) }
   }
-  func always(cb: ( HTTPResponse?, Error? ) -> Void) -> Self {
+  public func always(cb: ( HTTPResponse?, Error? ) -> Void) -> Self {
     return always { _, res, error in cb(res, error) }
   }
-  func always(cb: () -> Void) -> Self {
+  public func always(cb: () -> Void) -> Self {
     return always { _, _, _ in cb() }
   }
   
   
   /* main runner */
   
-  func run() {
+  public func run() {
     assert(state == State.Idle)
     
     /* keep reference around, even if the caller does not */
@@ -335,7 +337,8 @@ class HTTPCall : Equatable {
   }
 }
 
-func ==(lhs: HTTPCall, rhs: HTTPCall) -> Bool { // required for find() above
+public func ==(lhs: HTTPCall, rhs: HTTPCall) -> Bool {
+  // required for find() above
   // hm, this is, well, a little bit questionable. But there is no 'find'
   // which takes a predicate? (instead of requiring Equatable)
   return lhs === rhs
