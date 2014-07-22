@@ -10,8 +10,8 @@ import Dispatch
 
 public class HTTPServer : HTTPConnectionPool {
   
-  var port         : Int?           = nil
-  var socket       : PassiveSocketIPv4!
+  public var port         : Int?           = nil
+  public var socket       : PassiveSocketIPv4!
   
   var handler      : ((HTTPRequest, HTTPResponse, HTTPConnection)->Void)? = nil
   var handlerQueue : dispatch_queue_t? = nil

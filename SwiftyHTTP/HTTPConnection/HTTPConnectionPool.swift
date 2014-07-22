@@ -64,7 +64,7 @@ public class HTTPConnectionPool {
     log("")
   }
 
-  func onLog(cb: (String) -> Void) -> Self {
+  public func onLog(cb: (String) -> Void) -> Self {
     logger = cb
     return self
   }
