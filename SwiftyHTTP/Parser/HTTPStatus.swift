@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
-enum HTTPStatus {
+public enum HTTPStatus {
   // Either inherit from Int (and have raw values) OR have cases with arguments
   // Slightly annoying.
   
@@ -42,9 +42,9 @@ enum HTTPStatus {
   case Extension(Int, String) // status, statusText
 }
 
-extension HTTPStatus {
+public extension HTTPStatus {
   
-  init(_ status: Int, _ text: String? = nil) {
+  public init(_ status: Int, _ text: String? = nil) {
     switch status {
       case 200: self = .OK
       case 201: self = .Created
@@ -72,7 +72,7 @@ extension HTTPStatus {
     }
   }
   
-  var status : Int {
+  public var status : Int {
     // FIXME: complete me
   
     switch self {
@@ -101,7 +101,7 @@ extension HTTPStatus {
     }
   }
   
-  var statusText : String {
+  public var statusText : String {
     switch self {
       case .Extension(_, let text):
         return text
@@ -110,7 +110,7 @@ extension HTTPStatus {
     }
   }
   
-  static func textForStatus(status: Int) -> String {
+  public static func textForStatus(status: Int) -> String {
     // FIXME: complete me for type safety ;-)
     
     switch status {
@@ -135,7 +135,7 @@ extension HTTPStatus {
 
 extension HTTPStatus : Printable {
   
-  var description: String {
+  public var description: String {
     return "\(status) \(statusText)"
   }
   

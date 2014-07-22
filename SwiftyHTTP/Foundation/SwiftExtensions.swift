@@ -6,15 +6,17 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
+import Darwin
+
 // This allows you to do: str[str.startIndex..idx+4]
-func +<T: ForwardIndex>(idx: T, distance: T.DistanceType) -> T {
+public func +<T: ForwardIndex>(idx: T, distance: T.DistanceType) -> T {
   return advance(idx, distance)
 }
-func +<T: ForwardIndex>(distance: T.DistanceType, idx: T) -> T {
+public func +<T: ForwardIndex>(distance: T.DistanceType, idx: T) -> T {
   return advance(idx, distance)
 }
 
-func -<T: BidirectionalIndex where T.DistanceType : SignedInteger>
+public func -<T: BidirectionalIndex where T.DistanceType : SignedInteger>
   (idx: T, distance: T.DistanceType) -> T
 {
   var cursor = idx
@@ -25,29 +27,35 @@ func -<T: BidirectionalIndex where T.DistanceType : SignedInteger>
 }
 
 
+// Hack to compare values if we don't have access to the members of the struct,
+// eg http_errno in v0.0.4
+public func isByteEqual<T>(var lhs: T, var rhs: T) -> Bool {
+  return memcmp(&lhs, &rhs, UInt(sizeof(T))) == 0
+}
+
+
 // Those are mostly dirty hacks to get what I need :-)
 // I would be very interested in better way to do those things, W/O using
 // Foundation.
 
-extension String {
+public extension String {
   
-  static func fromCString(cs: CString, length: Int?) -> String? {
+  static func fromCString
+    (cs: ConstUnsafePointer<CChar>, length: Int!) -> String?
+  {
     if length == .None { // no length given, use \0 standard variant
       return String.fromCString(cs)
     }
     
     // hh: this is really lame, there must be a better way :-)
-    // Also: it could be a constant string! So we probably need to copy ...
-    if let buf = cs.persist() {
-      return buf.withUnsafePointerToElements {
-        (p: UnsafePointer<CChar>) in
-        let old = p[length!]
-        p[length!] = 0
-        let s = String.fromCString(CString(p))
-        p[length!] = old
-        return s
-      }
-    }
+    // Also: it could be a constant string! So we really need to copy ...
+    // NOTE: this is really really wrong, don't use it in actual projects! :-)
+    let unconst = UnsafePointer<CChar>(cs)
+    let old = cs[length]
+    unconst[length] = 0
+    let s   = String.fromCString(cs)
+    unconst[length] = old
+    
     return nil
   }
   
@@ -63,33 +71,26 @@ extension String {
     var cstr = [CChar](count: data.count + 1, repeatedValue: 0)
     cstr.withUnsafePointerToElements { dest in  // cannot just use cstr!
       data.withUnsafePointerToElements { src in
-        memcpy(UnsafePointer<Void>(dest),
-               UnsafePointer<Void>(src),
-               UInt(data.count))
+        memcpy(dest, src, UInt(data.count))
       }
     }
     cstr[data.count] = 0 // 0-terminate
     
     // var s = "" // direct return seems to crash things, not sure why
     return cstr.withUnsafePointerToElements {
-      return String.fromCString(CString($0))!
+      return String.fromCString($0)!
     }
   }
   
   func dataInCStringEncoding() -> [UInt8] {
-    return self.withCString { (p: CString) in
-      let cstr = p.persist()
-      let len  = UInt(cstr!.count) - 1
+    return self.withCString { (cstr: ConstUnsafePointer<CChar>) in
+      let len  = strlen(cstr)
       if len < 1 {
         return [UInt8]()
       }
       var buf = [UInt8](count: Int(len), repeatedValue: 0)
       buf.withUnsafePointerToElements { dest in
-        cstr!.withUnsafePointerToElements { src in
-          memcpy(UnsafePointer<Void>(dest),
-                 UnsafePointer<Void>(src),
-                 len)
-        }
+        memcpy(dest, cstr, len)
       }
       return buf
     }
@@ -115,6 +116,10 @@ extension String {
 
 }
 
+// Starting with v0.0.4 we cannot just extend CString anymore, this doesn't
+// work: extension UnsafePointer<CChar>
+
+/* FIXME: No more CString in v0.0.4
 extension CString {
   // Q(hh): this doesn't work?: extension Array<CChar> {}
   
@@ -143,11 +148,57 @@ extension CString {
   }
   
 }
+*/
 
 extension Int32 : LogicValue {
   
-  func getLogicValue() -> Bool {
+  public func getLogicValue() -> Bool {
     return self != 0
   }
   
+}
+
+
+/* v0.0.4 has no lowercaseString anymore. Need to hack around this. I think
+ * there is no proper Unicode up/low in 0.0.4 w/o resorting to Cocoa?
+ */
+extension Character {
+  
+  var unicodeScalarCodePoint : UInt32 {
+    let characterString = String(self)
+    let scalars = characterString.unicodeScalars
+    
+    return scalars[scalars.startIndex].value
+  }
+  
+  var isASCIILower : Bool {
+    let cp = self.unicodeScalarCodePoint
+    return cp >= 97 && cp <= 122
+  }
+  var isASCIIUpper : Bool {
+    let cp = self.unicodeScalarCodePoint
+    return cp >= 65 && cp <= 90
+  }
+  
+  var asciiLower : Character {
+    return self.isASCIIUpper
+      ? Character(UnicodeScalar(self.unicodeScalarCodePoint + 32))
+      : self
+  }
+  var asciiUpper : Character {
+    return self.isASCIILower
+      ? Character(UnicodeScalar(self.unicodeScalarCodePoint - 32))
+      : self
+  }
+
+}
+
+extension String {
+  
+  var lowercaseString : String {
+    // HACK. I think there is no proper way to do this in v0.0.4 w/o resorting
+    //       to Cocoa?
+    return reduce(self, "", { $0 + $1.asciiLower })
+  }
+
 }

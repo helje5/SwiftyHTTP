@@ -6,11 +6,11 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
-enum HTTPParserType {
+public enum HTTPParserType {
   case Request, Response, Both
 }
 
-class HTTPParser {
+public class HTTPParser {
   
   enum ParseState {
     case Idle, URL, HeaderName, HeaderValue, Body
@@ -29,7 +29,7 @@ class HTTPParser {
   var message    : HTTPMessage?
   
   
-  init(type: HTTPParserType = .Both) {
+  public init(type: HTTPParserType = .Both) {
     var cType: http_parser_type
     switch type {
       case .Request:  cType = HTTP_REQUEST
@@ -45,23 +45,25 @@ class HTTPParser {
   
   /* callbacks */
   
-  func onRequest(cb: ((HTTPRequest) -> Void)?) -> Self {
+  public func onRequest(cb: ((HTTPRequest) -> Void)?) -> Self {
     requestCB = cb
     return self
   }
-  func onResponse(cb: ((HTTPResponse) -> Void)?) -> Self {
+  public func onResponse(cb: ((HTTPResponse) -> Void)?) -> Self {
     responseCB = cb
     return self
   }
-  func onHeaders(cb: ((HTTPMessage) -> Bool)?) -> Self {
+  public func onHeaders(cb: ((HTTPMessage) -> Bool)?) -> Self {
     headersCB = cb
     return self
   }
-  func onBodyData(cb: ((HTTPMessage, CString, UInt) -> Bool)?) -> Self {
+  public func onBodyData
+    (cb: ((HTTPMessage, ConstUnsafePointer<CChar>, UInt) -> Bool)?) -> Self
+  {
     bodyDataCB = cb
     return self
   }
-  func resetEventHandlers() {
+  public func resetEventHandlers() {
     requestCB  = nil
     responseCB = nil
     headersCB  = nil
@@ -70,14 +72,19 @@ class HTTPParser {
   var requestCB  : ((HTTPRequest)  -> Void)?
   var responseCB : ((HTTPResponse) -> Void)?
   var headersCB  : ((HTTPMessage)  -> Bool)?
-  var bodyDataCB : ((HTTPMessage, CString, UInt) -> Bool)?
+  var bodyDataCB : ((HTTPMessage, ConstUnsafePointer<CChar>, UInt) -> Bool)?
   
   
   /* write */
   
-  var bodyIsFinal: Bool { return http_body_is_final(parser) == 0 ? false:true }
+  public var bodyIsFinal: Bool {
+    return http_body_is_final(parser) == 0 ? false:true
+  }
   
-  func write(buffer: CString, _ count: Int) -> HTTPParserError {
+  public func write
+    (buffer: ConstUnsafePointer<CChar>, _ count: Int) -> HTTPParserError
+  {
+    // Note: the parser doesn't expect this to be 0-terminated.
     let len = UInt(count)
     
     if !isWiredUp {
@@ -87,7 +94,7 @@ class HTTPParser {
     let bytesConsumed = http_parser_execute(self.parser, buffer, len)
     
     let errno = http_parser_get_errno(parser)
-    let err   = HTTPParserError.fromRaw(Int(errno.value))!
+    let err   = HTTPParserError(errno)
     
     if err != .OK {
       // Now hitting this, not quite sure why. Maybe a Safari feature?
@@ -98,11 +105,9 @@ class HTTPParser {
     return err
   }
   
-  func write(buffer: [CChar], _ count: Int) -> HTTPParserError {
-    if count == 0 {
-      return self.write("", 0)
-    }
-    return CString.withCString(buffer) { self.write($0, count) }
+  public func write(buffer: [CChar]) -> HTTPParserError {
+    let count = buffer.count
+    return write(buffer, count)
   }
   
   
@@ -115,17 +120,19 @@ class HTTPParser {
     self.headers.removeAll(keepCapacity: true)
   }
   
-  func addData(data: CString, length: UInt) -> Int32 {
+  public func addData(data: ConstUnsafePointer<CChar>, length: UInt) -> Int32 {
     if parseState == .Body && bodyDataCB && message {
       return bodyDataCB!(message!, data, length) ? 42 : 0
     }
     else {
-      buffer.add(data, length: length)
+      buffer.add(data, length: Int(length))
     }
     return 0
   }
   
-  func processDataForState(state: ParseState, d: CString, l: UInt) -> Int32 {
+  func processDataForState
+    (state: ParseState, d: ConstUnsafePointer<CChar>, l: UInt) -> Int32
+  {
     if (state == parseState) { // more data for same field
       return addData(d, length: l)
     }
@@ -167,44 +174,50 @@ class HTTPParser {
     return addData(d, length: l)
   }
   
-  var isRequest  : Bool { return http_parser_get_type(parser) == 0 }
-  var isResponse : Bool { return http_parser_get_type(parser) == 1 }
+  public var isRequest  : Bool { return http_parser_get_type(parser) == 0 }
+  public var isResponse : Bool { return http_parser_get_type(parser) == 1 }
   
-  class func parserCodeToMethod(rq: CUnsignedInt) -> HTTPMethod? {
+  public class func parserCodeToMethod(rq: CUnsignedInt) -> HTTPMethod? {
+    return parserCodeToMethod(http_method(rq))
+  }
+  public class func parserCodeToMethod(rq: http_method) -> HTTPMethod? {
     var method : HTTPMethod?
+    // Trying to use HTTP_DELETE gives http_method not convertible to
+    // _OptionalNilComparisonType
     switch rq { // hardcode C enum value, defines from http_parser n/a
-      case  0: method = HTTPMethod.DELETE
-      case  1: method = HTTPMethod.GET
-      case  2: method = HTTPMethod.HEAD
-      case  3: method = HTTPMethod.POST
-      case  4: method = HTTPMethod.PUT
-      case  5: method = HTTPMethod.CONNECT
-      case  6: method = HTTPMethod.OPTIONS
-      case  7: method = HTTPMethod.TRACE
-      case  8: method = HTTPMethod.COPY
-      case  9: method = HTTPMethod.LOCK
-      case 10: method = HTTPMethod.MKCOL
-      case 11: method = HTTPMethod.MOVE
-      case 12: method = HTTPMethod.PROPFIND
-      case 13: method = HTTPMethod.PROPPATCH
-      case 14: method = HTTPMethod.SEARCH
-      case 15: method = HTTPMethod.UNLOCK
+      case HTTP_DELETE:      method = HTTPMethod.DELETE
+      case HTTP_GET:         method = HTTPMethod.GET
+      case HTTP_HEAD:        method = HTTPMethod.HEAD
+      case HTTP_POST:        method = HTTPMethod.POST
+      case HTTP_PUT:         method = HTTPMethod.PUT
+      case HTTP_CONNECT:     method = HTTPMethod.CONNECT
+      case HTTP_OPTIONS:     method = HTTPMethod.OPTIONS
+      case HTTP_TRACE:       method = HTTPMethod.TRACE
+      case HTTP_COPY:        method = HTTPMethod.COPY
+      case HTTP_LOCK:        method = HTTPMethod.LOCK
+      case HTTP_MKCOL:       method = HTTPMethod.MKCOL
+      case HTTP_MOVE:        method = HTTPMethod.MOVE
+      case HTTP_PROPFIND:    method = HTTPMethod.PROPFIND
+      case HTTP_PROPPATCH:   method = HTTPMethod.PROPPATCH
+      case HTTP_SEARCH:      method = HTTPMethod.SEARCH
+      case HTTP_UNLOCK:      method = HTTPMethod.UNLOCK
         
-      case 16: method = HTTPMethod.REPORT((nil, nil)) // FIXME: peek body ..
+      case HTTP_REPORT:      method = HTTPMethod.REPORT((nil, nil))
+        // FIXME: peek body ..
         
-      case 17: method = HTTPMethod.MKACTIVITY
-      case 18: method = HTTPMethod.CHECKOUT
-      case 19: method = HTTPMethod.MERGE
+      case HTTP_MKACTIVITY:  method = HTTPMethod.MKACTIVITY
+      case HTTP_CHECKOUT:    method = HTTPMethod.CHECKOUT
+      case HTTP_MERGE:       method = HTTPMethod.MERGE
         
-      case 20: method = HTTPMethod.MSEARCH
-      case 21: method = HTTPMethod.NOTIFY
-      case 22: method = HTTPMethod.SUBSCRIBE
-      case 23: method = HTTPMethod.UNSUBSCRIBE
+      case HTTP_MSEARCH:     method = HTTPMethod.MSEARCH
+      case HTTP_NOTIFY:      method = HTTPMethod.NOTIFY
+      case HTTP_SUBSCRIBE:   method = HTTPMethod.SUBSCRIBE
+      case HTTP_UNSUBSCRIBE: method = HTTPMethod.UNSUBSCRIBE
         
-      case 24: method = HTTPMethod.PATCH
-      case 25: method = HTTPMethod.PURGE
+      case HTTP_PATCH:      method = HTTPMethod.PATCH
+      case HTTP_PURGE:      method = HTTPMethod.PURGE
       
-      case 26: method = HTTPMethod.MKCALENDAR
+      case HTTP_MKCALENDAR: method = HTTPMethod.MKCALENDAR
       
       default:
         // Note: extra custom methods don't work (I think)
@@ -322,13 +335,14 @@ class HTTPParser {
 
 extension HTTPParser : Printable {
   
-  var description : String {
+  public var description : String {
     return "<HTTPParser \(parseState) @\(buffer.count)>"
   }
 }
 
-enum HTTPParserError : Int, Printable {
-  // manual mapping, Swift can't bridge the http_parser macros
+public enum HTTPParserError : Int, Printable {
+  // manual mapping, Swift doesn't directly bridge the http_parser macros but
+  // rather creates constants for them
   case OK
   case cbMessageBegin, cbURL, cbBody, cbMessageComplete, cbStatus
   case cbHeaderField, cbHeaderValue, cbHeadersComplete
@@ -342,9 +356,45 @@ enum HTTPParserError : Int, Printable {
   case NotStrict, Paused
   case Unknown
   
-  var description : String { return errorDescription }
+  public init(_ errcode: http_errno) {
+    switch (errcode) {
+      case HPE_OK:                     self = .OK
+      case HPE_CB_message_begin:       self = .cbMessageBegin
+      case HPE_CB_url:                 self = .cbURL
+      case HPE_CB_header_field:        self = .cbHeaderField
+      case HPE_CB_header_value:        self = .cbHeaderValue
+      case HPE_CB_headers_complete:    self = .cbHeadersComplete
+      case HPE_CB_body:                self = .cbBody
+      case HPE_CB_message_complete:    self = .cbMessageComplete
+      case HPE_CB_status:              self = .cbStatus
+      case HPE_INVALID_EOF_STATE:      self = .InvalidEOFState
+      case HPE_HEADER_OVERFLOW:        self = .HeaderOverflow
+      case HPE_CLOSED_CONNECTION:      self = .ClosedConnection
+      case HPE_INVALID_VERSION:        self = .InvalidVersion
+      case HPE_INVALID_STATUS:         self = .InvalidStatus
+      case HPE_INVALID_METHOD:         self = .InvalidMethod
+      case HPE_INVALID_URL:            self = .InvalidURL
+      case HPE_INVALID_HOST:           self = .InvalidHost
+      case HPE_INVALID_PORT:           self = .InvalidPort
+      case HPE_INVALID_PATH:           self = .InvalidPath
+      case HPE_INVALID_QUERY_STRING:   self = .InvalidQueryString
+      case HPE_INVALID_FRAGMENT:       self = .InvalidFragment
+      case HPE_LF_EXPECTED:            self = .LineFeedExpected
+      case HPE_INVALID_HEADER_TOKEN:   self = .InvalidHeaderToken
+      case HPE_INVALID_CONTENT_LENGTH: self = .InvalidContentLength
+      case HPE_INVALID_CHUNK_SIZE:     self = .InvalidChunkSize
+      case HPE_INVALID_CONSTANT:       self = .InvalidConstant
+      case HPE_INVALID_INTERNAL_STATE: self = .InvalidInternalState
+      case HPE_STRICT:                 self = .NotStrict
+      case HPE_PAUSED:                 self = .Paused
+      case HPE_UNKNOWN:                self = .Unknown
+      default: self = .Unknown
+    }
+  }
   
-  var errorDescription : String {
+  public var description : String { return errorDescription }
+  
+  public var errorDescription : String {
     switch self {
       case OK:                   return "Success"
       case cbMessageBegin:       return "The on_message_begin callback failed"
@@ -384,4 +434,27 @@ enum HTTPParserError : Int, Printable {
       default:                   return "Unknown Error"
     }
   }
+}
+
+
+/* hack to make some structs work */
+// FIXME: can't figure out how to access errcode.value. Maybe because it
+//        is not 'public'?
+
+extension http_errno : Equatable {
+  // struct: init(_ value: UInt32); var value: UInt32;
+}
+extension http_method : Equatable {
+  // struct: init(_ value: UInt32); var value: UInt32;
+}
+public func ==(lhs: http_errno, rhs: http_errno) -> Bool {
+  // this just recurses (of course):
+  //   return lhs == rhs
+  // this failes, maybe because it's not public?:
+  //   return lhs.value == rhs.value
+  // Hard hack, does it actually work? :-)
+  return isByteEqual(lhs, rhs)
+}
+public func ==(lhs: http_method, rhs: http_method) -> Bool {
+  return isByteEqual(lhs, rhs)
 }

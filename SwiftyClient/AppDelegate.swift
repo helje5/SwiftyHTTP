@@ -32,9 +32,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
   /* Cocoa app boilerplate */
   
-  @IBOutlet var window        : NSWindow
-  @IBOutlet var logViewParent : NSScrollView
-  @IBOutlet var urlField      : NSTextField
+  @IBOutlet var window        : NSWindow!
+  @IBOutlet var logViewParent : NSScrollView!
+  @IBOutlet var urlField      : NSTextField!
   
   @IBAction func fetch(sender: AnyObject!) {
     //logView.string = ""

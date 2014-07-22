@@ -6,7 +6,9 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
-class HTTPConnectionPool {
+import Dispatch
+
+public class HTTPConnectionPool {
   
   let lockQueue   = dispatch_get_main_queue()
   var openSockets = Dictionary<Int32, HTTPConnection>(minimumCapacity: 8)
@@ -62,7 +64,7 @@ class HTTPConnectionPool {
     log("")
   }
 
-  func onLog(cb: (String) -> Void) -> Self {
+  public func onLog(cb: (String) -> Void) -> Self {
     logger = cb
     return self
   }

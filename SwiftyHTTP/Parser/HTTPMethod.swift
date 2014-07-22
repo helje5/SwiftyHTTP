@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
-enum HTTPMethod {
+public enum HTTPMethod {
   // Either inherit from Int (and have raw values) OR have cases with arguments
   
   case GET, HEAD, PUT, DELETE, POST, OPTIONS
@@ -32,7 +32,7 @@ enum HTTPMethod {
   case Extension(String)
 
 
-  init(string: String) {
+  public init(string: String) {
     switch string {
       case "GET":         self = .GET
       case "HEAD":        self = .HEAD
@@ -79,9 +79,9 @@ enum HTTPMethod {
   
 }
 
-extension HTTPMethod {
+public extension HTTPMethod {
 
-  var method: String {
+  public var method: String {
     switch self {
       case .GET:        return "GET"
       case .HEAD:       return "HEAD"
@@ -127,7 +127,7 @@ extension HTTPMethod {
     }
   }
   
-  var isSafe: Bool? { // can't say for extension methods
+  public var isSafe: Bool? { // can't say for extension methods
     switch self {
       case .GET, .HEAD, .OPTIONS:
         return true
@@ -142,7 +142,7 @@ extension HTTPMethod {
     }
   }
   
-  var isIdempotent: Bool? { // can't say for extension methods
+  public var isIdempotent: Bool? { // can't say for extension methods
     switch self {
       case .GET, .HEAD, .PUT, .DELETE, .OPTIONS:
         return true
@@ -160,9 +160,9 @@ extension HTTPMethod {
   }
 }
 
-extension HTTPMethod : Printable {
+ extension HTTPMethod : Printable {
   
-  var description: String {
+  public var description: String {
     switch self {
       case .REPORT(let ns, let tag):
         return "REPORT[{\(ns)}\(tag)]"
@@ -176,11 +176,13 @@ extension HTTPMethod : Printable {
 extension HTTPMethod: StringLiteralConvertible {
   // this allows you to do: let addr : in_addr = "192.168.0.1"
   
-  static func convertFromStringLiteral(value: StringLiteralType) -> HTTPMethod {
+  public static func convertFromStringLiteral
+    (value: StringLiteralType) -> HTTPMethod
+  {
     return HTTPMethod(string: value)
   }
   
-  static func convertFromExtendedGraphemeClusterLiteral
+  public static func convertFromExtendedGraphemeClusterLiteral
     (value: ExtendedGraphemeClusterType) -> HTTPMethod
   {
     return HTTPMethod(string: value)
