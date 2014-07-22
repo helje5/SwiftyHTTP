@@ -57,7 +57,9 @@ class HTTPParser {
     headersCB = cb
     return self
   }
-  func onBodyData(cb: ((HTTPMessage, CString, UInt) -> Bool)?) -> Self {
+  func onBodyData
+    (cb: ((HTTPMessage, ConstUnsafePointer<CChar>, UInt) -> Bool)?) -> Self
+  {
     bodyDataCB = cb
     return self
   }
@@ -70,14 +72,17 @@ class HTTPParser {
   var requestCB  : ((HTTPRequest)  -> Void)?
   var responseCB : ((HTTPResponse) -> Void)?
   var headersCB  : ((HTTPMessage)  -> Bool)?
-  var bodyDataCB : ((HTTPMessage, CString, UInt) -> Bool)?
+  var bodyDataCB : ((HTTPMessage, ConstUnsafePointer<CChar>, UInt) -> Bool)?
   
   
   /* write */
   
   var bodyIsFinal: Bool { return http_body_is_final(parser) == 0 ? false:true }
   
-  func write(buffer: CString, _ count: Int) -> HTTPParserError {
+  func write
+    (buffer: ConstUnsafePointer<CChar>, _ count: Int) -> HTTPParserError
+  {
+    // Note: the parser doesn't expect this to be 0-terminated.
     let len = UInt(count)
     
     if !isWiredUp {
@@ -102,7 +107,10 @@ class HTTPParser {
     if count == 0 {
       return self.write("", 0)
     }
-    return CString.withCString(buffer) { self.write($0, count) }
+    
+    return buffer.withUnsafePointerToElements {
+      return self.write($0, count)
+    }
   }
   
   
@@ -115,7 +123,7 @@ class HTTPParser {
     self.headers.removeAll(keepCapacity: true)
   }
   
-  func addData(data: CString, length: UInt) -> Int32 {
+  func addData(data: ConstUnsafePointer<CChar>, length: UInt) -> Int32 {
     if parseState == .Body && bodyDataCB && message {
       return bodyDataCB!(message!, data, length) ? 42 : 0
     }
@@ -125,7 +133,9 @@ class HTTPParser {
     return 0
   }
   
-  func processDataForState(state: ParseState, d: CString, l: UInt) -> Int32 {
+  func processDataForState
+    (state: ParseState, d: ConstUnsafePointer<CChar>, l: UInt) -> Int32
+  {
     if (state == parseState) { // more data for same field
       return addData(d, length: l)
     }

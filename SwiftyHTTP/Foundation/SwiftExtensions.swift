@@ -111,6 +111,9 @@ extension String {
 
 }
 
+// Starting with v0.0.4 we cannot just extend CString anymore, this doesn't
+// work: extension UnsafePointer<CChar>
+
 /* FIXME: No more CString in v0.0.4
 extension CString {
   // Q(hh): this doesn't work?: extension Array<CChar> {}
