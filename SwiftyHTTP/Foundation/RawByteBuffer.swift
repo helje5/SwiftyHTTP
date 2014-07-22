@@ -6,14 +6,16 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
-class RawByteBuffer {
+import Darwin
+
+public class RawByteBuffer {
   
-  var buffer   : UnsafePointer<RawByte>
-  var capacity : Int
-  var count    : Int
-  let extra    = 2
+  public var buffer   : UnsafePointer<RawByte>
+  public var capacity : Int
+  public var count    : Int
+  let extra = 2
   
-  init(capacity: Int) {
+  public init(capacity: Int) {
     count         = 0
     self.capacity = capacity
     
@@ -30,7 +32,7 @@ class RawByteBuffer {
     }
   }
   
-  func asByteArray() -> [UInt8] {
+  public func asByteArray() -> [UInt8] {
     if count == 0 {
       return []
     }
@@ -49,7 +51,7 @@ class RawByteBuffer {
     return a
   }
   
-  func ensureCapacity(newCapacity: Int) {
+  public func ensureCapacity(newCapacity: Int) {
     if newCapacity > capacity {
       let newsize = newCapacity + 1024
       var newbuf  = UnsafePointer<RawByte>.alloc(newsize + extra)
@@ -64,11 +66,11 @@ class RawByteBuffer {
     }
   }
   
-  func reset() {
+  public func reset() {
     count = 0
   }
   
-  func addBytes(src: ConstUnsafePointer<Void>, length: Int) {
+  public func addBytes(src: ConstUnsafePointer<Void>, length: Int) {
     // println("add \(length) count: \(count) capacity: \(capacity)")
     if length < 1 {
       println("NO LENGTH?")
@@ -82,7 +84,7 @@ class RawByteBuffer {
     // println("--- \(length) count: \(count) capacity: \(capacity)")
   }
   
-  func add(cs: ConstUnsafePointer<CChar>, length: Int? = nil) {
+  public func add(cs: ConstUnsafePointer<CChar>, length: Int? = nil) {
     if let len = length {
       addBytes(cs, length: len)
     }
@@ -91,7 +93,7 @@ class RawByteBuffer {
     }
   }
   
-  func asString() -> String? {
+  public func asString() -> String? {
     if buffer == nil {
       return nil
     }

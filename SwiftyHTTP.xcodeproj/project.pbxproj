@@ -95,7 +95,6 @@
 		E8BEE1F2195B169F001499EE /* SocketAddress.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SocketAddress.swift; sourceTree = "<group>"; };
 		E8BEE1F3195B169F001499EE /* UnixUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnixUtils.swift; sourceTree = "<group>"; };
 		E8BEE20C195C4363001499EE /* UnixBridge.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = UnixBridge.c; sourceTree = "<group>"; };
-		E8BEE20D195C4363001499EE /* UnixBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnixBridge.h; sourceTree = "<group>"; };
 		E8D5E6E0196AAE250088F65E /* HTTPCall.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HTTPCall.swift; path = HTTPConnection/HTTPCall.swift; sourceTree = "<group>"; };
 		E8D8D187195B4F5E0070973F /* RawByteBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RawByteBuffer.swift; sourceTree = "<group>"; };
 		E8D8D188195B4F5E0070973F /* SwiftExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftExtensions.swift; sourceTree = "<group>"; };
@@ -237,7 +236,6 @@
 				E81DC1F91965A5D500BD826B /* DNS.swift */,
 				E8BEE1F3195B169F001499EE /* UnixUtils.swift */,
 				E8BEE20C195C4363001499EE /* UnixBridge.c */,
-				E8BEE20D195C4363001499EE /* UnixBridge.h */,
 			);
 			path = Sockets;
 			sourceTree = "<group>";

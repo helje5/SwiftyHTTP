@@ -6,13 +6,13 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
-class HTTPConnection {
+public class HTTPConnection {
   
   let debugOn = false
   let parser  : HTTPParser
-  let socket  : ActiveSocket<sockaddr_in>
+  public let socket  : ActiveSocket<sockaddr_in>
   
-  init(_ socket: ActiveSocket<sockaddr_in>) {
+  public init(_ socket: ActiveSocket<sockaddr_in>) {
     self.socket = socket
     
     parser = HTTPParser()
@@ -55,11 +55,11 @@ class HTTPConnection {
   
   /* callbacks */
   
-  func onRequest(cb: ((HTTPRequest, HTTPConnection) -> Void)?) -> Self {
+  public func onRequest(cb: ((HTTPRequest, HTTPConnection) -> Void)?) -> Self {
     requestQueue.on = cb
     return self
   }
-  func onResponse(cb: ((HTTPResponse, HTTPConnection) -> Void)?) -> Self {
+  public func onResponse(cb: ((HTTPResponse, HTTPConnection) -> Void)?) -> Self {
     responseQueue.on = cb
     return self
   }
@@ -81,7 +81,7 @@ class HTTPConnection {
   }
   */
   
-  func onClose(cb: ((Int32) -> Void)?) -> Self {
+  public func onClose(cb: ((Int32) -> Void)?) -> Self {
     // FIXME: what if the socket was closed already? Need to check for isValid?
     socket.onClose(cb)
     return self
@@ -99,7 +99,8 @@ class HTTPConnection {
     parser.resetEventHandlers()
     return self
   }
-  func close() { // cannot assign default-arg to reason, makes it a kw arg
+  public func close() {
+    // cannot assign default-arg to reason, makes it a kw arg
     close(nil)
   }
   
@@ -132,7 +133,7 @@ class HTTPConnection {
     }
   }
   
-  func sendRequest(rq: HTTPRequest, cb: (()->Void)? = nil) -> Self {
+  public func sendRequest(rq: HTTPRequest, cb: (()->Void)? = nil) -> Self {
     // FIXME: it's inefficient to do that many writes
     fixupHeaders(rq)
     
@@ -152,7 +153,7 @@ class HTTPConnection {
     return self
   }
   
-  func sendResponse(res: HTTPResponse, cb: (()->Void)? = nil) -> Self {
+  public func sendResponse(res: HTTPResponse, cb: (()->Void)? = nil) -> Self {
     // FIXME: it's inefficient to do that many writes
     fixupHeaders(res)
     
@@ -213,7 +214,7 @@ class HTTPConnection {
 
 extension HTTPConnection : Printable {
   
-  var description : String {
+  public var description : String {
     return "<HTTPConnection \(socket)>"
   }
 }

@@ -6,11 +6,11 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
-enum HTTPParserType {
+public enum HTTPParserType {
   case Request, Response, Both
 }
 
-class HTTPParser {
+public class HTTPParser {
   
   enum ParseState {
     case Idle, URL, HeaderName, HeaderValue, Body
@@ -29,7 +29,7 @@ class HTTPParser {
   var message    : HTTPMessage?
   
   
-  init(type: HTTPParserType = .Both) {
+  public init(type: HTTPParserType = .Both) {
     var cType: http_parser_type
     switch type {
       case .Request:  cType = HTTP_REQUEST
@@ -45,25 +45,25 @@ class HTTPParser {
   
   /* callbacks */
   
-  func onRequest(cb: ((HTTPRequest) -> Void)?) -> Self {
+  public func onRequest(cb: ((HTTPRequest) -> Void)?) -> Self {
     requestCB = cb
     return self
   }
-  func onResponse(cb: ((HTTPResponse) -> Void)?) -> Self {
+  public func onResponse(cb: ((HTTPResponse) -> Void)?) -> Self {
     responseCB = cb
     return self
   }
-  func onHeaders(cb: ((HTTPMessage) -> Bool)?) -> Self {
+  public func onHeaders(cb: ((HTTPMessage) -> Bool)?) -> Self {
     headersCB = cb
     return self
   }
-  func onBodyData
+  public func onBodyData
     (cb: ((HTTPMessage, ConstUnsafePointer<CChar>, UInt) -> Bool)?) -> Self
   {
     bodyDataCB = cb
     return self
   }
-  func resetEventHandlers() {
+  public func resetEventHandlers() {
     requestCB  = nil
     responseCB = nil
     headersCB  = nil
@@ -77,9 +77,11 @@ class HTTPParser {
   
   /* write */
   
-  var bodyIsFinal: Bool { return http_body_is_final(parser) == 0 ? false:true }
+  public var bodyIsFinal: Bool {
+    return http_body_is_final(parser) == 0 ? false:true
+  }
   
-  func write
+  public func write
     (buffer: ConstUnsafePointer<CChar>, _ count: Int) -> HTTPParserError
   {
     // Note: the parser doesn't expect this to be 0-terminated.
@@ -103,7 +105,7 @@ class HTTPParser {
     return err
   }
   
-  func write(buffer: [CChar], _ count: Int) -> HTTPParserError {
+  public func write(buffer: [CChar], _ count: Int) -> HTTPParserError {
     if count == 0 {
       return self.write("", 0)
     }
@@ -123,7 +125,7 @@ class HTTPParser {
     self.headers.removeAll(keepCapacity: true)
   }
   
-  func addData(data: ConstUnsafePointer<CChar>, length: UInt) -> Int32 {
+  public func addData(data: ConstUnsafePointer<CChar>, length: UInt) -> Int32 {
     if parseState == .Body && bodyDataCB && message {
       return bodyDataCB!(message!, data, length) ? 42 : 0
     }
@@ -177,10 +179,10 @@ class HTTPParser {
     return addData(d, length: l)
   }
   
-  var isRequest  : Bool { return http_parser_get_type(parser) == 0 }
-  var isResponse : Bool { return http_parser_get_type(parser) == 1 }
+  public var isRequest  : Bool { return http_parser_get_type(parser) == 0 }
+  public var isResponse : Bool { return http_parser_get_type(parser) == 1 }
   
-  class func parserCodeToMethod(rq: CUnsignedInt) -> HTTPMethod? {
+  public class func parserCodeToMethod(rq: CUnsignedInt) -> HTTPMethod? {
     var method : HTTPMethod?
     switch rq { // hardcode C enum value, defines from http_parser n/a
       case  0: method = HTTPMethod.DELETE
@@ -332,12 +334,12 @@ class HTTPParser {
 
 extension HTTPParser : Printable {
   
-  var description : String {
+  public var description : String {
     return "<HTTPParser \(parseState) @\(buffer.count)>"
   }
 }
 
-enum HTTPParserError : Int, Printable {
+public enum HTTPParserError : Int, Printable {
   // manual mapping, Swift can't bridge the http_parser macros
   case OK
   case cbMessageBegin, cbURL, cbBody, cbMessageComplete, cbStatus
@@ -352,9 +354,9 @@ enum HTTPParserError : Int, Printable {
   case NotStrict, Paused
   case Unknown
   
-  var description : String { return errorDescription }
+  public var description : String { return errorDescription }
   
-  var errorDescription : String {
+  public var errorDescription : String {
     switch self {
       case OK:                   return "Success"
       case cbMessageBegin:       return "The on_message_begin callback failed"

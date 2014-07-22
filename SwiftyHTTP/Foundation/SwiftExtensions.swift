@@ -6,15 +6,17 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
+import Darwin
+
 // This allows you to do: str[str.startIndex..idx+4]
-func +<T: ForwardIndex>(idx: T, distance: T.DistanceType) -> T {
+public func +<T: ForwardIndex>(idx: T, distance: T.DistanceType) -> T {
   return advance(idx, distance)
 }
-func +<T: ForwardIndex>(distance: T.DistanceType, idx: T) -> T {
+public func +<T: ForwardIndex>(distance: T.DistanceType, idx: T) -> T {
   return advance(idx, distance)
 }
 
-func -<T: BidirectionalIndex where T.DistanceType : SignedInteger>
+public func -<T: BidirectionalIndex where T.DistanceType : SignedInteger>
   (idx: T, distance: T.DistanceType) -> T
 {
   var cursor = idx
@@ -29,7 +31,7 @@ func -<T: BidirectionalIndex where T.DistanceType : SignedInteger>
 // I would be very interested in better way to do those things, W/O using
 // Foundation.
 
-extension String {
+public extension String {
   
   static func fromCString
     (cs: ConstUnsafePointer<CChar>, length: Int!) -> String?
@@ -62,9 +64,7 @@ extension String {
     var cstr = [CChar](count: data.count + 1, repeatedValue: 0)
     cstr.withUnsafePointerToElements { dest in  // cannot just use cstr!
       data.withUnsafePointerToElements { src in
-        memcpy(UnsafePointer<Void>(dest),
-               UnsafePointer<Void>(src),
-               UInt(data.count))
+        memcpy(dest, src, UInt(data.count))
       }
     }
     cstr[data.count] = 0 // 0-terminate
@@ -83,9 +83,7 @@ extension String {
       }
       var buf = [UInt8](count: Int(len), repeatedValue: 0)
       buf.withUnsafePointerToElements { dest in
-        memcpy(UnsafePointer<Void>(dest),
-               UnsafePointer<Void>(cstr),
-               len)
+        memcpy(dest, cstr, len)
       }
       return buf
     }
@@ -147,7 +145,7 @@ extension CString {
 
 extension Int32 : LogicValue {
   
-  func getLogicValue() -> Bool {
+  public func getLogicValue() -> Bool {
     return self != 0
   }
   

@@ -13,22 +13,22 @@
  *
  * Note: no error handling
  */
-class Connect : HTTPServer {
+public class Connect : HTTPServer {
   
   var middlewarez = [MiddlewareEntry]()
   
-  init() {
+  public init() {
     super.init()
     self.onRequest { [unowned self] in
       self.doRequest($0, response: $1, connection: $2)
     }
   }
   
-  func use(cb: Middleware) -> Self {
+  public func use(cb: Middleware) -> Self {
     middlewarez.append(MiddlewareEntry(middleware: cb))
     return self
   }
-  func use(prefix: String, _ cb: Middleware) -> Self {
+  public func use(prefix: String, _ cb: Middleware) -> Self {
     middlewarez.append(MiddlewareEntry(urlPrefix: prefix, middleware: cb))
     return self
   }
@@ -83,5 +83,6 @@ struct MiddlewareEntry {
   
 }
 
-typealias Next       = (String...) -> Void
-typealias Middleware = (HTTPRequest, HTTPResponse, HTTPConnection, Next) -> Void
+public typealias Next       = (String...) -> Void
+public typealias Middleware =
+                   (HTTPRequest, HTTPResponse, HTTPConnection, Next) -> Void

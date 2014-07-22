@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
-class HTTPMessage {
+public class HTTPMessage {
   
   class HeaderLine { // a class, so we work with references, not copies?
     let name:   String
@@ -23,7 +23,7 @@ class HTTPMessage {
   let version : ( major: Int, minor: Int )
   var header  = [HeaderLine]() // not a dict, we need to do cis lookups
   
-  init(version: ( Int, Int ), headers: Dictionary<String, String>) {
+  public init(version: ( Int, Int ), headers: Dictionary<String, String>) {
     self.version = version
 
     for (key, value) in headers {
@@ -31,7 +31,7 @@ class HTTPMessage {
     }
   }
   
-  subscript(key: String?) -> String? {
+  public subscript(key: String?) -> String? {
     get {
       if key != nil {
         let lcName = key!.lowercaseString
@@ -69,7 +69,7 @@ class HTTPMessage {
     }
   }
   
-  var headers : Dictionary<String, String> {
+  public var headers : Dictionary<String, String> {
     var headers = Dictionary<String, String>()
     for line in header {
       headers[line.name] = line.value
@@ -80,9 +80,9 @@ class HTTPMessage {
   
   /* body handling */
   
-  var hasBody : Bool { return _byteBodyCache || _stringBodyCache }
+  public var hasBody : Bool { return _byteBodyCache || _stringBodyCache }
   
-  var bodyAsByteArray : Array<UInt8>? {
+  public var bodyAsByteArray : Array<UInt8>? {
     get {
       if _byteBodyCache {
         return _byteBodyCache
@@ -101,7 +101,7 @@ class HTTPMessage {
       _stringBodyCache = nil
     }
   }
-  var bodyAsString : String? {
+  public var bodyAsString : String? {
     get {
       if _stringBodyCache {
         return _stringBodyCache
@@ -127,7 +127,7 @@ class HTTPMessage {
   
   /* persistent connections */
   
-  var closeConnection : Bool {
+  public var closeConnection : Bool {
     if version.major == 0 {
       return true
     }
@@ -168,7 +168,7 @@ class HTTPMessage {
 
 extension HTTPMessage: Printable {
   
-  var description: String {
+  public var description: String {
     return "<Message:" + descriptionAttributes() + ">"
   }
   

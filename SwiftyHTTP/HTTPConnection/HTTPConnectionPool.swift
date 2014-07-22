@@ -6,7 +6,9 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
-class HTTPConnectionPool {
+import Dispatch
+
+public class HTTPConnectionPool {
   
   let lockQueue   = dispatch_get_main_queue()
   var openSockets = Dictionary<Int32, HTTPConnection>(minimumCapacity: 8)
