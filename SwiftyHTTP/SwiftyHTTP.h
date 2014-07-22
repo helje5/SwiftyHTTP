@@ -18,7 +18,7 @@ FOUNDATION_EXPORT const unsigned char SwiftyHTTPVersionString[];
 
 
 // No more bridging header in v0.0.4, need to make all C stuff public
-#import <SwiftyHTTP/Parser/http_parser.h>
+#import <SwiftyHTTP/http_parser.h>
 
 // I think the originals are not mapped because they are using varargs
 FOUNDATION_EXPORT int ari_fcntlVi (int fildes, int cmd, int val);
