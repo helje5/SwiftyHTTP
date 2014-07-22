@@ -6,6 +6,8 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
+import Darwin
+
 public class HTTPConnection {
   
   let debugOn = false
