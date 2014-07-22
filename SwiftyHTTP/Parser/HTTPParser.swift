@@ -94,7 +94,7 @@ public class HTTPParser {
     let bytesConsumed = http_parser_execute(self.parser, buffer, len)
     
     let errno = http_parser_get_errno(parser)
-    let err   = HTTPParserError.fromRaw(Int(errno.value))!
+    let err   = HTTPParserError(errno)
     
     if err != .OK {
       // Now hitting this, not quite sure why. Maybe a Safari feature?
@@ -335,7 +335,8 @@ extension HTTPParser : Printable {
 }
 
 public enum HTTPParserError : Int, Printable {
-  // manual mapping, Swift can't bridge the http_parser macros
+  // manual mapping, Swift doesn't directly bridge the http_parser macros but
+  // rather creates constants for them
   case OK
   case cbMessageBegin, cbURL, cbBody, cbMessageComplete, cbStatus
   case cbHeaderField, cbHeaderValue, cbHeadersComplete
@@ -348,6 +349,48 @@ public enum HTTPParserError : Int, Printable {
   case InvalidConstant, InvalidInternalState
   case NotStrict, Paused
   case Unknown
+  
+  public init(_ errcode: http_errno) {
+    // FIXME: can't figure out how to access errcode.value. Maybe because it
+    //        is not 'public'?
+    let a = HPE_OK
+    self = .Unknown
+    /*
+    switch (errcode) {
+      case HPE_OK:                     self = .OK
+      case HPE_CB_message_begin:       self = .cbMessageBegin
+      case HPE_CB_url:                 self = .cbURL
+      case HPE_CB_header_field:        self = .cbHeaderField
+      case HPE_CB_header_value:        self = .cbHeaderValue
+      case HPE_CB_headers_complete:    self = .cbHeadersComplete
+      case HPE_CB_body:                self = .cbBody
+      case HPE_CB_message_complete:    self = .cbMessageComplete
+      case HPE_CB_status:              self = .cbStatus
+      case HPE_INVALID_EOF_STATE:      self = .InvalidEOFState
+      case HPE_HEADER_OVERFLOW:        self = .HeaderOverflow
+      case HPE_CLOSED_CONNECTION:      self = .ClosedConnection
+      case HPE_INVALID_VERSION:        self = .InvalidVersion
+      case HPE_INVALID_STATUS:         self = .InvalidStatus
+      case HPE_INVALID_METHOD:         self = .InvalidMethod
+      case HPE_INVALID_URL:            self = .InvalidUrl
+      case HPE_INVALID_HOST:           self = .InvalidHost
+      case HPE_INVALID_PORT:           self = .InvalidPort
+      case HPE_INVALID_PATH:           self = .InvalidPath
+      case HPE_INVALID_QUERY_STRING:   self = .InvalidQueryString
+      case HPE_INVALID_FRAGMENT:       self = .InvalidFragment
+      case HPE_LF_EXPECTED:            self = .LineFeedExpected
+      case HPE_INVALID_HEADER_TOKEN:   self = .InvalidHeaderToken
+      case HPE_INVALID_CONTENT_LENGTH: self = .InvalidContentLength
+      case HPE_INVALID_CHUNK_SIZE:     self = .InvalidChunkSize
+      case HPE_INVALID_CONSTANT:       self = .InvalidConstant
+      case HPE_INVALID_INTERNAL_STATE: self = .InvalidInternalState
+      case HPE_STRICT:                 self = .NotStrict
+      case HPE_PAUSED:                 self = .Paused
+      case HPE_UNKNOWN:                self = .Unknown
+      default: self = .Unknown
+    }
+    */
+  }
   
   public var description : String { return errorDescription }
   
