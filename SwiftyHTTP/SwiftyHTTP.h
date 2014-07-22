@@ -17,3 +17,5 @@ FOUNDATION_EXPORT const unsigned char SwiftyHTTPVersionString[];
 // In this header, you should import all the public headers of your framework using statements like #import <SwiftyHTTP/PublicHeader.h>
 
 
+// No more bridging header in v0.0.4, need to make all C stuff public
+#import <SwiftyHTTP/Parser/http_parser.h>

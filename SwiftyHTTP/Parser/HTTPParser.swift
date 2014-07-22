@@ -128,7 +128,7 @@ class HTTPParser {
       return bodyDataCB!(message!, data, length) ? 42 : 0
     }
     else {
-      buffer.add(data, length: length)
+      buffer.add(data, length: Int(length))
     }
     return 0
   }
