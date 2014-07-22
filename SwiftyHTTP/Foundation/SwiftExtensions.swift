@@ -31,23 +31,22 @@ func -<T: BidirectionalIndex where T.DistanceType : SignedInteger>
 
 extension String {
   
-  static func fromCString(cs: CString, length: Int?) -> String? {
+  static func fromCString
+    (cs: ConstUnsafePointer<CChar>, length: Int!) -> String?
+  {
     if length == .None { // no length given, use \0 standard variant
       return String.fromCString(cs)
     }
     
     // hh: this is really lame, there must be a better way :-)
-    // Also: it could be a constant string! So we probably need to copy ...
-    if let buf = cs.persist() {
-      return buf.withUnsafePointerToElements {
-        (p: UnsafePointer<CChar>) in
-        let old = p[length!]
-        p[length!] = 0
-        let s = String.fromCString(CString(p))
-        p[length!] = old
-        return s
-      }
-    }
+    // Also: it could be a constant string! So we really need to copy ...
+    // NOTE: this is really really wrong, don't use it in actual projects! :-)
+    let unconst = UnsafePointer<CChar>(cs)
+    let old = cs[length]
+    unconst[length] = 0
+    let s   = String.fromCString(cs)
+    unconst[length] = old
+    
     return nil
   }
   
@@ -72,24 +71,21 @@ extension String {
     
     // var s = "" // direct return seems to crash things, not sure why
     return cstr.withUnsafePointerToElements {
-      return String.fromCString(CString($0))!
+      return String.fromCString($0)!
     }
   }
   
   func dataInCStringEncoding() -> [UInt8] {
-    return self.withCString { (p: CString) in
-      let cstr = p.persist()
-      let len  = UInt(cstr!.count) - 1
+    return self.withCString { (cstr: ConstUnsafePointer<CChar>) in
+      let len  = strlen(cstr)
       if len < 1 {
         return [UInt8]()
       }
       var buf = [UInt8](count: Int(len), repeatedValue: 0)
       buf.withUnsafePointerToElements { dest in
-        cstr!.withUnsafePointerToElements { src in
-          memcpy(UnsafePointer<Void>(dest),
-                 UnsafePointer<Void>(src),
-                 len)
-        }
+        memcpy(UnsafePointer<Void>(dest),
+               UnsafePointer<Void>(cstr),
+               len)
       }
       return buf
     }
@@ -115,6 +111,7 @@ extension String {
 
 }
 
+/* FIXME: No more CString in v0.0.4
 extension CString {
   // Q(hh): this doesn't work?: extension Array<CChar> {}
   
@@ -143,6 +140,7 @@ extension CString {
   }
   
 }
+*/
 
 extension Int32 : LogicValue {
   
