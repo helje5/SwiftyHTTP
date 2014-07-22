@@ -178,40 +178,46 @@ public class HTTPParser {
   public var isResponse : Bool { return http_parser_get_type(parser) == 1 }
   
   public class func parserCodeToMethod(rq: CUnsignedInt) -> HTTPMethod? {
+    return parserCodeToMethod(http_method(rq))
+  }
+  public class func parserCodeToMethod(rq: http_method) -> HTTPMethod? {
     var method : HTTPMethod?
+    // Trying to use HTTP_DELETE gives http_method not convertible to
+    // _OptionalNilComparisonType
     switch rq { // hardcode C enum value, defines from http_parser n/a
-      case  0: method = HTTPMethod.DELETE
-      case  1: method = HTTPMethod.GET
-      case  2: method = HTTPMethod.HEAD
-      case  3: method = HTTPMethod.POST
-      case  4: method = HTTPMethod.PUT
-      case  5: method = HTTPMethod.CONNECT
-      case  6: method = HTTPMethod.OPTIONS
-      case  7: method = HTTPMethod.TRACE
-      case  8: method = HTTPMethod.COPY
-      case  9: method = HTTPMethod.LOCK
-      case 10: method = HTTPMethod.MKCOL
-      case 11: method = HTTPMethod.MOVE
-      case 12: method = HTTPMethod.PROPFIND
-      case 13: method = HTTPMethod.PROPPATCH
-      case 14: method = HTTPMethod.SEARCH
-      case 15: method = HTTPMethod.UNLOCK
+      case HTTP_DELETE:      method = HTTPMethod.DELETE
+      case HTTP_GET:         method = HTTPMethod.GET
+      case HTTP_HEAD:        method = HTTPMethod.HEAD
+      case HTTP_POST:        method = HTTPMethod.POST
+      case HTTP_PUT:         method = HTTPMethod.PUT
+      case HTTP_CONNECT:     method = HTTPMethod.CONNECT
+      case HTTP_OPTIONS:     method = HTTPMethod.OPTIONS
+      case HTTP_TRACE:       method = HTTPMethod.TRACE
+      case HTTP_COPY:        method = HTTPMethod.COPY
+      case HTTP_LOCK:        method = HTTPMethod.LOCK
+      case HTTP_MKCOL:       method = HTTPMethod.MKCOL
+      case HTTP_MOVE:        method = HTTPMethod.MOVE
+      case HTTP_PROPFIND:    method = HTTPMethod.PROPFIND
+      case HTTP_PROPPATCH:   method = HTTPMethod.PROPPATCH
+      case HTTP_SEARCH:      method = HTTPMethod.SEARCH
+      case HTTP_UNLOCK:      method = HTTPMethod.UNLOCK
         
-      case 16: method = HTTPMethod.REPORT((nil, nil)) // FIXME: peek body ..
+      case HTTP_REPORT:      method = HTTPMethod.REPORT((nil, nil))
+        // FIXME: peek body ..
         
-      case 17: method = HTTPMethod.MKACTIVITY
-      case 18: method = HTTPMethod.CHECKOUT
-      case 19: method = HTTPMethod.MERGE
+      case HTTP_MKACTIVITY:  method = HTTPMethod.MKACTIVITY
+      case HTTP_CHECKOUT:    method = HTTPMethod.CHECKOUT
+      case HTTP_MERGE:       method = HTTPMethod.MERGE
         
-      case 20: method = HTTPMethod.MSEARCH
-      case 21: method = HTTPMethod.NOTIFY
-      case 22: method = HTTPMethod.SUBSCRIBE
-      case 23: method = HTTPMethod.UNSUBSCRIBE
+      case HTTP_MSEARCH:     method = HTTPMethod.MSEARCH
+      case HTTP_NOTIFY:      method = HTTPMethod.NOTIFY
+      case HTTP_SUBSCRIBE:   method = HTTPMethod.SUBSCRIBE
+      case HTTP_UNSUBSCRIBE: method = HTTPMethod.UNSUBSCRIBE
         
-      case 24: method = HTTPMethod.PATCH
-      case 25: method = HTTPMethod.PURGE
+      case HTTP_PATCH:      method = HTTPMethod.PATCH
+      case HTTP_PURGE:      method = HTTPMethod.PURGE
       
-      case 26: method = HTTPMethod.MKCALENDAR
+      case HTTP_MKCALENDAR: method = HTTPMethod.MKCALENDAR
       
       default:
         // Note: extra custom methods don't work (I think)
@@ -351,11 +357,6 @@ public enum HTTPParserError : Int, Printable {
   case Unknown
   
   public init(_ errcode: http_errno) {
-    // FIXME: can't figure out how to access errcode.value. Maybe because it
-    //        is not 'public'?
-    let a = HPE_OK
-    self = .Unknown
-    /*
     switch (errcode) {
       case HPE_OK:                     self = .OK
       case HPE_CB_message_begin:       self = .cbMessageBegin
@@ -372,7 +373,7 @@ public enum HTTPParserError : Int, Printable {
       case HPE_INVALID_VERSION:        self = .InvalidVersion
       case HPE_INVALID_STATUS:         self = .InvalidStatus
       case HPE_INVALID_METHOD:         self = .InvalidMethod
-      case HPE_INVALID_URL:            self = .InvalidUrl
+      case HPE_INVALID_URL:            self = .InvalidURL
       case HPE_INVALID_HOST:           self = .InvalidHost
       case HPE_INVALID_PORT:           self = .InvalidPort
       case HPE_INVALID_PATH:           self = .InvalidPath
@@ -389,7 +390,6 @@ public enum HTTPParserError : Int, Printable {
       case HPE_UNKNOWN:                self = .Unknown
       default: self = .Unknown
     }
-    */
   }
   
   public var description : String { return errorDescription }
@@ -434,4 +434,27 @@ public enum HTTPParserError : Int, Printable {
       default:                   return "Unknown Error"
     }
   }
+}
+
+
+/* hack to make some structs work */
+// FIXME: can't figure out how to access errcode.value. Maybe because it
+//        is not 'public'?
+
+extension http_errno : Equatable {
+  // struct: init(_ value: UInt32); var value: UInt32;
+}
+extension http_method : Equatable {
+  // struct: init(_ value: UInt32); var value: UInt32;
+}
+public func ==(lhs: http_errno, rhs: http_errno) -> Bool {
+  // this just recurses (of course):
+  //   return lhs == rhs
+  // this failes, maybe because it's not public?:
+  //   return lhs.value == rhs.value
+  // Hard hack, does it actually work? :-)
+  return isByteEqual(lhs, rhs)
+}
+public func ==(lhs: http_method, rhs: http_method) -> Bool {
+  return isByteEqual(lhs, rhs)
 }
