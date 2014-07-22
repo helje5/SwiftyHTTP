@@ -27,6 +27,13 @@ public func -<T: BidirectionalIndex where T.DistanceType : SignedInteger>
 }
 
 
+// Hack to compare values if we don't have access to the members of the struct,
+// eg http_errno in v0.0.4
+public func isByteEqual<T>(var lhs: T, var rhs: T) -> Bool {
+  return memcmp(&lhs, &rhs, UInt(sizeof(T))) == 0
+}
+
+
 // Those are mostly dirty hacks to get what I need :-)
 // I would be very interested in better way to do those things, W/O using
 // Foundation.
