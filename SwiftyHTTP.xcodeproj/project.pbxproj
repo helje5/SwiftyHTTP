@@ -39,7 +39,6 @@
 		E8D5E6E1196AAE250088F65E /* HTTPCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8D5E6E0196AAE250088F65E /* HTTPCall.swift */; };
 		E8D8D189195B4F5E0070973F /* RawByteBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8D8D187195B4F5E0070973F /* RawByteBuffer.swift */; };
 		E8D8D18A195B4F5E0070973F /* SwiftExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8D8D188195B4F5E0070973F /* SwiftExtensions.swift */; };
-		E8D8D18C195B50000070973F /* SwiftyHTTP-Bridging-Header.h in Headers */ = {isa = PBXBuildFile; fileRef = E8D8D18B195B50000070973F /* SwiftyHTTP-Bridging-Header.h */; };
 		E8D8D196195B603B0070973F /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8D8D195195B603B0070973F /* main.swift */; };
 		E8D8D198195B603B0070973F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8D8D197195B603B0070973F /* AppDelegate.swift */; };
 		E8D8D19A195B603B0070973F /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E8D8D199195B603B0070973F /* Images.xcassets */; };
@@ -101,7 +100,6 @@
 		E8D5E6E0196AAE250088F65E /* HTTPCall.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HTTPCall.swift; path = HTTPConnection/HTTPCall.swift; sourceTree = "<group>"; };
 		E8D8D187195B4F5E0070973F /* RawByteBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RawByteBuffer.swift; sourceTree = "<group>"; };
 		E8D8D188195B4F5E0070973F /* SwiftExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftExtensions.swift; sourceTree = "<group>"; };
-		E8D8D18B195B50000070973F /* SwiftyHTTP-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SwiftyHTTP-Bridging-Header.h"; sourceTree = "<group>"; };
 		E8D8D191195B603B0070973F /* SwiftyServer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftyServer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E8D8D194195B603B0070973F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E8D8D195195B603B0070973F /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
@@ -209,7 +207,6 @@
 			isa = PBXGroup;
 			children = (
 				E8BEE1C9195B152D001499EE /* Info.plist */,
-				E8D8D18B195B50000070973F /* SwiftyHTTP-Bridging-Header.h */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -283,7 +280,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E8BEE1CB195B152D001499EE /* SwiftyHTTP.h in Headers */,
-				E8D8D18C195B50000070973F /* SwiftyHTTP-Bridging-Header.h in Headers */,
 				E8BEE1F7195B169F001499EE /* http_parser.h in Headers */,
 				E8BEE20F195C4363001499EE /* UnixBridge.h in Headers */,
 			);
@@ -624,7 +620,6 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "SwiftyHTTP/SwiftyHTTP-Bridging-Header.h";
 			};
 			name = Debug;
 		};
@@ -643,7 +638,6 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "SwiftyHTTP/SwiftyHTTP-Bridging-Header.h";
 			};
 			name = Release;
 		};
