@@ -68,9 +68,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   
   /* Cocoa app boilerplate */
                             
-  @IBOutlet var window        : NSWindow
-  @IBOutlet var logViewParent : NSScrollView
-  @IBOutlet var label         : NSTextField
+  @IBOutlet var window        : NSWindow!
+  @IBOutlet var logViewParent : NSScrollView!
+  @IBOutlet var label         : NSTextField!
   
   var logView : NSTextView {
     // NSTextView doesn't work with weak?
