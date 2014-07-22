@@ -105,14 +105,9 @@ public class HTTPParser {
     return err
   }
   
-  public func write(buffer: [CChar], _ count: Int) -> HTTPParserError {
-    if count == 0 {
-      return self.write("", 0)
-    }
-    
-    return buffer.withUnsafePointerToElements {
-      return self.write($0, count)
-    }
+  public func write(buffer: [CChar]) -> HTTPParserError {
+    let count = buffer.count
+    return write(buffer, count)
   }
   
   
