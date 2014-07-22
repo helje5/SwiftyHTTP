@@ -150,3 +150,48 @@ extension Int32 : LogicValue {
   }
   
 }
+
+
+/* v0.0.4 has no lowercaseString anymore. Need to hack around this. I think
+ * there is no proper Unicode up/low in 0.0.4 w/o resorting to Cocoa?
+ */
+extension Character {
+  
+  var unicodeScalarCodePoint : UInt32 {
+    let characterString = String(self)
+    let scalars = characterString.unicodeScalars
+    
+    return scalars[scalars.startIndex].value
+  }
+  
+  var isASCIILower : Bool {
+    let cp = self.unicodeScalarCodePoint
+    return cp >= 97 && cp <= 122
+  }
+  var isASCIIUpper : Bool {
+    let cp = self.unicodeScalarCodePoint
+    return cp >= 65 && cp <= 90
+  }
+  
+  var asciiLower : Character {
+    return self.isASCIIUpper
+      ? Character(UnicodeScalar(self.unicodeScalarCodePoint + 32))
+      : self
+  }
+  var asciiUpper : Character {
+    return self.isASCIILower
+      ? Character(UnicodeScalar(self.unicodeScalarCodePoint - 32))
+      : self
+  }
+
+}
+
+extension String {
+  
+  var lowercaseString : String {
+    // HACK. I think there is no proper way to do this in v0.0.4 w/o resorting
+    //       to Cocoa?
+    return reduce(self, "", { $0 + $1.asciiLower })
+  }
+
+}
