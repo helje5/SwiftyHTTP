@@ -56,7 +56,7 @@ public extension String {
     let s   = String.fromCString(cs)
     unconst[length] = old
     
-    return nil
+    return s
   }
   
   static func fromDataInCStringEncoding(data: [UInt8]) -> String {
