@@ -73,7 +73,8 @@ public class RawByteBuffer {
   public func addBytes(src: ConstUnsafePointer<Void>, length: Int) {
     // println("add \(length) count: \(count) capacity: \(capacity)")
     if length < 1 {
-      println("NO LENGTH?")
+      // This is fine, happens for empty bodies (like in OPTION requests)
+      // println("NO LENGTH?")
       return
     }
     ensureCapacity(count + length)
