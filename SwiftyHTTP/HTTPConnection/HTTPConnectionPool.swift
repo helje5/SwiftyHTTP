@@ -51,7 +51,7 @@ public class HTTPConnectionPool {
 
   var logger : (( String ) -> Void)? = nil
   
-  func log(s: String) {
+  public func log(s: String) {
     if let cb = logger {
       cb(s)
     }
@@ -59,7 +59,7 @@ public class HTTPConnectionPool {
       println(s)
     }
   }
-  func log() {
+  public func log() {
      // if I do (_ s: String = "") the compiler crashes
     log("")
   }
