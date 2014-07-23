@@ -160,7 +160,7 @@ public extension HTTPMethod {
   }
 }
 
- extension HTTPMethod : Printable {
+extension HTTPMethod : Printable {
   
   public var description: String {
     switch self {
