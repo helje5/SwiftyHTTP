@@ -202,3 +202,18 @@ extension String {
   }
 
 }
+
+extension String {
+  
+  var isHexDigit : Bool {
+    if self == "" { return false }
+    
+    for c in self {
+      if isxdigit(Int32(c.unicodeScalarCodePoint)) == 0 {
+        return false
+      }
+    }
+    
+    return true
+  }
+}
