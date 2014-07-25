@@ -136,6 +136,53 @@ public struct URL {
     return us
   }
   
+}
+
+public extension String {
+  
+  public var withoutPercentEscapes : String { return percentUnescape(self) }
+  
+}
+
+public extension URL {
+  
+  var escapedPathComponents : [String]? {
+    if path == .None { return nil }
+    let uPath = path!
+    if uPath == ""   { return nil }
+    
+    let isAbsolute = uPath.hasPrefix("/")
+    let pathComps  = split(uPath, { $0 == "/" }, allowEmptySlices: true)
+    
+    /* Note: we cannot just return a leading slash for absolute pathes as we
+     *       wouldn't be able to distinguish between an absolute path and a
+     *       relative path starting with an escaped slash.
+     *   So: Absolute pathes instead start with an empty string.
+     */
+    var gotAbsolute = isAbsolute ? false : true
+    return filter(pathComps) {
+      if $0 != "" || !gotAbsolute {
+        if !gotAbsolute { gotAbsolute = true }
+        return true
+      }
+      else {
+        return false
+      }
+    }
+  }
+  
+  var pathComponents : [String]? {
+    if let escapedPC = escapedPathComponents {
+      return escapedPC.map { return $0.withoutPercentEscapes }
+    }
+    else {
+      return nil
+    }
+  }
+}
+
+public extension URL { // /etc/services
+  
   public static func schemeForPort(port: Int) -> String? {
     // read /etc/services? but this doesn't have a proper 1337?
     switch port {
@@ -151,6 +198,7 @@ public struct URL {
       default:   return nil
     }
   }
+  
   public static func portForScheme(scheme: String) -> Int? {
     // read /etc/services? but this doesn't have a proper 1337?
     switch scheme {
@@ -166,6 +214,7 @@ public struct URL {
       default:       return nil
     }
   }
+  
 }
 
 extension URL : Printable {
@@ -260,4 +309,51 @@ public func parse_url(us: String) -> URL {
   
   url.clearEmptyStrings()
   return url
+}
+
+
+func percentUnescape(src: String) -> String {
+  // Lame implementation. Likely really slow.
+  if src == "" { return "" }
+  
+  var dest = ""
+  
+  var cursor = src.startIndex
+  let endIdx = src.endIndex
+  
+  while cursor != endIdx {
+    if src[cursor] == "%" { // %40 = @
+      let v0idx = cursor.successor()
+      if v0idx == endIdx {
+        dest += src[cursor..<endIdx]
+        break
+      }
+      
+      let v1idx = v0idx.successor()
+      if v1idx == endIdx {
+        dest += src[cursor..<endIdx]
+        break
+      }
+      
+      let hex = src[v0idx...v1idx]
+      
+      if !hex.isHexDigit {
+        println("Invalid percent escapes: \(src)")
+        dest += src[cursor...v1idx]
+      }
+      else {
+        let code = hex.withCString {
+          ( cs : UnsafePointer<CChar> ) -> Int in
+          return strtol(cs, nil, 16)
+        }
+        dest += Character(UnicodeScalar(code))
+      }
+      cursor = v1idx.successor()
+    }
+    else {
+      dest   += src[cursor]
+      cursor =  cursor.successor()
+    }
+  }
+  return dest
 }
