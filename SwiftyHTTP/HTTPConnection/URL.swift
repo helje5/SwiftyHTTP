@@ -22,7 +22,7 @@ public struct URL {
   
   public init() {
   }
-  public init(string: String) {
+  public init(_ string: String) {
     self = parse_url(string)
   }
   
@@ -240,13 +240,13 @@ extension URL : Printable {
 extension URL : StringLiteralConvertible {
   
   public static func convertFromStringLiteral(value:StringLiteralType) -> URL {
-    return URL(string: value)
+    return URL(value)
   }
   
   public static func convertFromExtendedGraphemeClusterLiteral
     (value: ExtendedGraphemeClusterType) -> URL
   {
-    return URL(string: value)
+    return URL(value)
   }
   
 }

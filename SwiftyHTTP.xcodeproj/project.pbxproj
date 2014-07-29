@@ -63,7 +63,7 @@
 
 /* Begin PBXFileReference section */
 		E81DC1F91965A5D500BD826B /* DNS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DNS.swift; sourceTree = "<group>"; };
-		E81DC1FB1966E49C00BD826B /* URL.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = URL.swift; path = HTTPConnection/URL.swift; sourceTree = "<group>"; };
+		E81DC1FB1966E49C00BD826B /* URL.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = URL.swift; path = ../HTTPConnection/URL.swift; sourceTree = "<group>"; };
 		E83305A0195B7AB500CCBDF5 /* HTTPRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPRequest.swift; sourceTree = "<group>"; };
 		E83305A2195B7ABE00CCBDF5 /* HTTPResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPResponse.swift; sourceTree = "<group>"; };
 		E848E9C9196302BD00F63423 /* HTTPConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HTTPConnection.swift; path = HTTPConnection/HTTPConnection.swift; sourceTree = "<group>"; };
@@ -142,7 +142,6 @@
 				E848E9CD196302BD00F63423 /* HTTPConnectionPool.swift */,
 				E848E9C9196302BD00F63423 /* HTTPConnection.swift */,
 				E8951DDD1968157C001B7F46 /* HTTPEventQueue.swift */,
-				E81DC1FB1966E49C00BD826B /* URL.swift */,
 			);
 			name = HTTPConnection;
 			sourceTree = "<group>";
@@ -245,6 +244,7 @@
 			children = (
 				E8D8D187195B4F5E0070973F /* RawByteBuffer.swift */,
 				E8D8D188195B4F5E0070973F /* SwiftExtensions.swift */,
+				E81DC1FB1966E49C00BD826B /* URL.swift */,
 			);
 			path = Foundation;
 			sourceTree = "<group>";
