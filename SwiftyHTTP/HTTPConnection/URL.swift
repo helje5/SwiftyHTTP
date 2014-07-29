@@ -83,6 +83,10 @@ public struct URL {
     if fragment != nil && fragment! == "" { fragment = nil }
     if userInfo != nil && userInfo! == "" { userInfo = nil }
   }
+}
+
+
+public extension URL { // String representation
   
   public func toString() -> String? {
     var us = ""
@@ -138,13 +142,24 @@ public struct URL {
   
 }
 
+
 public extension String {
   
   public var withoutPercentEscapes : String { return percentUnescape(self) }
   
 }
 
+
 public extension URL {
+  
+  var pathComponents : [String]? {
+    if let escapedPC = escapedPathComponents {
+      return escapedPC.map { return $0.withoutPercentEscapes }
+    }
+    else {
+      return nil
+    }
+  }
   
   var escapedPathComponents : [String]? {
     if path == .None { return nil }
@@ -170,15 +185,7 @@ public extension URL {
       }
     }
   }
-  
-  var pathComponents : [String]? {
-    if let escapedPC = escapedPathComponents {
-      return escapedPC.map { return $0.withoutPercentEscapes }
-    }
-    else {
-      return nil
-    }
-  }
+
 }
 
 public extension URL { // /etc/services
@@ -252,7 +259,7 @@ extension String {
   
 }
 
-public func parse_url(us: String) -> URL {
+func parse_url(us: String) -> URL {
   // yes, yes, I know. Pleaze send me a proper version ;-)
   var url = URL()
   var s   = us
