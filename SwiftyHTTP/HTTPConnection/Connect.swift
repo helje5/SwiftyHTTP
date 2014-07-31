@@ -73,7 +73,7 @@ struct MiddlewareEntry {
   
   func matchesRequest(request: HTTPRequest) -> Bool {
     if let prefix = urlPrefix {
-      if !request.url.hasPrefix(prefix) {
+      if !request.path.hasPrefix(prefix) {
         return false
       }
     }

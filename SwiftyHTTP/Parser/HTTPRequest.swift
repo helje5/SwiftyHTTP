@@ -13,15 +13,28 @@ public let HTTPv09 = ( major: 0, minor: 9 )
 public class HTTPRequest : HTTPMessage {
   
   public let method : HTTPMethod
-  public let url    : String
+  public let url    : URL
   
-  public init(method: HTTPMethod, url: String, version: ( Int, Int ) = HTTPv11,
+  public var path : String {
+    assert(url.path, "HTTP request URL has no path?!")
+    return url.path ? url.path! : ""
+  }
+  
+  public init(method: HTTPMethod, url: URL, version: ( Int, Int ) = HTTPv11,
               headers: Dictionary<String, String> = [:] )
   {
     self.method = method
     self.url    = url
+
+    assert(url.path, "HTTP request URL has no path?!")
     
     super.init(version: version, headers: headers)
+  }
+  public convenience init
+    (method: HTTPMethod, url: String, version: ( Int, Int ) = HTTPv11,
+     headers: Dictionary<String, String> = [:] )
+  {
+    self.init(method: method, url: URL(url), version: version, headers: headers)
   }
   
   override func descriptionAttributes() -> String {

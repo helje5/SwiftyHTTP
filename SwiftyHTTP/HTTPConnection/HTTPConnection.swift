@@ -10,9 +10,10 @@ import Darwin
 
 public class HTTPConnection {
   
+  public let socket : ActiveSocket<sockaddr_in>
+  
   let debugOn = false
   let parser  : HTTPParser
-  public let socket  : ActiveSocket<sockaddr_in>
   
   public init(_ socket: ActiveSocket<sockaddr_in>) {
     self.socket = socket
@@ -27,8 +28,6 @@ public class HTTPConnection {
     responseQueue.connection = self
     
     
-    // FIXME: make generic, reuse code
-    // Somehow an object taking the closure as a T?
     parser.onRequest  {
       [unowned self] rq in
       self.requestQueue.emit (rq)
@@ -89,7 +88,7 @@ public class HTTPConnection {
     return self
   }
   
-  var isValid : Bool { return self.socket.isValid }
+  public var isValid : Bool { return self.socket.isValid }
   
   
   /* close the connection */
@@ -106,74 +105,6 @@ public class HTTPConnection {
     close(nil)
   }
   
-  
-  /* send HTTP messages */
-  
-  func fixupHeaders(m: HTTPMessage) {
-    if let bodyBuffer = m.bodyAsByteArray {
-      m["Content-Length"] = String(bodyBuffer.count)
-    }
-  }
-  
-  func sendHeaders(m: HTTPMessage) -> Self {
-    // this sends things as UTF-8 which is only right in the very lastest
-    // HTTP revision (before HTTP headers have been Latin1)
-    var s = ""
-    for (key, value) in m.headers {
-      s += "\(key): \(value)\r\n"
-    }
-    s += "\r\n"
-    socket.write(s)
-    // println("Headers:\r\n \(s)")
-    return self
-  }
-  
-  func sendBody(r: HTTPMessage) {
-    let bodyBuffer = r.bodyAsByteArray
-    if bodyBuffer {
-      socket.asyncWrite(bodyBuffer!);
-    }
-  }
-  
-  public func sendRequest(rq: HTTPRequest, cb: (()->Void)? = nil) -> Self {
-    // FIXME: it's inefficient to do that many writes
-    fixupHeaders(rq)
-    
-    let requestLine = "\(rq.method.method) \(rq.url) " +
-                      "HTTP/\(rq.version.major).\(rq.version.minor)\r\n"
-    
-    if debugOn { println("HC: sending request \(rq) \(self)") }
-    
-    socket.write(requestLine)
-    sendHeaders(rq)
-    sendBody(rq)
-    if let lcb = cb {
-      lcb()
-    }
-    
-    if debugOn { println("HC: did enqueue request \(rq) \(self)") }
-    return self
-  }
-  
-  public func sendResponse(res: HTTPResponse, cb: (()->Void)? = nil) -> Self {
-    // FIXME: it's inefficient to do that many writes
-    fixupHeaders(res)
-    
-    let statusLine = "HTTP/\(res.version.major).\(res.version.minor)" +
-                     " \(res.status.status) \(res.status.statusText)\r\n"
-    
-    if debugOn { println("HC: sending response \(res) \(self)") }
-    socket.write(statusLine)
-    
-    sendHeaders(res)
-    sendBody(res)
-    if let lcb = cb {
-      lcb()
-    }
-    
-    if debugOn { println("HC: did enqueue response \(res) \(self)") }
-    return self
-  }
   
   
   /* handle incoming data */
@@ -213,6 +144,78 @@ public class HTTPConnection {
     } while true
   }
 }
+
+
+extension HTTPConnection { /* send HTTP messages */
+  
+  func fixupHeaders(m: HTTPMessage) {
+    if let bodyBuffer = m.bodyAsByteArray {
+      m["Content-Length"] = String(bodyBuffer.count)
+    }
+  }
+  
+  func sendHeaders(m: HTTPMessage) -> Self {
+    // this sends things as UTF-8 which is only right in the very lastest
+    // HTTP revision (before HTTP headers have been Latin1)
+    var s = ""
+    for (key, value) in m.headers {
+      s += "\(key): \(value)\r\n"
+    }
+    s += "\r\n"
+    socket.write(s)
+    // println("Headers:\r\n \(s)")
+    return self
+  }
+  
+  func sendBody(r: HTTPMessage) {
+    let bodyBuffer = r.bodyAsByteArray
+    if bodyBuffer {
+      socket.asyncWrite(bodyBuffer!);
+    }
+  }
+  
+  public func sendRequest(rq: HTTPRequest, cb: (()->Void)? = nil) -> Self {
+    // FIXME: it's inefficient to do that many writes
+    fixupHeaders(rq)
+    
+    let requestLine = "\(rq.method.method) \(rq.url) " +
+    "HTTP/\(rq.version.major).\(rq.version.minor)\r\n"
+    
+    if debugOn { println("HC: sending request \(rq) \(self)") }
+    
+    socket.write(requestLine)
+    sendHeaders(rq)
+    sendBody(rq)
+    if let lcb = cb {
+      lcb()
+    }
+    
+    if debugOn { println("HC: did enqueue request \(rq) \(self)") }
+    return self
+  }
+  
+  public func sendResponse(res: HTTPResponse, cb: (()->Void)? = nil) -> Self {
+    // FIXME: it's inefficient to do that many writes
+    fixupHeaders(res)
+    
+    let statusLine = "HTTP/\(res.version.major).\(res.version.minor)" +
+    " \(res.status.status) \(res.status.statusText)\r\n"
+    
+    if debugOn { println("HC: sending response \(res) \(self)") }
+    socket.write(statusLine)
+    
+    sendHeaders(res)
+    sendBody(res)
+    if let lcb = cb {
+      lcb()
+    }
+    
+    if debugOn { println("HC: did enqueue response \(res) \(self)") }
+    return self
+  }
+  
+}
+
 
 extension HTTPConnection : Printable {
   

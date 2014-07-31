@@ -85,6 +85,7 @@ public class HTTPCall : Equatable {
       }
     }
   }
+  
   enum State {
     case Idle
     case DNSLookup, Connect, Send, Receive
@@ -258,7 +259,7 @@ public class HTTPCall : Equatable {
           self.doConnect(addr)
         }
         else {
-          self.stopWithError(Error.DNSLookup)
+          self.stopWithError(.DNSLookup)
         }
       }
     }
@@ -297,7 +298,7 @@ public class HTTPCall : Equatable {
     }
     
     if !ok {
-      stopWithError(.DNSLookup)
+      stopWithError(.Connect)
     }
   }
   
