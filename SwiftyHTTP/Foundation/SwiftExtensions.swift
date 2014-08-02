@@ -47,15 +47,12 @@ public extension String {
       return String.fromCString(cs)
     }
     
-    // hh: this is really lame, there must be a better way :-)
-    // Also: it could be a constant string! So we really need to copy ...
-    // NOTE: this is really really wrong, don't use it in actual projects! :-)
-    let unconst = UnsafePointer<CChar>(cs)
-    let old = cs[length]
-    unconst[length] = 0
-    let s   = String.fromCString(cs)
-    unconst[length] = old
-    
+    let buflen = length + 1
+    var buf    = UnsafePointer<CChar>.alloc(buflen)
+    memcpy(buf, cs, UInt(length))
+    buf[length] = 0 // zero terminate
+    let s = String.fromCString(buf)
+    buf.dealloc(buflen)
     return s
   }
   
