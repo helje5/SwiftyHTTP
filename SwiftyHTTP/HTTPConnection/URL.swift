@@ -6,6 +6,8 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
+import Darwin
+
 // Very simple URL class. Do not use ;-)
 // RFC 3986
 // https://joe:user@apple.com:443/path/elements#red?a=10&b=20
