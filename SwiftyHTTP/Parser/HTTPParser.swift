@@ -158,7 +158,7 @@ public class HTTPParser {
         buffer.reset()
       
       case .Body:
-        if bodyDataCB != nil {
+        if bodyDataCB == nil {
           body = buffer.asByteArray()
         }
         buffer.reset()
