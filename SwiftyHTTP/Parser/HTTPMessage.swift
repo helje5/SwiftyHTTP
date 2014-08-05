@@ -80,11 +80,13 @@ public class HTTPMessage {
   
   /* body handling */
   
-  public var hasBody : Bool { return _byteBodyCache || _stringBodyCache }
+  public var hasBody : Bool {
+    return _byteBodyCache != nil || _stringBodyCache != nil
+  }
   
   public var bodyAsByteArray : Array<UInt8>? {
     get {
-      if _byteBodyCache {
+      if _byteBodyCache != nil {
         return _byteBodyCache
       }
       else if let s = _stringBodyCache {
@@ -103,7 +105,7 @@ public class HTTPMessage {
   }
   public var bodyAsString : String? {
     get {
-      if _stringBodyCache {
+      if _stringBodyCache != nil {
         return _stringBodyCache
       }
       else if let buf = _byteBodyCache {

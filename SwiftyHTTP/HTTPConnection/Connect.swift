@@ -17,7 +17,7 @@ public class Connect : HTTPServer {
   
   var middlewarez = [MiddlewareEntry]()
   
-  public init() {
+  override public init() {
     super.init()
     self.onRequest { [unowned self] in
       self.doRequest($0, response: $1, connection: $2)
