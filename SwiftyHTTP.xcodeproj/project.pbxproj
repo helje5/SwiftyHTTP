@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		E81DC1FA1965A5D500BD826B /* DNS.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81DC1F91965A5D500BD826B /* DNS.swift */; };
 		E81DC1FC1966E49C00BD826B /* URL.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81DC1FB1966E49C00BD826B /* URL.swift */; };
+		E82E195D199110260056F5E1 /* SwiftyHTTP.h in Headers */ = {isa = PBXBuildFile; fileRef = E8BEE1CA195B152D001499EE /* SwiftyHTTP.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		E82E195E1991102A0056F5E1 /* http_parser.h in Headers */ = {isa = PBXBuildFile; fileRef = E8BEE1E6195B169F001499EE /* http_parser.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E83305A1195B7AB500CCBDF5 /* HTTPRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = E83305A0195B7AB500CCBDF5 /* HTTPRequest.swift */; };
 		E83305A3195B7ABE00CCBDF5 /* HTTPResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = E83305A2195B7ABE00CCBDF5 /* HTTPResponse.swift */; };
 		E848E9CE196302BD00F63423 /* HTTPConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E848E9C9196302BD00F63423 /* HTTPConnection.swift */; };
@@ -22,9 +24,7 @@
 		E888C63E196578C9008EF6B9 /* SwiftyHTTP.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E8BEE1C5195B152D001499EE /* SwiftyHTTP.framework */; };
 		E888C63F196578CD008EF6B9 /* SwiftyHTTP.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E8BEE1C5195B152D001499EE /* SwiftyHTTP.framework */; };
 		E8951DDE1968157C001B7F46 /* HTTPEventQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8951DDD1968157C001B7F46 /* HTTPEventQueue.swift */; };
-		E8BEE1CB195B152D001499EE /* SwiftyHTTP.h in Headers */ = {isa = PBXBuildFile; fileRef = E8BEE1CA195B152D001499EE /* SwiftyHTTP.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E8BEE1F6195B169F001499EE /* http_parser.c in Sources */ = {isa = PBXBuildFile; fileRef = E8BEE1E5195B169F001499EE /* http_parser.c */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		E8BEE1F7195B169F001499EE /* http_parser.h in Headers */ = {isa = PBXBuildFile; fileRef = E8BEE1E6195B169F001499EE /* http_parser.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E8BEE1F8195B169F001499EE /* HTTPMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8BEE1E7195B169F001499EE /* HTTPMessage.swift */; };
 		E8BEE1F9195B169F001499EE /* HTTPMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8BEE1E8195B169F001499EE /* HTTPMethod.swift */; };
 		E8BEE1FA195B169F001499EE /* HTTPParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8BEE1E9195B169F001499EE /* HTTPParser.swift */; };
@@ -276,8 +276,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E8BEE1CB195B152D001499EE /* SwiftyHTTP.h in Headers */,
-				E8BEE1F7195B169F001499EE /* http_parser.h in Headers */,
+				E82E195D199110260056F5E1 /* SwiftyHTTP.h in Headers */,
+				E82E195E1991102A0056F5E1 /* http_parser.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
