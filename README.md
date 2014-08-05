@@ -184,11 +184,11 @@ companions - it gives you plenty of extra features you want to have for realz.
   - [x] sizeof()
   - [x] Standard Protocols
     - [x] Printable
-    - [x] LogicValue
-    - [x] OutputStream
+    - [x] BooleanType (aka LogicValue)
+    - [x] OutputStreamType
     - [x] Equatable
     - [x] Hashable
-    - [x] Sequence (GeneratorOf<T>)
+    - [x] SequenceType (GeneratorOf<T>)
   - [x] Left shift AND right shift
   - [x] Enums on steroids
   - [ ] Dynamic type system, reflection
@@ -198,8 +198,11 @@ companions - it gives you plenty of extra features you want to have for realz.
   - [x] Nested classes/types
   - [ ] Patterns
     - [x] Use wildcard pattern to ignore value
-  - [ ] @auto-closure
+  - [ ] @autoclosure
   - [ ] reinterpretCast()
+  - [x] final
+  - [x] Nil coalescing operator
+  - [ ] dynamic
 
 ###Why?!
 
