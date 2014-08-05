@@ -121,7 +121,7 @@ public class HTTPParser {
   }
   
   public func addData(data: UnsafePointer<CChar>, length: UInt) -> Int32 {
-    if parseState == .Body && bodyDataCB && message {
+    if parseState == .Body && bodyDataCB != nil && message != nil {
       return bodyDataCB!(message!, data, length) ? 42 : 0
     }
     else {
