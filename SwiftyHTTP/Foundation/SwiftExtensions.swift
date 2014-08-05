@@ -9,15 +9,15 @@
 import Darwin
 
 // This allows you to do: str[str.startIndex..idx+4]
-public func +<T: ForwardIndexType>(idx: T, distance: T.DistanceType) -> T {
+public func +<T: ForwardIndexType>(idx: T, distance: T.Distance) -> T {
   return advance(idx, distance)
 }
-public func +<T: ForwardIndexType>(distance: T.DistanceType, idx: T) -> T {
+public func +<T: ForwardIndexType>(distance: T.Distance, idx: T) -> T {
   return advance(idx, distance)
 }
 
-public func -<T:BidirectionalIndexType where T.DistanceType : SignedIntegerType>
-  (idx: T, distance: T.DistanceType) -> T
+public func -<T:BidirectionalIndexType where T.Distance : SignedIntegerType>
+  (idx: T, distance: T.Distance) -> T
 {
   var cursor = idx
   for i in 0..<distance {
