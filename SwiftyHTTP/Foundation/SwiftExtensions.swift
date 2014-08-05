@@ -9,15 +9,15 @@
 import Darwin
 
 // This allows you to do: str[str.startIndex..idx+4]
-public func +<T: ForwardIndex>(idx: T, distance: T.DistanceType) -> T {
+public func +<T: ForwardIndexType>(idx: T, distance: T.Distance) -> T {
   return advance(idx, distance)
 }
-public func +<T: ForwardIndex>(distance: T.DistanceType, idx: T) -> T {
+public func +<T: ForwardIndexType>(distance: T.Distance, idx: T) -> T {
   return advance(idx, distance)
 }
 
-public func -<T: BidirectionalIndex where T.DistanceType : SignedInteger>
-  (idx: T, distance: T.DistanceType) -> T
+public func -<T:BidirectionalIndexType where T.Distance : SignedIntegerType>
+  (idx: T, distance: T.Distance) -> T
 {
   var cursor = idx
   for i in 0..<distance {
@@ -41,21 +41,18 @@ public func isByteEqual<T>(var lhs: T, var rhs: T) -> Bool {
 public extension String {
   
   static func fromCString
-    (cs: ConstUnsafePointer<CChar>, length: Int!) -> String?
+    (cs: UnsafePointer<CChar>, length: Int!) -> String?
   {
     if length == .None { // no length given, use \0 standard variant
       return String.fromCString(cs)
     }
     
-    // hh: this is really lame, there must be a better way :-)
-    // Also: it could be a constant string! So we really need to copy ...
-    // NOTE: this is really really wrong, don't use it in actual projects! :-)
-    let unconst = UnsafePointer<CChar>(cs)
-    let old = cs[length]
-    unconst[length] = 0
-    let s   = String.fromCString(cs)
-    unconst[length] = old
-    
+    let buflen = length + 1
+    var buf    = UnsafeMutablePointer<CChar>.alloc(buflen)
+    memcpy(buf, cs, UInt(length))
+    buf[length] = 0 // zero terminate
+    let s = String.fromCString(buf)
+    buf.dealloc(buflen)
     return s
   }
   
@@ -69,29 +66,20 @@ public extension String {
     }
     
     var cstr = [CChar](count: data.count + 1, repeatedValue: 0)
-    cstr.withUnsafePointerToElements { dest in  // cannot just use cstr!
-      data.withUnsafePointerToElements { src in
-        memcpy(dest, src, UInt(data.count))
-      }
-    }
+    memcpy(&cstr, data, UInt(data.count))
     cstr[data.count] = 0 // 0-terminate
     
-    // var s = "" // direct return seems to crash things, not sure why
-    return cstr.withUnsafePointerToElements {
-      return String.fromCString($0)!
-    }
+    return String.fromCString(cstr)!
   }
   
   func dataInCStringEncoding() -> [UInt8] {
-    return self.withCString { (cstr: ConstUnsafePointer<CChar>) in
+    return self.withCString { (cstr: UnsafePointer<CChar>) in
       let len  = strlen(cstr)
       if len < 1 {
         return [UInt8]()
       }
       var buf = [UInt8](count: Int(len), repeatedValue: 0)
-      buf.withUnsafePointerToElements { dest in
-        memcpy(dest, cstr, len)
-      }
+      memcpy(&buf, cstr, len)
       return buf
     }
   }
@@ -116,43 +104,9 @@ extension String {
 
 }
 
-// Starting with v0.0.4 we cannot just extend CString anymore, this doesn't
-// work: extension UnsafePointer<CChar>
-
-/* FIXME: No more CString in v0.0.4
-extension CString {
-  // Q(hh): this doesn't work?: extension Array<CChar> {}
+extension Int32 : BooleanType {
   
-  static func withCString<R>(buffer: [CChar], _ cb: (_: CString) -> R) -> R {
-    // FIXME for b3, simple CString(buffer)?
-    // the new cast version:
-    return buffer.withUnsafePointerToElements {
-      var cs: CString = reinterpretCast($0)
-      return cb(cs)
-    }
-    
-    /*
-    // how to I convert a [CChar] to a CString?!
-    // The approach here is stupid :-)
-    // FIXME: this does a real String conversion which is not necessary and
-    //        breaks if the input is not proper UTF-8
-    return buffer.withUnsafePointerToElements {
-      let ss = $0 != nil ? String.fromCString($0) : "" // not an optional?
-      // assert($0 != nil)
-      if $0 == nil {
-        println("FATAL: Could not grab unsafe pointer from array? \(buffer)")
-      }
-      return ss.withCString { (cs: CString) -> R in cb(cs) }
-    }
-    */
-  }
-  
-}
-*/
-
-extension Int32 : LogicValue {
-  
-  public func getLogicValue() -> Bool {
+  public var boolValue : Bool {
     return self != 0
   }
   

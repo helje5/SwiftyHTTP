@@ -17,14 +17,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     log("Fetch: \(urlField.stringValue)")
     
     GET(urlField.stringValue)
-      .done {
+      .done { rq, res in
         self.log()
-        self.log("request  \($0)")
-        self.log("response \($1)")
-        self.log("body:\n\($1.bodyAsString)")
+        self.log("request  \(rq)")
+        self.log("response \(res)")
+        self.log("body:\n\(res.bodyAsString)")
       }
-      .fail {
-        self.log("failed \($0): \($1)")
+      .fail { rq, err in
+        self.log("failed \(rq): \(err)")
       }
       .always { self.log("---") }
   }

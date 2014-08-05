@@ -10,7 +10,7 @@ import Darwin
 
 public class RawByteBuffer {
   
-  public var buffer   : UnsafePointer<RawByte>
+  public var buffer   : UnsafeMutablePointer<RawByte>
   public var capacity : Int
   public var count    : Int
   let extra = 2
@@ -20,7 +20,7 @@ public class RawByteBuffer {
     self.capacity = capacity
     
     if (self.capacity > 0) {
-      buffer  = UnsafePointer<RawByte>.alloc(self.capacity + extra)
+      buffer  = UnsafeMutablePointer<RawByte>.alloc(self.capacity + extra)
     }
     else {
       buffer = nil
@@ -40,13 +40,10 @@ public class RawByteBuffer {
     // having to assign a value is slow
     var a = [UInt8](count: count, repeatedValue: 0)
     
-    a.withUnsafePointerToElements {
+    memcpy(&a, self.buffer,  UInt(self.count))
       // Note: In the Darwin pkg there is also:
       //   memcpy(UnsafePointer<Void>(a), buffer, UInt(self.count))
       // func memcpy(_: UnsafePointer<()>, _: ConstUnsafePointer<()>, _: UInt) -> UnsafePointer<()>
-
-      memcpy($0, self.buffer,  UInt(self.count))
-    }
     
     return a
   }
@@ -54,7 +51,7 @@ public class RawByteBuffer {
   public func ensureCapacity(newCapacity: Int) {
     if newCapacity > capacity {
       let newsize = newCapacity + 1024
-      var newbuf  = UnsafePointer<RawByte>.alloc(newsize + extra)
+      var newbuf  = UnsafeMutablePointer<RawByte>.alloc(newsize + extra)
       
       if (count > 0) {
         memcpy(newbuf, buffer, UInt(count))
@@ -70,7 +67,7 @@ public class RawByteBuffer {
     count = 0
   }
   
-  public func addBytes(src: ConstUnsafePointer<Void>, length: Int) {
+  public func addBytes(src: UnsafePointer<Void>, length: Int) {
     // println("add \(length) count: \(count) capacity: \(capacity)")
     if length < 1 {
       // This is fine, happens for empty bodies (like in OPTION requests)
@@ -80,12 +77,12 @@ public class RawByteBuffer {
     ensureCapacity(count + length)
     
     let dest = buffer + count
-    memcpy(UnsafePointer<Void>(dest), src, UInt(length))
+    memcpy(UnsafeMutablePointer<Void>(dest), src, UInt(length))
     count += length
     // println("--- \(length) count: \(count) capacity: \(capacity)")
   }
   
-  public func add(cs: ConstUnsafePointer<CChar>, length: Int? = nil) {
+  public func add(cs: UnsafePointer<CChar>, length: Int? = nil) {
     if let len = length {
       addBytes(cs, length: len)
     }
@@ -99,7 +96,7 @@ public class RawByteBuffer {
       return nil
     }
     
-    let cptr = UnsafePointer<CChar>(buffer)
+    let cptr = UnsafeMutablePointer<CChar>(buffer)
     cptr[count] = 0 // null terminate, buffer is always bigger than it claims
     return String.fromCString(cptr)
   }

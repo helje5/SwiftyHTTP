@@ -29,7 +29,7 @@ public class HTTPConnectionPool {
   func unregisterConnection(fd: Int32) {
     dispatch_async(lockQueue) {
       let rc = self.openSockets.removeValueForKey(fd)
-      if !rc {
+      if rc != nil {
         self.log("closed socket \(fd).")
         self.log("-----")
       }

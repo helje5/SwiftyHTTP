@@ -67,7 +67,7 @@ public extension HTTPStatus {
       // FIXME: complete me
       
       default:
-        let statusText = text ? text! : HTTPStatus.textForStatus(status)
+        let statusText = text ?? HTTPStatus.textForStatus(status)
         self = .Extension(status, statusText)
     }
   }
