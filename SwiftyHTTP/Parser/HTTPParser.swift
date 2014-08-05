@@ -58,7 +58,7 @@ public class HTTPParser {
     return self
   }
   public func onBodyData
-    (cb: ((HTTPMessage, ConstUnsafePointer<CChar>, UInt) -> Bool)?) -> Self
+    (cb: ((HTTPMessage, UnsafePointer<CChar>, UInt) -> Bool)?) -> Self
   {
     bodyDataCB = cb
     return self
@@ -72,7 +72,7 @@ public class HTTPParser {
   var requestCB  : ((HTTPRequest)  -> Void)?
   var responseCB : ((HTTPResponse) -> Void)?
   var headersCB  : ((HTTPMessage)  -> Bool)?
-  var bodyDataCB : ((HTTPMessage, ConstUnsafePointer<CChar>, UInt) -> Bool)?
+  var bodyDataCB : ((HTTPMessage, UnsafePointer<CChar>, UInt) -> Bool)?
   
   
   /* write */
@@ -82,7 +82,7 @@ public class HTTPParser {
   }
   
   public func write
-    (buffer: ConstUnsafePointer<CChar>, _ count: Int) -> HTTPParserError
+    (buffer: UnsafePointer<CChar>, _ count: Int) -> HTTPParserError
   {
     // Note: the parser doesn't expect this to be 0-terminated.
     let len = UInt(count)
@@ -120,7 +120,7 @@ public class HTTPParser {
     self.headers.removeAll(keepCapacity: true)
   }
   
-  public func addData(data: ConstUnsafePointer<CChar>, length: UInt) -> Int32 {
+  public func addData(data: UnsafePointer<CChar>, length: UInt) -> Int32 {
     if parseState == .Body && bodyDataCB && message {
       return bodyDataCB!(message!, data, length) ? 42 : 0
     }
@@ -131,7 +131,7 @@ public class HTTPParser {
   }
   
   func processDataForState
-    (state: ParseState, d: ConstUnsafePointer<CChar>, l: UInt) -> Int32
+    (state: ParseState, d: UnsafePointer<CChar>, l: UInt) -> Int32
   {
     if (state == parseState) { // more data for same field
       return addData(d, length: l)
@@ -140,7 +140,7 @@ public class HTTPParser {
     switch parseState {
       case .HeaderValue:
         // finished parsing a header
-        assert(lastName)
+        assert(lastName != nil)
         if let n = lastName {
           headers[n] = buffer.asString()
         }
@@ -158,7 +158,7 @@ public class HTTPParser {
         buffer.reset()
       
       case .Body:
-        if !bodyDataCB {
+        if bodyDataCB != nil {
           body = buffer.asByteArray()
         }
         buffer.reset()
