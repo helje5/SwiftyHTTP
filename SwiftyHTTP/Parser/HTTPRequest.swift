@@ -16,8 +16,8 @@ public class HTTPRequest : HTTPMessage {
   public let url    : URL
   
   public var path : String {
-    assert(url.path, "HTTP request URL has no path?!")
-    return url.path ? url.path! : ""
+    assert(url.path != nil, "HTTP request URL has no path?!")
+    return url.path ?? ""
   }
   
   public init(method: HTTPMethod, url: URL, version: ( Int, Int ) = HTTPv11,
@@ -26,7 +26,7 @@ public class HTTPRequest : HTTPMessage {
     self.method = method
     self.url    = url
 
-    assert(url.path, "HTTP request URL has no path?!")
+    assert(url.path != nil, "HTTP request URL has no path?!")
     
     super.init(version: version, headers: headers)
   }
