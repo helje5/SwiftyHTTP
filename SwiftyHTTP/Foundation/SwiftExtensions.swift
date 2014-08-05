@@ -9,14 +9,14 @@
 import Darwin
 
 // This allows you to do: str[str.startIndex..idx+4]
-public func +<T: ForwardIndex>(idx: T, distance: T.DistanceType) -> T {
+public func +<T: ForwardIndexType>(idx: T, distance: T.DistanceType) -> T {
   return advance(idx, distance)
 }
-public func +<T: ForwardIndex>(distance: T.DistanceType, idx: T) -> T {
+public func +<T: ForwardIndexType>(distance: T.DistanceType, idx: T) -> T {
   return advance(idx, distance)
 }
 
-public func -<T: BidirectionalIndex where T.DistanceType : SignedInteger>
+public func -<T:BidirectionalIndexType where T.DistanceType : SignedIntegerType>
   (idx: T, distance: T.DistanceType) -> T
 {
   var cursor = idx
@@ -41,14 +41,14 @@ public func isByteEqual<T>(var lhs: T, var rhs: T) -> Bool {
 public extension String {
   
   static func fromCString
-    (cs: ConstUnsafePointer<CChar>, length: Int!) -> String?
+    (cs: UnsafePointer<CChar>, length: Int!) -> String?
   {
     if length == .None { // no length given, use \0 standard variant
       return String.fromCString(cs)
     }
     
     let buflen = length + 1
-    var buf    = UnsafePointer<CChar>.alloc(buflen)
+    var buf    = UnsafeMutablePointer<CChar>.alloc(buflen)
     memcpy(buf, cs, UInt(length))
     buf[length] = 0 // zero terminate
     let s = String.fromCString(buf)
@@ -66,29 +66,20 @@ public extension String {
     }
     
     var cstr = [CChar](count: data.count + 1, repeatedValue: 0)
-    cstr.withUnsafePointerToElements { dest in  // cannot just use cstr!
-      data.withUnsafePointerToElements { src in
-        memcpy(dest, src, UInt(data.count))
-      }
-    }
+    memcpy(&cstr, data, UInt(data.count))
     cstr[data.count] = 0 // 0-terminate
     
-    // var s = "" // direct return seems to crash things, not sure why
-    return cstr.withUnsafePointerToElements {
-      return String.fromCString($0)!
-    }
+    return String.fromCString(cstr)!
   }
   
   func dataInCStringEncoding() -> [UInt8] {
-    return self.withCString { (cstr: ConstUnsafePointer<CChar>) in
+    return self.withCString { (cstr: UnsafePointer<CChar>) in
       let len  = strlen(cstr)
       if len < 1 {
         return [UInt8]()
       }
       var buf = [UInt8](count: Int(len), repeatedValue: 0)
-      buf.withUnsafePointerToElements { dest in
-        memcpy(dest, cstr, len)
-      }
+      memcpy(&buf, cstr, len)
       return buf
     }
   }
@@ -147,9 +138,9 @@ extension CString {
 }
 */
 
-extension Int32 : LogicValue {
+extension Int32 : BooleanType {
   
-  public func getLogicValue() -> Bool {
+  public var boolValue : Bool {
     return self != 0
   }
   
