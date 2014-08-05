@@ -104,40 +104,6 @@ extension String {
 
 }
 
-// Starting with v0.0.4 we cannot just extend CString anymore, this doesn't
-// work: extension UnsafePointer<CChar>
-
-/* FIXME: No more CString in v0.0.4
-extension CString {
-  // Q(hh): this doesn't work?: extension Array<CChar> {}
-  
-  static func withCString<R>(buffer: [CChar], _ cb: (_: CString) -> R) -> R {
-    // FIXME for b3, simple CString(buffer)?
-    // the new cast version:
-    return buffer.withUnsafePointerToElements {
-      var cs: CString = reinterpretCast($0)
-      return cb(cs)
-    }
-    
-    /*
-    // how to I convert a [CChar] to a CString?!
-    // The approach here is stupid :-)
-    // FIXME: this does a real String conversion which is not necessary and
-    //        breaks if the input is not proper UTF-8
-    return buffer.withUnsafePointerToElements {
-      let ss = $0 != nil ? String.fromCString($0) : "" // not an optional?
-      // assert($0 != nil)
-      if $0 == nil {
-        println("FATAL: Could not grab unsafe pointer from array? \(buffer)")
-      }
-      return ss.withCString { (cs: CString) -> R in cb(cs) }
-    }
-    */
-  }
-  
-}
-*/
-
 extension Int32 : BooleanType {
   
   public var boolValue : Bool {
