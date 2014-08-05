@@ -16,7 +16,7 @@ public class HTTPServer : HTTPConnectionPool {
   var handler      : ((HTTPRequest, HTTPResponse, HTTPConnection)->Void)? = nil
   var handlerQueue : dispatch_queue_t? = nil
   
-  public init() {
+  override public init() {
     // If there is an init(), you don't have to provide default values for
     // all ivars?
     super.init()
@@ -38,7 +38,7 @@ public class HTTPServer : HTTPConnectionPool {
     log()
     
     if let handler = handler {
-      let q = handlerQueue ? handlerQueue! : dispatch_get_main_queue()
+      let q = handlerQueue ?? dispatch_get_main_queue()
       
       dispatch_async(q) {
         let response = HTTPResponse(status: .OK, headers: [

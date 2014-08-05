@@ -169,8 +169,8 @@ extension HTTPConnection { /* send HTTP messages */
   
   func sendBody(r: HTTPMessage) {
     let bodyBuffer = r.bodyAsByteArray
-    if bodyBuffer {
-      socket.asyncWrite(bodyBuffer!);
+    if let bb = bodyBuffer {
+      socket.asyncWrite(bb);
     }
   }
   
@@ -179,7 +179,7 @@ extension HTTPConnection { /* send HTTP messages */
     fixupHeaders(rq)
     
     let requestLine = "\(rq.method.method) \(rq.url) " +
-    "HTTP/\(rq.version.major).\(rq.version.minor)\r\n"
+                      "HTTP/\(rq.version.major).\(rq.version.minor)\r\n"
     
     if debugOn { println("HC: sending request \(rq) \(self)") }
     
@@ -199,7 +199,7 @@ extension HTTPConnection { /* send HTTP messages */
     fixupHeaders(res)
     
     let statusLine = "HTTP/\(res.version.major).\(res.version.minor)" +
-    " \(res.status.status) \(res.status.statusText)\r\n"
+                     " \(res.status.status) \(res.status.statusText)\r\n"
     
     if debugOn { println("HC: sending response \(res) \(self)") }
     socket.write(statusLine)
