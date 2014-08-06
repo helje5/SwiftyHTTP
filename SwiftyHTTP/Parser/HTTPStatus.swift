@@ -43,6 +43,14 @@ public enum HTTPStatus : Equatable {
   case Extension(Int, String) // status, statusText
 }
 
+extension HTTPStatus : BooleanType {
+  
+  public var boolValue : Bool {
+    return status >= 200 && status < 300
+  }
+  
+}
+
 public extension HTTPStatus {
   
   public init(_ status: Int, _ text: String? = nil) {
