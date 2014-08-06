@@ -225,6 +225,15 @@ extension HTTPStatus : Printable {
   
 }
 
+extension HTTPStatus : IntegerLiteralConvertible {
+  // this allows: let status : HTTPStatus = 418
+  
+  public static func convertFromIntegerLiteral(value: Int) -> HTTPStatus {
+    return HTTPStatus(value)
+  }
+  
+}
+
 public func ==(lhs: HTTPStatus, rhs: HTTPStatus) -> Bool {
   return lhs.status == rhs.status
 }

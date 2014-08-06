@@ -187,8 +187,12 @@ companions - it gives you plenty of extra features you want to have for realz.
     - [x] BooleanType (aka LogicValue)
     - [x] OutputStreamType
     - [x] Equatable
+      - [x] Equatable on Enums with Associated Values
     - [x] Hashable
     - [x] SequenceType (GeneratorOf<T>)
+    - [x] Literal Convertibles
+      - [x] StringLiteralConvertible
+      - [x] IntegerLiteralConvertible
   - [x] Left shift AND right shift
   - [x] Enums on steroids
   - [ ] Dynamic type system, reflection
@@ -199,7 +203,7 @@ companions - it gives you plenty of extra features you want to have for realz.
   - [ ] Patterns
     - [x] Use wildcard pattern to ignore value
   - [ ] @autoclosure
-  - [ ] reinterpretCast()
+  - [ ] unsafeBitCast (was reinterpretCast)
   - [x] final
   - [x] Nil coalescing operator
   - [ ] dynamic
