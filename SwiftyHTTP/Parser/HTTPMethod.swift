@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
-public enum HTTPMethod {
+public enum HTTPMethod : Equatable {
   // Either inherit from Int (and have raw values) OR have cases with arguments
   
   case GET, HEAD, PUT, DELETE, POST, OPTIONS
@@ -187,4 +187,10 @@ extension HTTPMethod: StringLiteralConvertible {
   {
     return HTTPMethod(string: value)
   }
+}
+
+public func ==(lhs: HTTPMethod, rhs: HTTPMethod) -> Bool {
+  // TBD: This is a bit lame, but is there a way to do this w/o spelling out all
+  //      values in a big switch?
+  return lhs.description == rhs.description
 }

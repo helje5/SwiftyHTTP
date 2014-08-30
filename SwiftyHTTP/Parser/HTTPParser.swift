@@ -10,7 +10,7 @@ public enum HTTPParserType {
   case Request, Response, Both
 }
 
-public class HTTPParser {
+public final class HTTPParser {
   
   enum ParseState {
     case Idle, URL, HeaderName, HeaderValue, Body

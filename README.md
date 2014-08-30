@@ -61,7 +61,8 @@ GET("http://www.apple.com/")
 
 ###Targets
 
-Updated to use Swift v0.0.5.
+Updated to use Swift v0.0.6 (removes generics in Sockets to avoid a runtime
+hang)
 
 The project includes three targets:
 - SwiftyHTTP
@@ -184,11 +185,15 @@ companions - it gives you plenty of extra features you want to have for realz.
   - [x] sizeof()
   - [x] Standard Protocols
     - [x] Printable
-    - [x] LogicValue
-    - [x] OutputStream
+    - [x] BooleanType (aka LogicValue)
+    - [x] OutputStreamType
     - [x] Equatable
+      - [x] Equatable on Enums with Associated Values
     - [x] Hashable
-    - [x] Sequence (GeneratorOf<T>)
+    - [x] SequenceType (GeneratorOf<T>)
+    - [x] Literal Convertibles
+      - [x] StringLiteralConvertible
+      - [x] IntegerLiteralConvertible
   - [x] Left shift AND right shift
   - [x] Enums on steroids
   - [ ] Dynamic type system, reflection
@@ -198,8 +203,11 @@ companions - it gives you plenty of extra features you want to have for realz.
   - [x] Nested classes/types
   - [ ] Patterns
     - [x] Use wildcard pattern to ignore value
-  - [ ] @auto-closure
-  - [ ] reinterpretCast()
+  - [ ] @autoclosure
+  - [ ] unsafeBitCast (was reinterpretCast)
+  - [x] final
+  - [x] Nil coalescing operator
+  - [ ] dynamic
 
 ###Why?!
 

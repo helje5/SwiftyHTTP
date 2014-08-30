@@ -152,7 +152,7 @@ extension String {
   var lowercaseString : String {
     // HACK. I think there is no proper way to do this in v0.0.4 w/o resorting
     //       to Cocoa?
-    return reduce(self, "", { $0 + $1.asciiLower })
+    return reduce(self, "", { $0 + String($1.asciiLower) })
   }
 
 }
