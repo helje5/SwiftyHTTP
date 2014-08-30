@@ -10,12 +10,12 @@ import Darwin
 
 public class HTTPConnection {
   
-  public let socket : ActiveSocket<sockaddr_in>
+  public let socket : ActiveSocketIPv4
   
   let debugOn = false
   let parser  : HTTPParser
   
-  public init(_ socket: ActiveSocket<sockaddr_in>) {
+  public init(_ socket: ActiveSocketIPv4) {
     self.socket = socket
     
     parser = HTTPParser()
@@ -109,7 +109,7 @@ public class HTTPConnection {
   
   /* handle incoming data */
   
-  func handleIncomingData<T>(socket: ActiveSocket<T>, expectedLength: Int) {
+  func handleIncomingData(socket: ActiveSocketIPv4, expectedLength: Int) {
     // For some reason this is called on a closed socket (in the SwiftyClient).
     // Not quite sure why, presumably the read-closure is hanging in some queue
     // on a different thread.
