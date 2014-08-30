@@ -355,12 +355,12 @@ func percentUnescape(src: String) -> String {
           ( cs : UnsafePointer<CChar> ) -> Int in
           return strtol(cs, nil, 16)
         }
-        dest += Character(UnicodeScalar(code))
+        dest.append(UnicodeScalar(code))
       }
       cursor = v1idx.successor()
     }
     else {
-      dest   += src[cursor]
+      dest.append(src[cursor])
       cursor =  cursor.successor()
     }
   }
