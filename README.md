@@ -61,8 +61,7 @@ GET("http://www.apple.com/")
 
 ###Targets
 
-Updated to use Swift v0.0.6 (removes generics in Sockets to avoid a runtime
-hang)
+Updated to use Swift v0.0.7
 
 The project includes three targets:
 - SwiftyHTTP

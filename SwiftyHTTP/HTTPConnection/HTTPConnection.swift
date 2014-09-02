@@ -109,7 +109,7 @@ public class HTTPConnection {
   
   /* handle incoming data */
   
-  func handleIncomingData(socket: ActiveSocketIPv4, expectedLength: Int) {
+  func handleIncomingData<T>(socket: ActiveSocket<T>, expectedLength: Int) {
     // For some reason this is called on a closed socket (in the SwiftyClient).
     // Not quite sure why, presumably the read-closure is hanging in some queue
     // on a different thread.
