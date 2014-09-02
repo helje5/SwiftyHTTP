@@ -92,6 +92,8 @@ lots and lots :-)</p>
 <h3>
 <a name="targets" class="anchor" href="#targets"><span class="octicon octicon-link"></span></a>Targets</h3>
 
+<p>Updated to use Swift v0.0.7</p>
+
 <p>The project includes three targets:</p>
 
 <ul>
@@ -259,18 +261,30 @@ companions - it gives you plenty of extra features you want to have for realz.</
 
 <ul>
 <li>[x] Printable</li>
-<li>[x] LogicValue</li>
-<li>[x] OutputStream</li>
-<li>[x] Equatable</li>
+<li>[x] BooleanType (aka LogicValue)</li>
+<li>[x] OutputStreamType</li>
+<li>[x] Equatable
+
+<ul>
+<li>[x] Equatable on Enums with Associated Values</li>
+</ul>
+</li>
 <li>[x] Hashable</li>
-<li>[x] Sequence (GeneratorOf)</li>
+<li>[x] SequenceType (GeneratorOf)</li>
+<li>[x] Literal Convertibles
+
+<ul>
+<li>[x] StringLiteralConvertible</li>
+<li>[x] IntegerLiteralConvertible</li>
+</ul>
+</li>
 </ul>
 </li>
 <li>[x] Left shift AND right shift</li>
 <li>[x] Enums on steroids</li>
 <li>[ ] Dynamic type system, reflection</li>
 <li>[x] Operator overloading</li>
-<li>[x] UCS-4 identifiers (🐔🐔🐔)</li>
+<li>[x] UCS-4 identifiers (<g-emoji alias="chicken" fallback-src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f414.png">🐔</g-emoji><g-emoji alias="chicken" fallback-src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f414.png">🐔</g-emoji><g-emoji alias="chicken" fallback-src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f414.png">🐔</g-emoji>)</li>
 <li>[ ] <del>RTF source code with images and code sections in different fonts</del>
 </li>
 <li>[x] Nested classes/types</li>
@@ -280,8 +294,12 @@ companions - it gives you plenty of extra features you want to have for realz.</
 <li>[x] Use wildcard pattern to ignore value</li>
 </ul>
 </li>
-<li>[ ] @auto-closure</li>
-<li>[ ] reinterpretCast()</li>
+<li>[ ] <a href="https://github.com/autoclosure" class="user-mention">@autoclosure</a>
+</li>
+<li>[ ] unsafeBitCast (was reinterpretCast)</li>
+<li>[x] final</li>
+<li>[x] Nil coalescing operator</li>
+<li>[ ] dynamic</li>
 </ul>
 </li>
 </ul><h3>
