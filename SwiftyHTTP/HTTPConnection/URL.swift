@@ -251,6 +251,10 @@ extension URL : StringLiteralConvertible {
     return URL(value)
   }
   
+  public static func convertFromUnicodeScalarLiteral(value: String) -> URL {
+    // FIXME: doesn't work with UnicodeScalarLiteralType?
+    return URL(value)
+  }
 }
 
 extension String {

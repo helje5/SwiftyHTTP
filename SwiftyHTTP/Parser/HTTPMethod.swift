@@ -187,6 +187,11 @@ extension HTTPMethod: StringLiteralConvertible {
   {
     return HTTPMethod(string: value)
   }
+  
+  public static func convertFromUnicodeScalarLiteral(v: String) -> HTTPMethod {
+    // FIXME: doesn't work with UnicodeScalarLiteralType?
+    return HTTPMethod(string: v)
+  }
 }
 
 public func ==(lhs: HTTPMethod, rhs: HTTPMethod) -> Bool {
