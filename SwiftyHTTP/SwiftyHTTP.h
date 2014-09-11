@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
-#import <Cocoa/Cocoa.h>
+@import Foundation;
 
 //! Project version number for SwiftyHTTP.
 FOUNDATION_EXPORT double SwiftyHTTPVersionNumber;
