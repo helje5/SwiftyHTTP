@@ -51,6 +51,15 @@ extension HTTPStatus : BooleanType {
   
 }
 
+extension HTTPStatus : RawRepresentable {
+  
+  public init?(rawValue: Int) {
+    self.init(rawValue)
+  }
+  
+  public var rawValue: Int { return self.status }
+}
+
 public extension HTTPStatus {
   
   public init(_ status: Int, _ text: String? = nil) {
