@@ -340,7 +340,7 @@ extension HTTPParser : Printable {
   }
 }
 
-public enum HTTPParserError : Int, Printable {
+public enum HTTPParserError : Printable {
   // manual mapping, Swift doesn't directly bridge the http_parser macros but
   // rather creates constants for them
   case OK

@@ -61,7 +61,7 @@ GET("http://www.apple.com/")
 
 ###Targets
 
-Updated to use Swift v0.0.8 (aka Swift 1.0 beta)
+Updated to use Swift v0.0.9 (aka Swift 1.1 beta 2)
 
 The project includes three targets:
 - SwiftyHTTP
@@ -195,6 +195,7 @@ companions - it gives you plenty of extra features you want to have for realz.
       - [x] IntegerLiteralConvertible
   - [x] Left shift AND right shift
   - [x] Enums on steroids
+    - [x] RawRepresentable
   - [ ] Dynamic type system, reflection
   - [x] Operator overloading
   - [x] UCS-4 identifiers (🐔🐔🐔)
