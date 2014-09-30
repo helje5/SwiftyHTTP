@@ -243,6 +243,14 @@ extension HTTPStatus : IntegerLiteralConvertible {
   
 }
 
+extension HTTPStatus : Hashable {
+
+  public var hashValue: Int {
+    return self.status
+  }
+  
+}
+
 public func ==(lhs: HTTPStatus, rhs: HTTPStatus) -> Bool {
   return lhs.status == rhs.status
 }
