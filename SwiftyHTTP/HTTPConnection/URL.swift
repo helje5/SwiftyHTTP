@@ -27,6 +27,19 @@ public struct URL {
   public init(_ string: String) {
     self = parse_url(string)
   }
+  public init(baseURL: URL, path: String) {
+    // FIXME: very basic implementation, should be more clever
+    self = baseURL
+    if path.hasPrefix("/") {
+      self.path = path
+    }
+    else if let basePath = self.path {
+      self.path = basePath + (basePath.hasSuffix("/") ? "" : "/" ) + path
+    }
+    else {
+      self.path = "/" + path
+    }
+  }
   
   public var isEmpty : Bool {
     if let s = scheme   { return false }
