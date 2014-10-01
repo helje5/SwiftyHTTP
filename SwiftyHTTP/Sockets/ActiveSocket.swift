@@ -314,6 +314,28 @@ extension ActiveSocket : OutputStreamType { // writing
   
 }
 
+let dumpAllReadData = false // true
+let dumpWidth = 8
+
+func dumpCharBuffer(block: UnsafePointer<CChar>, size: Int) {
+  for var i = 0; i < size; i++ {
+    let c  : CChar = block[i]
+    let ok = c > 32 && c < 127
+    let cs = ( c < 10 ? "  \(c)" : ( c < 100 ? " \(c)" : "\(c)" ) )
+    
+    if ok {
+      let uc = Character(UnicodeScalar(Int(c)))
+      print(" \(uc)[\(cs)]")
+    }
+    else {
+      print("  [\(cs)]")
+    }
+    
+    if i % dumpWidth == 0 && i > 0 {
+      println()
+    }
+  }
+}
 
 extension ActiveSocket { // Reading
   
@@ -337,6 +359,10 @@ extension ActiveSocket { // Reading
     if readCount < 0 {
       readBufferPtr[0] = 0
       return ( readCount, bptr, errno )
+    }
+    
+    if dumpAllReadData {
+      dumpCharBuffer(bptr, readCount)
     }
     
     readBufferPtr[readCount] = 0 // convenience
