@@ -176,21 +176,17 @@ extension HTTPMethod : Printable {
 extension HTTPMethod: StringLiteralConvertible {
   // this allows you to do: let addr : in_addr = "192.168.0.1"
   
-  public static func convertFromStringLiteral
-    (value: StringLiteralType) -> HTTPMethod
-  {
-    return HTTPMethod(string: value)
+  public init(stringLiteral value: StringLiteralType) {
+    self.init(string: value)
   }
   
-  public static func convertFromExtendedGraphemeClusterLiteral
-    (value: ExtendedGraphemeClusterType) -> HTTPMethod
-  {
-    return HTTPMethod(string: value)
+  public init(extendedGraphemeClusterLiteral v: ExtendedGraphemeClusterType) {
+    self.init(string: v)
   }
   
-  public static func convertFromUnicodeScalarLiteral(v: String) -> HTTPMethod {
+  public init(unicodeScalarLiteral v: String) {
     // FIXME: doesn't work with UnicodeScalarLiteralType?
-    return HTTPMethod(string: v)
+    self.init(string: v)
   }
 }
 

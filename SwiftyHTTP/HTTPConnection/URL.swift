@@ -254,19 +254,17 @@ extension URL : Printable {
 
 extension URL : StringLiteralConvertible {
   
-  public static func convertFromStringLiteral(value:StringLiteralType) -> URL {
-    return URL(value)
+  public init(stringLiteral value: StringLiteralType) {
+    self.init(value)
   }
   
-  public static func convertFromExtendedGraphemeClusterLiteral
-    (value: ExtendedGraphemeClusterType) -> URL
-  {
-    return URL(value)
+  public init(extendedGraphemeClusterLiteral v: ExtendedGraphemeClusterType) {
+    self.init(v)
   }
   
-  public static func convertFromUnicodeScalarLiteral(value: String) -> URL {
+  public init(unicodeScalarLiteral value: String) {
     // FIXME: doesn't work with UnicodeScalarLiteralType?
-    return URL(value)
+    self.init(value)
   }
 }
 
