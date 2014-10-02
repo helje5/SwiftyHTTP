@@ -88,11 +88,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       let s   = "<pre>Connect in your browser via " +
                 "'<a href='\(url)'>\(url)</a>'</pre>"
 
-      /* FIXME: HTML not available anymore?
-      let aS = NSAttributedString(HTML: s.dataUsingEncoding(NSUTF8StringEncoding), documentAttributes: nil)
-      label.attributedStringValue = aS
-      */
-      label.stringValue = "Connect in your browser via \(url)"
+      let utf8 = s.dataUsingEncoding(NSUTF8StringEncoding)!
+      let aS   = NSAttributedString(HTML: utf8, documentAttributes: nil)
+      label.attributedStringValue = aS!
     }
   }
   
