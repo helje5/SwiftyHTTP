@@ -47,7 +47,10 @@ public class HTTPConnection {
     self.socket.onRead {
       [unowned self] in self.handleIncomingData($0, expectedLength: $1)
     }
-    // look for data already in the queue
+
+    // look for data already in the queue.
+    // FIXME: This is failing sometimes with 0 bytes. While it's OK to return
+    //        0 bytes, it should fail with an EWOULDBLOCK
     self.handleIncomingData(self.socket, expectedLength: 1)
     
     if debugOn { println("HC: did init \(self)") }

@@ -100,7 +100,8 @@ public final class HTTPParser {
       // Now hitting this, not quite sure why. Maybe a Safari feature?
       let s = http_errno_name(errno)
       let d = http_errno_description(errno)
-      println("BYTES \(bytesConsumed) ERRNO: \(err) \(s) \(d)")
+      println("BYTES consumed \(bytesConsumed) from \(buffer)[\(len)] " +
+              "ERRNO: \(err) \(s) \(d)")
     }
     return err
   }
