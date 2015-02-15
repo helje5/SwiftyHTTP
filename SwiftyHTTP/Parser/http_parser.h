@@ -208,24 +208,22 @@ extern void http_parser_set_on_header_value    (http_parser *, http_data_cb);
 extern void http_parser_set_on_headers_complete(http_parser *, http_cb);
 extern void http_parser_set_on_body            (http_parser *, http_data_cb);
 extern void http_parser_set_on_message_complete(http_parser *, http_cb);
-
-// hh change: value readers
-extern unsigned int http_parser_get_type(http_parser *);
-extern void http_parser_get_response_info
-  (http_parser *, unsigned short *major, unsigned short *minor,
-   unsigned int *status);
-extern void http_parser_get_request_info
-  (http_parser *, unsigned short *major, unsigned short *minor,
-   unsigned int *method);
-extern enum http_errno http_parser_get_errno(http_parser *);
-
+ 
 struct http_parser {
   /** PRIVATE **/
+#if HH_SWIFT_SUPPORTS_BITSETS
   unsigned int type : 2;         /* enum http_parser_type */
   unsigned int flags : 6;        /* F_* values from 'flags' enum; semi-public */
   unsigned int state : 8;        /* enum state from http_parser.c */
   unsigned int header_state : 8; /* enum header_state from http_parser.c */
   unsigned int index : 8;        /* index into current matcher */
+#else
+  unsigned char type;         /* enum http_parser_type */
+  unsigned char flags;        /* F_* values from 'flags' enum; semi-public */
+  unsigned char state;        /* enum state from http_parser.c */
+  unsigned char header_state; /* enum header_state from http_parser.c */
+  unsigned char index;        /* index into current matcher */
+#endif
 
   uint32_t nread;          /* # bytes read in various scenarios */
   uint64_t content_length; /* # bytes in body (0 if no Content-Length header) */
@@ -233,9 +231,15 @@ struct http_parser {
   /** READ-ONLY **/
   unsigned short http_major;
   unsigned short http_minor;
+#if HH_SWIFT_SUPPORTS_BITSETS
   unsigned int status_code : 16; /* responses only */
   unsigned int method : 8;       /* requests only */
   unsigned int http_errno : 7;
+#else
+  unsigned short  status_code; /* responses only */
+  unsigned char   method;      /* requests only */
+  enum http_errno http_errno;
+#endif
 
   /* 1 = Upgrade header was present and the parser has exited because of that.
    * 0 = No upgrade header present.

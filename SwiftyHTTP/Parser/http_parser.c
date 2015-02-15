@@ -57,30 +57,6 @@ CB_SETTER(on_headers_complete, http_cb)
 CB_SETTER(on_body,             http_data_cb)
 CB_SETTER(on_message_complete, http_cb)
 
-unsigned int http_parser_get_type(http_parser *p) {
-  return p->type;
-}
-
-enum http_errno http_parser_get_errno(http_parser *p) {
-  return p->http_errno;
-}
-void http_parser_get_response_info
-  (http_parser *p, unsigned short *major, unsigned short *minor,
-   unsigned int *status)
-{
-  if (major)  *major  = p->http_major;
-  if (minor)  *minor  = p->http_minor;
-  if (status) *status = p->status_code;
-}
-void http_parser_get_request_info
-  (http_parser *p, unsigned short *major, unsigned short *minor,
-   unsigned int *method)
-{
-  if (major)  *major  = p->http_major;
-  if (minor)  *minor  = p->http_minor;
-  if (method) *method = p->method;
-}
-
 
 #ifndef ULLONG_MAX
 # define ULLONG_MAX ((uint64_t) -1) /* 2^64-1 */

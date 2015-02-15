@@ -38,7 +38,7 @@ public final class HTTPParser {
     http_parser_init(&parser, cType)
   }
   deinit {
-    http_parser_free(&parser)
+    http_parser_free(&parser) // still required to release blocks
   }
   
   
@@ -92,7 +92,7 @@ public final class HTTPParser {
     
     let bytesConsumed = http_parser_execute(&parser, buffer, len)
     
-    let errno = http_parser_get_errno(&parser)
+    let errno = parser.http_errno
     let err   = HTTPParserError(errno)
     
     if err != .OK {
@@ -174,11 +174,11 @@ public final class HTTPParser {
     return addData(d, length: l)
   }
   
-  public var isRequest  : Bool { return http_parser_get_type(&parser) == 0 }
-  public var isResponse : Bool { return http_parser_get_type(&parser) == 1 }
+  public var isRequest  : Bool { return parser.type == 0 }
+  public var isResponse : Bool { return parser.type == 1 }
   
-  public class func parserCodeToMethod(rq: CUnsignedInt) -> HTTPMethod? {
-    return parserCodeToMethod(http_method(rq))
+  public class func parserCodeToMethod(rq: UInt8) -> HTTPMethod? {
+    return parserCodeToMethod(http_method(CUnsignedInt(rq)))
   }
   public class func parserCodeToMethod(rq: http_method) -> HTTPMethod? {
     var method : HTTPMethod?
@@ -231,14 +231,11 @@ public final class HTTPParser {
     
     message = nil
     
-    var major : CUnsignedShort = 1
-    var minor : CUnsignedShort = 1
+    var major = parser.http_major
+    var minor = parser.http_minor
     
     if isRequest {
-      var rq : CUnsignedInt = 0
-      http_parser_get_request_info(&parser, &major, &minor, &rq)
-      
-      var method  = HTTPParser.parserCodeToMethod(rq)
+      var method  = HTTPParser.parserCodeToMethod(parser.method)
       
       message = HTTPRequest(method: method!, url: url!,
                             version: ( Int(major), Int(minor) ),
@@ -246,8 +243,7 @@ public final class HTTPParser {
       self.clearState()
     }
     else if isResponse {
-      var status : CUnsignedInt = 200
-      http_parser_get_response_info(&parser, &major, &minor, &status)
+      let status = parser.status_code
       
       // TBD: also grab status text? Doesn't matter in the real world ...
       message = HTTPResponse(status: HTTPStatus(rawValue: Int(status))!,
@@ -256,9 +252,8 @@ public final class HTTPParser {
       self.clearState()
     }
     else { // FIXME: PS style great error handling
-      let msgtype = http_parser_get_type(&parser)
-      println("Unexpected message? \(msgtype)")
-      assert(msgtype == 0 || msgtype == 1)
+      println("Unexpected message? \(parser.type)")
+      assert(parser.type == 0 || parser.type == 1)
     }
     
     if let m = message {
