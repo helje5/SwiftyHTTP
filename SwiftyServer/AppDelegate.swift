@@ -74,10 +74,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   
   var logView : NSTextView {
     // NSTextView doesn't work with weak?
-    return logViewParent.contentView.documentView as NSTextView
+    return logViewParent.contentView.documentView as! NSTextView
   }
   
-  func applicationDidFinishLaunching(aNotification: NSNotification?) {
+  func applicationDidFinishLaunching(aNotification: NSNotification) {
     startServer()
     
     label.allowsEditingTextAttributes = true
@@ -94,7 +94,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
   }
   
-  func applicationWillTerminate(aNotification: NSNotification?) {
+  func applicationWillTerminate(aNotification: NSNotification) {
     httpd?.stop()
     httpd = nil
   }

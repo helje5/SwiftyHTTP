@@ -16,7 +16,7 @@ public final class HTTPParser {
     case Idle, URL, HeaderName, HeaderValue, Body
   }
   
-  let parser     : COpaquePointer = nil
+  let parser     : UnsafeMutablePointer<http_parser>
   let buffer     = RawByteBuffer(capacity: 4096)
   var parseState = ParseState.Idle
   
@@ -27,7 +27,6 @@ public final class HTTPParser {
   var body       : [UInt8]?
   
   var message    : HTTPMessage?
-  
   
   public init(type: HTTPParserType = .Both) {
     var cType: http_parser_type
@@ -251,7 +250,7 @@ public final class HTTPParser {
       http_parser_get_response_info(parser, &major, &minor, &status)
       
       // TBD: also grab status text? Doesn't matter in the real world ...
-      message = HTTPResponse(status: HTTPStatus(Int(status)),
+      message = HTTPResponse(status: HTTPStatus(rawValue: Int(status))!,
                              version: ( Int(major), Int(minor) ),
                              headers: headers)
       self.clearState()
@@ -302,21 +301,22 @@ public final class HTTPParser {
   /* callbacks */
   
   func wireUpCallbacks() {
-    // http_cb      => (p: COpaquePointer) -> Int32
-    // http_data_cb => (p: COpaquePointer, d: CString, l: UInt)
+    // http_cb      = (UnsafeMutablePointer<http_parser>) -> Int32
+    // http_data_cb = (UnsafeMutablePointer<http_parser>, 
+    //                 UnsafePointer<Int8>, UInt) -> Int32
     // Note: CString is NOT a real C string, it's length terminated
     http_parser_set_on_message_begin(parser, {
-      [unowned self] (_: COpaquePointer) -> Int32 in
+      [unowned self] (_: UnsafeMutablePointer<http_parser>) -> Int32 in
       self.message  = nil
       self.clearState()
       return 0
     })
     http_parser_set_on_message_complete(parser, {
-      [unowned self] (_: COpaquePointer) -> Int32 in
+      [unowned self] (_: UnsafeMutablePointer<http_parser>) -> Int32 in
       self.messageFinished()
      })
     http_parser_set_on_headers_complete(parser) {
-      [unowned self] (_: COpaquePointer) -> Int32 in
+      [unowned self] (_: UnsafeMutablePointer<http_parser>) -> Int32 in
       self.headerFinished()
     }
     http_parser_set_on_url(parser) { [unowned self] in
