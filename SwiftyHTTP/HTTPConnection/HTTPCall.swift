@@ -101,13 +101,13 @@ public class HTTPCall : Equatable {
   
   public let url     : URL
   public let request : HTTPRequest
-  let debugOn    = true
-  let callID     = 0
+  let debugOn        = true
+  let callID         : Int
   
-  var state      : State  = .Idle
-  var error      : Error? = nil // FIXME: should be an associated value
-  var connection : HTTPConnection?
-  var response   : HTTPResponse?
+  var state          : State  = .Idle
+  var error          : Error? = nil // FIXME: should be an associated value
+  var connection     : HTTPConnection?
+  var response       : HTTPResponse?
   
   public init(url: URL, request: HTTPRequest) {
     self.url     = url
@@ -118,7 +118,7 @@ public class HTTPCall : Equatable {
       callCounter++
       nextID = callCounter // cannot use self.callID in here
     }
-    callID = nextID
+    self.callID = nextID
   }
   deinit {
     if debugOn {
