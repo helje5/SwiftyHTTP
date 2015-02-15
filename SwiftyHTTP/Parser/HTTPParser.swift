@@ -16,7 +16,7 @@ public final class HTTPParser {
     case Idle, URL, HeaderName, HeaderValue, Body
   }
   
-  let parser     : UnsafeMutablePointer<http_parser>
+  var parser     = http_parser()
   let buffer     = RawByteBuffer(capacity: 4096)
   var parseState = ParseState.Idle
   
@@ -35,10 +35,10 @@ public final class HTTPParser {
       case .Response: cType = HTTP_RESPONSE
       case .Both:     cType = HTTP_BOTH
     }
-    parser = http_parser_init(cType)
+    http_parser_init(&parser, cType)
   }
   deinit {
-    http_parser_free(parser)
+    http_parser_free(&parser)
   }
   
   
@@ -77,7 +77,7 @@ public final class HTTPParser {
   /* write */
   
   public var bodyIsFinal: Bool {
-    return http_body_is_final(parser) == 0 ? false:true
+    return http_body_is_final(&parser) == 0 ? false:true
   }
   
   public func write
@@ -90,9 +90,9 @@ public final class HTTPParser {
       wireUpCallbacks()
     }
     
-    let bytesConsumed = http_parser_execute(self.parser, buffer, len)
+    let bytesConsumed = http_parser_execute(&parser, buffer, len)
     
-    let errno = http_parser_get_errno(parser)
+    let errno = http_parser_get_errno(&parser)
     let err   = HTTPParserError(errno)
     
     if err != .OK {
@@ -174,8 +174,8 @@ public final class HTTPParser {
     return addData(d, length: l)
   }
   
-  public var isRequest  : Bool { return http_parser_get_type(parser) == 0 }
-  public var isResponse : Bool { return http_parser_get_type(parser) == 1 }
+  public var isRequest  : Bool { return http_parser_get_type(&parser) == 0 }
+  public var isResponse : Bool { return http_parser_get_type(&parser) == 1 }
   
   public class func parserCodeToMethod(rq: CUnsignedInt) -> HTTPMethod? {
     return parserCodeToMethod(http_method(rq))
@@ -236,7 +236,7 @@ public final class HTTPParser {
     
     if isRequest {
       var rq : CUnsignedInt = 0
-      http_parser_get_request_info(parser, &major, &minor, &rq)
+      http_parser_get_request_info(&parser, &major, &minor, &rq)
       
       var method  = HTTPParser.parserCodeToMethod(rq)
       
@@ -247,7 +247,7 @@ public final class HTTPParser {
     }
     else if isResponse {
       var status : CUnsignedInt = 200
-      http_parser_get_response_info(parser, &major, &minor, &status)
+      http_parser_get_response_info(&parser, &major, &minor, &status)
       
       // TBD: also grab status text? Doesn't matter in the real world ...
       message = HTTPResponse(status: HTTPStatus(rawValue: Int(status))!,
@@ -256,7 +256,7 @@ public final class HTTPParser {
       self.clearState()
     }
     else { // FIXME: PS style great error handling
-      let msgtype = http_parser_get_type(parser)
+      let msgtype = http_parser_get_type(&parser)
       println("Unexpected message? \(msgtype)")
       assert(msgtype == 0 || msgtype == 1)
     }
@@ -305,30 +305,30 @@ public final class HTTPParser {
     // http_data_cb = (UnsafeMutablePointer<http_parser>, 
     //                 UnsafePointer<Int8>, UInt) -> Int32
     // Note: CString is NOT a real C string, it's length terminated
-    http_parser_set_on_message_begin(parser, {
+    http_parser_set_on_message_begin(&parser, {
       [unowned self] (_: UnsafeMutablePointer<http_parser>) -> Int32 in
       self.message  = nil
       self.clearState()
       return 0
     })
-    http_parser_set_on_message_complete(parser, {
+    http_parser_set_on_message_complete(&parser, {
       [unowned self] (_: UnsafeMutablePointer<http_parser>) -> Int32 in
       self.messageFinished()
      })
-    http_parser_set_on_headers_complete(parser) {
+    http_parser_set_on_headers_complete(&parser) {
       [unowned self] (_: UnsafeMutablePointer<http_parser>) -> Int32 in
       self.headerFinished()
     }
-    http_parser_set_on_url(parser) { [unowned self] in
+    http_parser_set_on_url(&parser) { [unowned self] in
       self.processDataForState(.URL, d: $1, l: $2)
     }
-    http_parser_set_on_header_field(parser) { [unowned self] in
+    http_parser_set_on_header_field(&parser) { [unowned self] in
       self.processDataForState(.HeaderName, d: $1, l: $2)
     }
-    http_parser_set_on_header_value(parser) { [unowned self] in
+    http_parser_set_on_header_value(&parser) { [unowned self] in
       self.processDataForState(.HeaderValue, d: $1, l: $2)
     }
-    http_parser_set_on_body(parser) { [unowned self] in
+    http_parser_set_on_body(&parser) { [unowned self] in
       self.processDataForState(.Body, d: $1, l: $2)
     }
   }

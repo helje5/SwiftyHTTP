@@ -293,8 +293,7 @@ struct http_parser_url {
  */
 unsigned long http_parser_version(void);
 
-// HH: hm, made that a malloc which is kinda crap, but well ...
-http_parser *http_parser_init(enum http_parser_type type);
+void http_parser_init(http_parser *parser, enum http_parser_type type);
 void http_parser_free(http_parser *parser);
 
 
