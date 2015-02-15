@@ -14,13 +14,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   /* our server */
   
   var httpd : Connect!
-  var requestCounter = 1 // not threadsafe, use sync_dispatch
+  var requestCounter = 1 // FIXME: not threadsafe, use sync_dispatch
   
   func startServer() {
     httpd = Connect()
       .onLog {
-        [weak self] in // unowned makes this crash
-        self!.log($0)
+        [unowned self] in
+        self.log($0)
       }
       .useQueue(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0))
     
