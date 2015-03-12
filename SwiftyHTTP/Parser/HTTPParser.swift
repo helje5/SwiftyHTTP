@@ -84,7 +84,7 @@ public final class HTTPParser {
     (buffer: UnsafePointer<CChar>, _ count: Int) -> HTTPParserError
   {
     // Note: the parser doesn't expect this to be 0-terminated.
-    let len = UInt(count)
+    let len = count
     
     if !isWiredUp {
       wireUpCallbacks()
