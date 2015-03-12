@@ -40,7 +40,7 @@ public class RawByteBuffer {
     // having to assign a value is slow
     var a = [UInt8](count: count, repeatedValue: 0)
     
-    memcpy(&a, self.buffer,  UInt(self.count))
+    memcpy(&a, self.buffer, self.count)
       // Note: In the Darwin pkg there is also:
       //   memcpy(UnsafePointer<Void>(a), buffer, UInt(self.count))
       // func memcpy(_: UnsafePointer<()>, _: ConstUnsafePointer<()>, _: UInt) -> UnsafePointer<()>
@@ -54,7 +54,7 @@ public class RawByteBuffer {
       var newbuf  = UnsafeMutablePointer<RawByte>.alloc(newsize + extra)
       
       if (count > 0) {
-        memcpy(newbuf, buffer, UInt(count))
+        memcpy(newbuf, buffer, count)
       }
       
       buffer.dealloc(capacity + extra)
@@ -77,7 +77,7 @@ public class RawByteBuffer {
     ensureCapacity(count + length)
     
     let dest = buffer + count
-    memcpy(UnsafeMutablePointer<Void>(dest), src, UInt(length))
+    memcpy(UnsafeMutablePointer<Void>(dest), src, length)
     count += length
     // println("--- \(length) count: \(count) capacity: \(capacity)")
   }
