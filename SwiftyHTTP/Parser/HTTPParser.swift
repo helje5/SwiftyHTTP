@@ -120,18 +120,18 @@ public final class HTTPParser {
     self.headers.removeAll(keepCapacity: true)
   }
   
-  public func addData(data: UnsafePointer<CChar>, length: UInt) -> Int32 {
+  public func addData(data: UnsafePointer<Int8>, length: Int) -> Int32 {
     if parseState == .Body && bodyDataCB != nil && message != nil {
-      return bodyDataCB!(message!, data, length) ? 42 : 0
+      return bodyDataCB!(message!, data, UInt(length)) ? 42 : 0
     }
     else {
-      buffer.add(data, length: Int(length))
+      buffer.add(data, length: length)
     }
     return 0
   }
   
   func processDataForState
-    (state: ParseState, d: UnsafePointer<CChar>, l: UInt) -> Int32
+    (state: ParseState, d: UnsafePointer<Int8>, l: Int) -> Int32
   {
     if (state == parseState) { // more data for same field
       return addData(d, length: l)
@@ -314,17 +314,20 @@ public final class HTTPParser {
       [unowned self] (_: UnsafeMutablePointer<http_parser>) -> Int32 in
       self.headerFinished()
     }
+    
+    // UnsafeMutablePointer<http_parser>, _: http_data_cb!
+    // typealias http_data_cb = (UnsafeMutablePointer<http_parser>, UnsafePointer<Int8>, Int) -> Int32
     http_parser_set_on_url(&parser) { [unowned self] in
-      self.processDataForState(.URL, d: $1, l: $2)
+      self.processDataForState(ParseState.URL, d: $1, l: $2)
     }
     http_parser_set_on_header_field(&parser) { [unowned self] in
-      self.processDataForState(.HeaderName, d: $1, l: $2)
+      self.processDataForState(ParseState.HeaderName, d: $1, l: $2)
     }
     http_parser_set_on_header_value(&parser) { [unowned self] in
-      self.processDataForState(.HeaderValue, d: $1, l: $2)
+      self.processDataForState(ParseState.HeaderValue, d: $1, l: $2)
     }
     http_parser_set_on_body(&parser) { [unowned self] in
-      self.processDataForState(.Body, d: $1, l: $2)
+      self.processDataForState(ParseState.Body, d: $1, l: $2)
     }
   }
 }
