@@ -1,35 +1,26 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en-us">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta charset="UTF-8">
     <title>SwiftyHTTP by AlwaysRightInstitute</title>
-
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
   <body>
-    <div class="wrapper">
-      <header>
-        <h1>SwiftyHTTP</h1>
-        <p>A simple GCD based HTTP client and server, written in &#39;pure&#39; Swift</p>
+    <section class="page-header">
+      <h1 class="project-name">SwiftyHTTP</h1>
+      <h2 class="project-tagline">A simple GCD based HTTP client and server, written in &#39;pure&#39; Swift</h2>
+      <a href="https://github.com/AlwaysRightInstitute/SwiftyHTTP" class="btn">View on GitHub</a>
+      <a href="https://github.com/AlwaysRightInstitute/SwiftyHTTP/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/AlwaysRightInstitute/SwiftyHTTP/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-        <p class="view"><a href="https://github.com/AlwaysRightInstitute/SwiftyHTTP">View the Project on GitHub <small>AlwaysRightInstitute/SwiftyHTTP</small></a></p>
-
-
-        <ul>
-          <li><a href="https://github.com/AlwaysRightInstitute/SwiftyHTTP/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/AlwaysRightInstitute/SwiftyHTTP/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/AlwaysRightInstitute/SwiftyHTTP">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
-        <h1>
-<a name="swiftyhttp" class="anchor" href="#swiftyhttp"><span class="octicon octicon-link"></span></a>SwiftyHTTP</h1>
+    <section class="main-content">
+      <h1>
+<a id="swiftyhttp" class="anchor" href="#swiftyhttp" aria-hidden="true"><span class="octicon octicon-link"></span></a>SwiftyHTTP</h1>
 
 <p>A simple GCD based HTTP library for Swift. This project is 'pure' Swift/C,
 it does not use any bridged Objective-C classes.</p>
@@ -43,56 +34,53 @@ project. Any suggestions on how to improve the code are welcome. I expect
 lots and lots :-)</p>
 
 <h3>
-<a name="first-things-first-samples" class="anchor" href="#first-things-first-samples"><span class="octicon octicon-link"></span></a>First things first: Samples</h3>
+<a id="first-things-first-samples" class="anchor" href="#first-things-first-samples" aria-hidden="true"><span class="octicon octicon-link"></span></a>First things first: Samples</h3>
 
 <p>Server:</p>
 
-<div class="highlight highlight-Swift"><pre><span class="k">let</span> <span class="n">httpd</span> <span class="o">=</span> <span class="n">HTTPServer</span><span class="p">()</span>
-  <span class="p">.</span><span class="n">onRequest</span> <span class="p">{</span>
-    <span class="n">rq</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">con</span> <span class="k">in</span>
-    <span class="n">res</span><span class="p">.</span><span class="n">bodyAsString</span> <span class="o">=</span> <span class="s">"&lt;h2&gt;Always Right, Never Wrong!&lt;/h2&gt;"</span>
-    <span class="n">con</span><span class="p">.</span><span class="n">sendResponse</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
-  <span class="p">}</span>
-  <span class="p">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">1337</span><span class="p">)</span>
-</pre></div>
+<div class="highlight highlight-Swift"><pre><span class="pl-k">let</span> httpd <span class="pl-k">=</span> HTTPServer()
+  <span class="pl-k">.</span>onRequest {
+    rq, res, con <span class="pl-k">in</span>
+    res<span class="pl-k">.</span>bodyAsString <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>&lt;h2&gt;Always Right, Never Wrong!&lt;/h2&gt;<span class="pl-pds">"</span></span>
+    con<span class="pl-k">.</span>sendResponse(res)
+  }
+  <span class="pl-k">.</span>listen(<span class="pl-c1">1337</span>)</pre></div>
 
 <p>Server using the Node.JS like Connect bonus class:</p>
 
-<div class="highlight highlight-Swift"><pre><span class="k">let</span> <span class="n">httpd</span> <span class="o">=</span> <span class="n">Connect</span><span class="p">()</span>
-  <span class="p">.</span><span class="n">use</span> <span class="p">{</span> <span class="n">rq</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">next</span> <span class="k">in</span>
-    <span class="n">println</span><span class="p">(</span><span class="s">"\(rq.method) \(rq.url) \(res.status)"</span><span class="p">)</span>
-    <span class="n">next</span><span class="p">()</span>
-  <span class="p">}</span>
-  <span class="p">.</span><span class="n">use</span><span class="p">(</span><span class="s">"/hello"</span><span class="p">)</span> <span class="p">{</span> <span class="n">rq</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">con</span><span class="p">,</span> <span class="n">next</span> <span class="k">in</span>
-    <span class="n">res</span><span class="p">.</span><span class="n">bodyAsString</span> <span class="o">=</span> <span class="s">"Hello!"</span>
-    <span class="n">con</span><span class="p">.</span><span class="n">sendResponse</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
-  <span class="p">}</span>
-  <span class="p">.</span><span class="n">use</span><span class="p">(</span><span class="s">"/"</span><span class="p">)</span> <span class="p">{</span> <span class="n">rq</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">con</span><span class="p">,</span> <span class="n">next</span> <span class="k">in</span>
-    <span class="n">res</span><span class="p">.</span><span class="n">bodyAsString</span> <span class="o">=</span> <span class="s">"Always, almost sometimes."</span>
-    <span class="n">con</span><span class="p">.</span><span class="n">sendResponse</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
-  <span class="p">}</span>
-  <span class="p">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">1337</span><span class="p">)</span>
-</pre></div>
+<div class="highlight highlight-Swift"><pre><span class="pl-k">let</span> httpd <span class="pl-k">=</span> Connect()
+  <span class="pl-k">.</span>use { rq, res, _, next <span class="pl-k">in</span>
+    println(<span class="pl-s"><span class="pl-pds">"</span><span class="pl-pse">\(</span><span class="pl-s1">rq<span class="pl-k">.</span>method</span><span class="pl-pse">)</span> <span class="pl-pse">\(</span><span class="pl-s1">rq<span class="pl-k">.</span>url</span><span class="pl-pse">)</span> <span class="pl-pse">\(</span><span class="pl-s1">res<span class="pl-k">.</span>status</span><span class="pl-pse">)</span><span class="pl-pds">"</span></span>)
+    next()
+  }
+  <span class="pl-k">.</span>use(<span class="pl-s"><span class="pl-pds">"</span>/hello<span class="pl-pds">"</span></span>) { rq, res, con, next <span class="pl-k">in</span>
+    res<span class="pl-k">.</span>bodyAsString <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>Hello!<span class="pl-pds">"</span></span>
+    con<span class="pl-k">.</span>sendResponse(res)
+  }
+  <span class="pl-k">.</span>use(<span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>) { rq, res, con, next <span class="pl-k">in</span>
+    res<span class="pl-k">.</span>bodyAsString <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>Always, almost sometimes.<span class="pl-pds">"</span></span>
+    con<span class="pl-k">.</span>sendResponse(res)
+  }
+  <span class="pl-k">.</span>listen(<span class="pl-c1">1337</span>)</pre></div>
 
 <p>Client (do not use this, use NSURLSession!):</p>
 
-<div class="highlight highlight-Swift"><pre><span class="n">GET</span><span class="p">(</span><span class="s">"http://www.apple.com/"</span><span class="p">)</span>
-  <span class="p">.</span><span class="n">done</span> <span class="p">{</span>
-    <span class="n">println</span><span class="p">()</span>
-    <span class="n">println</span><span class="p">(</span><span class="s">"request  \($0)"</span><span class="p">)</span>
-    <span class="n">println</span><span class="p">(</span><span class="s">"response \($1)"</span><span class="p">)</span>
-    <span class="n">println</span><span class="p">(</span><span class="s">"body:</span><span class="se">\n</span><span class="s">\($1.bodyAsString)"</span><span class="p">)</span>
-  <span class="p">}</span>
-  <span class="p">.</span><span class="n">fail</span> <span class="p">{</span>
-    <span class="n">println</span><span class="p">(</span><span class="s">"failed \($0): \($1)"</span><span class="p">)</span>
-  <span class="p">}</span>
-  <span class="p">.</span><span class="n">always</span> <span class="p">{</span> <span class="n">println</span><span class="p">(</span><span class="s">"---"</span><span class="p">)</span> <span class="p">}</span>
-</pre></div>
+<div class="highlight highlight-Swift"><pre>GET(<span class="pl-s"><span class="pl-pds">"</span>http://www.apple.com/<span class="pl-pds">"</span></span>)
+  <span class="pl-k">.</span>done {
+    println()
+    println(<span class="pl-s"><span class="pl-pds">"</span>request  <span class="pl-pse">\(</span><span class="pl-s1">$<span class="pl-c1">0</span></span><span class="pl-pse">)</span><span class="pl-pds">"</span></span>)
+    println(<span class="pl-s"><span class="pl-pds">"</span>response <span class="pl-pse">\(</span><span class="pl-s1">$<span class="pl-c1">1</span></span><span class="pl-pse">)</span><span class="pl-pds">"</span></span>)
+    println(<span class="pl-s"><span class="pl-pds">"</span>body:<span class="pl-cce">\n</span><span class="pl-pse">\(</span><span class="pl-s1">$<span class="pl-c1">1</span><span class="pl-k">.</span>bodyAsString</span><span class="pl-pse">)</span><span class="pl-pds">"</span></span>)
+  }
+  <span class="pl-k">.</span>fail {
+    println(<span class="pl-s"><span class="pl-pds">"</span>failed <span class="pl-pse">\(</span><span class="pl-s1">$<span class="pl-c1">0</span></span><span class="pl-pse">)</span>: <span class="pl-pse">\(</span><span class="pl-s1">$<span class="pl-c1">1</span></span><span class="pl-pse">)</span><span class="pl-pds">"</span></span>)
+  }
+  <span class="pl-k">.</span>always { println(<span class="pl-s"><span class="pl-pds">"</span>---<span class="pl-pds">"</span></span>) }</pre></div>
 
 <h3>
-<a name="targets" class="anchor" href="#targets"><span class="octicon octicon-link"></span></a>Targets</h3>
+<a id="targets" class="anchor" href="#targets" aria-hidden="true"><span class="octicon octicon-link"></span></a>Targets</h3>
 
-<p>Updated to use Swift v0.0.9 (aka Swift 1.1 beta 2)</p>
+<p>Updated to use Swift v0.2 (aka Xcode 6.3).</p>
 
 <p>The project includes three targets:</p>
 
@@ -100,10 +88,12 @@ lots and lots :-)</p>
 <li>SwiftyHTTP</li>
 <li>SwiftyServer</li>
 <li>SwiftyClient</li>
-</ul><p>I suggest you start out looking at the SwiftyServer.</p>
+</ul>
+
+<p>I suggest you start out looking at the SwiftyServer.</p>
 
 <h4>
-<a name="swiftyhttp-1" class="anchor" href="#swiftyhttp-1"><span class="octicon octicon-link"></span></a>SwiftyHTTP</h4>
+<a id="swiftyhttp-1" class="anchor" href="#swiftyhttp-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>SwiftyHTTP</h4>
 
 <p>A framework containing the HTTP classes and relevant extensions. It has a few
 'subprojects':</p>
@@ -113,8 +103,10 @@ lots and lots :-)</p>
 <li>Sockets</li>
 <li>Parser</li>
 <li>HTTP</li>
-</ul><h5>
-<a name="foundation" class="anchor" href="#foundation"><span class="octicon octicon-link"></span></a>Foundation</h5>
+</ul>
+
+<h5>
+<a id="foundation" class="anchor" href="#foundation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Foundation</h5>
 
 <p>This has just the 'RawByteBuffer' class. Which is kinda like a RawByte array.
 I bet there are better ways to implement this! Please suggest some! :-)</p>
@@ -125,13 +117,13 @@ CString's. I would love some suggestions on those as well.</p>
 <p>But remember: NSxyz is forbidden for this venture! :-)</p>
 
 <h5>
-<a name="sockets" class="anchor" href="#sockets"><span class="octicon octicon-link"></span></a>Sockets</h5>
+<a id="sockets" class="anchor" href="#sockets" aria-hidden="true"><span class="octicon octicon-link"></span></a>Sockets</h5>
 
 <p>Just a local copy of the SwiftSockets project - I wish GIT had proper externals
 ;-) (<a href="https://github.com/AlwaysRightInstitute/SwiftSockets">https://github.com/AlwaysRightInstitute/SwiftSockets</a>)</p>
 
 <h5>
-<a name="parser" class="anchor" href="#parser"><span class="octicon octicon-link"></span></a>Parser</h5>
+<a id="parser" class="anchor" href="#parser" aria-hidden="true"><span class="octicon octicon-link"></span></a>Parser</h5>
 
 <p>This uses the C HTTP parser which is also used in Node.JS. I couldn't
 directly use it being C callback driven - a feature (currently?)
@@ -146,7 +138,7 @@ And enums for HTTP status values (like <code>💰Required</code>) and request me
 etc).</p>
 
 <h5>
-<a name="http" class="anchor" href="#http"><span class="octicon octicon-link"></span></a>HTTP</h5>
+<a id="http" class="anchor" href="#http" aria-hidden="true"><span class="octicon octicon-link"></span></a>HTTP</h5>
 
 <p>HTTPConnectionPool is an abstract base class and manages open connections,
 either incoming or outgoing. The HTTPConnection sits on top of the SwiftSockets
@@ -166,8 +158,10 @@ Find a sample above.</p>
 
 <ul>
 <li>use this. Use NSURLSession and companions.</li>
-</ul><h4>
-<a name="swiftyserver" class="anchor" href="#swiftyserver"><span class="octicon octicon-link"></span></a>SwiftyServer</h4>
+</ul>
+
+<h4>
+<a id="swiftyserver" class="anchor" href="#swiftyserver" aria-hidden="true"><span class="octicon octicon-link"></span></a>SwiftyServer</h4>
 
 <p>Great httpd server - great in counting the requests it got sent. This is not
 actually serving any files ;-) Comes along as a Cocoa app. Compile it, run it,
@@ -176,7 +170,7 @@ then connect to it in the browser via <a href="http://127.0.0.1:1337/Awesome-O">
 <p><img src="http://i.imgur.com/4ShGZXS.png" alt=""></p>
 
 <h4>
-<a name="swiftyclient" class="anchor" href="#swiftyclient"><span class="octicon octicon-link"></span></a>SwiftyClient</h4>
+<a id="swiftyclient" class="anchor" href="#swiftyclient" aria-hidden="true"><span class="octicon octicon-link"></span></a>SwiftyClient</h4>
 
 <p>Just a demo on how to do HTTP requests via SwiftyHTTP. No, it doesn't do JSON
 decoding and such.</p>
@@ -187,7 +181,7 @@ companions - it gives you plenty of extra features you want to have for realz.</
 <p><img src="http://i.imgur.com/ny0PSKH.png" alt=""></p>
 
 <h3>
-<a name="goals" class="anchor" href="#goals"><span class="octicon octicon-link"></span></a>Goals</h3>
+<a id="goals" class="anchor" href="#goals" aria-hidden="true"><span class="octicon octicon-link"></span></a>Goals</h3>
 
 <ul>
 <li>[x] Max line length: 80 characters</li>
@@ -307,8 +301,10 @@ companions - it gives you plenty of extra features you want to have for realz.</
 <li>[ ] dynamic</li>
 </ul>
 </li>
-</ul><h3>
-<a name="why" class="anchor" href="#why"><span class="octicon octicon-link"></span></a>Why?!</h3>
+</ul>
+
+<h3>
+<a id="why" class="anchor" href="#why" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why?!</h3>
 
 <p>This is an experiment to get acquainted with Swift. To check whether something
 real can be implemented in 'pure' Swift. Meaning, without using any Objective-C
@@ -317,18 +313,21 @@ Or in other words: Can you use Swift without writing all the 'real' code in
 wrapped Objective-C? :-)</p>
 
 <h3>
-<a name="contact" class="anchor" href="#contact"><span class="octicon octicon-link"></span></a>Contact</h3>
+<a id="contact" class="anchor" href="#contact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contact</h3>
 
 <p><a href="http://twitter.com/helje5">@helje5</a> | <a href="mailto:helge@alwaysrightinstitute.com">helge@alwaysrightinstitute.com</a></p>
 
 <p><img src="http://www.alwaysrightinstitute.com/ARI.png" alt=""></p>
-      </section>
-      <footer>
-        <p>This project is maintained by <a href="https://github.com/AlwaysRightInstitute">AlwaysRightInstitute</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/AlwaysRightInstitute/SwiftyHTTP">SwiftyHTTP</a> is maintained by <a href="https://github.com/AlwaysRightInstitute">AlwaysRightInstitute</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
-    </div>
-    <script src="javascripts/scale.fix.js"></script>
-    
+
+    </section>
+
+  
   </body>
 </html>
+
