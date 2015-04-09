@@ -160,7 +160,7 @@ public class HTTPMessage {
       s += " body=#\(b.count)"
     }
     else if let b = _stringBodyCache {
-      s += " body=c#\(countElements(b))"
+      s += " body=c#\(count(b))"
     }
     
     s += " H: \(headers)"

@@ -30,7 +30,7 @@ public func -<T:BidirectionalIndexType where T.Distance : SignedIntegerType>
 // Hack to compare values if we don't have access to the members of the struct,
 // eg http_errno in v0.0.4
 public func isByteEqual<T>(var lhs: T, var rhs: T) -> Bool {
-  return memcmp(&lhs, &rhs, UInt(sizeof(T))) == 0
+  return memcmp(&lhs, &rhs, sizeof(T)) == 0
 }
 
 
@@ -49,7 +49,7 @@ public extension String {
     
     let buflen = length + 1
     var buf    = UnsafeMutablePointer<CChar>.alloc(buflen)
-    memcpy(buf, cs, UInt(length))
+    memcpy(buf, cs, length)
     buf[length] = 0 // zero terminate
     let s = String.fromCString(buf)
     buf.dealloc(buflen)
@@ -66,7 +66,7 @@ public extension String {
     }
     
     var cstr = [CChar](count: data.count + 1, repeatedValue: 0)
-    memcpy(&cstr, data, UInt(data.count))
+    memcpy(&cstr, data, data.count)
     cstr[data.count] = 0 // 0-terminate
     
     return String.fromCString(cstr)!
@@ -74,11 +74,11 @@ public extension String {
   
   func dataInCStringEncoding() -> [UInt8] {
     return self.withCString { (cstr: UnsafePointer<CChar>) in
-      let len  = strlen(cstr)
+      let len  = Int(strlen(cstr))
       if len < 1 {
         return [UInt8]()
       }
-      var buf = [UInt8](count: Int(len), repeatedValue: 0)
+      var buf = [UInt8](count: len, repeatedValue: 0)
       memcpy(&buf, cstr, len)
       return buf
     }

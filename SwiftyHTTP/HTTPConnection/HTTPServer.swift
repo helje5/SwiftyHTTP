@@ -40,7 +40,7 @@ public class HTTPServer : HTTPConnectionPool {
     if let handler = handler {
       let q = handlerQueue ?? dispatch_get_main_queue()
       
-      dispatch_async(q) {
+      dispatch_async(q!) {
         let response = HTTPResponse(status: .OK, headers: [
           "Content-Type": "text/html"
         ])

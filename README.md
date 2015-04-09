@@ -61,7 +61,7 @@ GET("http://www.apple.com/")
 
 ###Targets
 
-Updated to use Swift v0.0.10 (aka Swift 1.1 GM)
+Updated to use Swift v0.2.0 (aka Xcode 6.3 beta).
 
 The project includes three targets:
 - SwiftyHTTP
