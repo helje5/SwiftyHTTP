@@ -14,13 +14,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   /* our server */
   
   var httpd : Connect!
-  var requestCounter = 1 // not threadsafe, use sync_dispatch
+  var requestCounter = 1 // FIXME: not threadsafe, use sync_dispatch
   
   func startServer() {
     httpd = Connect()
       .onLog {
-        [weak self] in // unowned makes this crash
-        self!.log($0)
+        [unowned self] in
+        self.log($0)
       }
       .useQueue(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0))
     
@@ -74,10 +74,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   
   var logView : NSTextView {
     // NSTextView doesn't work with weak?
-    return logViewParent.contentView.documentView as NSTextView
+    return logViewParent.contentView.documentView as! NSTextView
   }
   
-  func applicationDidFinishLaunching(aNotification: NSNotification?) {
+  func applicationDidFinishLaunching(aNotification: NSNotification) {
     startServer()
     
     label.allowsEditingTextAttributes = true
@@ -94,7 +94,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
   }
   
-  func applicationWillTerminate(aNotification: NSNotification?) {
+  func applicationWillTerminate(aNotification: NSNotification) {
     httpd?.stop()
     httpd = nil
   }

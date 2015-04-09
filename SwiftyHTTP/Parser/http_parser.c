@@ -57,30 +57,6 @@ CB_SETTER(on_headers_complete, http_cb)
 CB_SETTER(on_body,             http_data_cb)
 CB_SETTER(on_message_complete, http_cb)
 
-unsigned int http_parser_get_type(http_parser *p) {
-  return p->type;
-}
-
-enum http_errno http_parser_get_errno(http_parser *p) {
-  return p->http_errno;
-}
-void http_parser_get_response_info
-  (http_parser *p, unsigned short *major, unsigned short *minor,
-   unsigned int *status)
-{
-  if (major)  *major  = p->http_major;
-  if (minor)  *minor  = p->http_minor;
-  if (status) *status = p->status_code;
-}
-void http_parser_get_request_info
-  (http_parser *p, unsigned short *major, unsigned short *minor,
-   unsigned int *method)
-{
-  if (major)  *major  = p->http_major;
-  if (minor)  *minor  = p->http_minor;
-  if (method) *method = p->method;
-}
-
 
 #ifndef ULLONG_MAX
 # define ULLONG_MAX ((uint64_t) -1) /* 2^64-1 */
@@ -2026,11 +2002,9 @@ http_method_str (enum http_method m)
   return ELEM_AT(method_strings, m, "<unknown>");
 }
 
-// hh: change to malloc, Swift-Bridging doesn't seem to expose C structs?
-http_parser *
-http_parser_init (enum http_parser_type t)
+void
+http_parser_init (http_parser *parser, enum http_parser_type t)
 {
-  http_parser *parser = malloc(sizeof(http_parser));
   //hh: void *data = parser->data; /* preserve application data */
   memset(parser, 0, sizeof(*parser));
   //hh: parser->data = data;
@@ -2039,7 +2013,6 @@ http_parser_init (enum http_parser_type t)
   parser->http_errno = HPE_OK;
   parser->cb = malloc(sizeof(http_parser_settings)); // hh: yuck, another malloc
   memset(parser->cb, 0, sizeof(http_parser_settings));
-  return parser;
 }
 void http_parser_free(http_parser *parser)
 {
@@ -2056,7 +2029,6 @@ void http_parser_free(http_parser *parser)
       Block_release(parser->cb->on_message_complete);
       free(parser->cb);
     }
-    free(parser);
   }
 }
 

@@ -182,7 +182,7 @@ public extension URL {
     if uPath == ""   { return nil }
     
     let isAbsolute = uPath.hasPrefix("/")
-    let pathComps  = split(uPath, { $0 == "/" }, allowEmptySlices: true)
+    let pathComps  = split(uPath, allowEmptySlices: true) { $0 == "/" }
     
     /* Note: we cannot just return a leading slash for absolute pathes as we
      *       wouldn't be able to distinguish between an absolute path and a
