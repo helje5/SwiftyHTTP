@@ -16,12 +16,6 @@ public class HTTPServer : HTTPConnectionPool {
   var handler      : ((HTTPRequest, HTTPResponse, HTTPConnection)->Void)? = nil
   var handlerQueue : dispatch_queue_t? = nil
   
-  override public init() {
-    // If there is an init(), you don't have to provide default values for
-    // all ivars?
-    super.init()
-  }
-  
   public func onRequest
     (cb:(HTTPRequest, HTTPResponse, HTTPConnection)->Void) -> Self
   {
