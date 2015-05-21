@@ -270,7 +270,7 @@ public class HTTPCall : Equatable {
     state = .Connect
     
     // FIXME: keep pool
-    let socket = ActiveSocketIPv4()
+    let socket = ActiveSocketIPv4()!
     
     // this callback setup is not quite right yet, we need to pass over errors
     let ok = socket.connect(address) {
