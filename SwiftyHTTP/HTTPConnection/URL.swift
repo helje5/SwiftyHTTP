@@ -42,13 +42,13 @@ public struct URL {
   }
   
   public var isEmpty : Bool {
-    if let s = scheme   { return false }
-    if let s = userInfo { return false }
-    if let s = host     { return false }
+    if let _ = scheme   { return false }
+    if let _ = userInfo { return false }
+    if let _ = host     { return false }
     // intentionally no port check, only in combination with host
-    if let s = path     { return false }
-    if let s = fragment { return false }
-    if let s = query    { return false }
+    if let _ = path     { return false }
+    if let _ = fragment { return false }
+    if let _ = query    { return false }
     return true
   }
   
@@ -123,7 +123,7 @@ public extension URL { // String representation
       
       us += host!
       
-      if let v = port {
+      if let _ = port {
         us += ":\(port)"
       }
     }
@@ -239,7 +239,7 @@ public extension URL { // /etc/services
   
 }
 
-extension URL : Printable {
+extension URL : CustomStringConvertible {
   
   public var description : String {
     if let s = toString() {
@@ -287,7 +287,7 @@ func parse_url(us: String) -> URL {
     s = s[idx + 3..<s.endIndex]
     
     // cut off path
-    if let idx = Swift.find(s, "/") {
+    if let idx = s.indexOf("/") {
       ps = s[idx..<s.endIndex] // path part
       s  = s[s.startIndex..<idx]
     }
@@ -362,7 +362,7 @@ func percentUnescape(src: String) -> String {
       let hex = src[v0idx...v1idx]
       
       if !hex.isHexDigit {
-        println("Invalid percent escapes: \(src)")
+        print("Invalid percent escapes: \(src)")
         dest += src[cursor...v1idx]
       }
       else {

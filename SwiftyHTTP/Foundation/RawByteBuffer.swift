@@ -51,7 +51,7 @@ public class RawByteBuffer {
   public func ensureCapacity(newCapacity: Int) {
     if newCapacity > capacity {
       let newsize = newCapacity + 1024
-      var newbuf  = UnsafeMutablePointer<RawByte>.alloc(newsize + extra)
+      let newbuf  = UnsafeMutablePointer<RawByte>.alloc(newsize + extra)
       
       if (count > 0) {
         memcpy(newbuf, buffer, count)

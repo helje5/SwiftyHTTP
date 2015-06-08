@@ -41,8 +41,8 @@ public class Connect : HTTPServer {
     let matchingMiddleware = middlewarez.filter { $0.matchesRequest(request) }
     var i = 0 // capture position
     
-    let endNext : Next = { args in let noop = args }
-    var next    : Next = { args in let noop = args }
+    let endNext : Next = { args in _ = args }
+    var next    : Next = { args in let _ = args }
     next = {
       args in
       let middleware = matchingMiddleware[i].middleware

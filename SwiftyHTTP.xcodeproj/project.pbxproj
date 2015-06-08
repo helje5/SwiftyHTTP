@@ -344,6 +344,7 @@
 		E8BEE1BC195B152D001499EE /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0700;
 				LastUpgradeCheck = 0600;
 				ORGANIZATIONNAME = "Always Right Institute";
 				TargetAttributes = {

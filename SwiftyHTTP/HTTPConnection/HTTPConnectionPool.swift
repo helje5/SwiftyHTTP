@@ -56,7 +56,7 @@ public class HTTPConnectionPool {
       cb(s)
     }
     else {
-      println(s)
+      print(s)
     }
   }
   public func log() {

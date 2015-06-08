@@ -99,7 +99,7 @@ public final class HTTPParser {
       // Now hitting this, not quite sure why. Maybe a Safari feature?
       let s = http_errno_name(errno)
       let d = http_errno_description(errno)
-      println("BYTES consumed \(bytesConsumed) from \(buffer)[\(len)] " +
+      print("BYTES consumed \(bytesConsumed) from \(buffer)[\(len)] " +
               "ERRNO: \(err) \(s) \(d)")
     }
     return err
@@ -231,11 +231,11 @@ public final class HTTPParser {
     
     message = nil
     
-    var major = parser.http_major
-    var minor = parser.http_minor
+    let major = parser.http_major
+    let minor = parser.http_minor
     
     if isRequest {
-      var method  = HTTPParser.parserCodeToMethod(parser.method)
+      let method  = HTTPParser.parserCodeToMethod(parser.method)
       
       message = HTTPRequest(method: method!, url: url!,
                             version: ( Int(major), Int(minor) ),
@@ -252,7 +252,7 @@ public final class HTTPParser {
       self.clearState()
     }
     else { // FIXME: PS style great error handling
-      println("Unexpected message? \(parser.type)")
+      print("Unexpected message? \(parser.type)")
       assert(parser.type == 0 || parser.type == 1)
     }
     
@@ -288,7 +288,7 @@ public final class HTTPParser {
       return 0
     }
     else {
-      println("did not parse a message ...")
+      print("did not parse a message ...")
       return 42
     }
   }
@@ -332,14 +332,14 @@ public final class HTTPParser {
   }
 }
 
-extension HTTPParser : Printable {
+extension HTTPParser : CustomStringConvertible {
   
   public var description : String {
     return "<HTTPParser \(parseState) @\(buffer.count)>"
   }
 }
 
-public enum HTTPParserError : Printable {
+public enum HTTPParserError : CustomStringConvertible {
   // manual mapping, Swift doesn't directly bridge the http_parser macros but
   // rather creates constants for them
   case OK
@@ -452,8 +452,8 @@ public func ==(lhs: http_errno, rhs: http_errno) -> Bool {
   // this failes, maybe because it's not public?:
   //   return lhs.value == rhs.value
   // Hard hack, does it actually work? :-)
-  return isByteEqual(lhs, rhs)
+  return isByteEqual(lhs, rhs: rhs)
 }
 public func ==(lhs: http_method, rhs: http_method) -> Bool {
-  return isByteEqual(lhs, rhs)
+  return isByteEqual(lhs, rhs: rhs)
 }

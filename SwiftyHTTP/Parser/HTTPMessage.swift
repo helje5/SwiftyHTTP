@@ -160,7 +160,7 @@ public class HTTPMessage {
       s += " body=#\(b.count)"
     }
     else if let b = _stringBodyCache {
-      s += " body=c#\(count(b))"
+      s += " body=c#\(b.characters.count)"
     }
     
     s += " H: \(headers)"
@@ -168,7 +168,7 @@ public class HTTPMessage {
   }
 }
 
-extension HTTPMessage: Printable {
+extension HTTPMessage: CustomStringConvertible {
   
   public var description: String {
     return "<Message:" + descriptionAttributes() + ">"

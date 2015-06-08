@@ -20,7 +20,7 @@ public func -<T:BidirectionalIndexType where T.Distance : SignedIntegerType>
   (idx: T, distance: T.Distance) -> T
 {
   var cursor = idx
-  for i in 0..<distance {
+  for _ in 0..<distance {
     cursor = cursor.predecessor()
   }
   return cursor
@@ -48,7 +48,7 @@ public extension String {
     }
     
     let buflen = length + 1
-    var buf    = UnsafeMutablePointer<CChar>.alloc(buflen)
+    let buf    = UnsafeMutablePointer<CChar>.alloc(buflen)
     memcpy(buf, cs, length)
     buf[length] = 0 // zero terminate
     let s = String.fromCString(buf)
@@ -91,8 +91,8 @@ extension String {
     // FIXME: make this a generic
     var start = startIndex
     
-    do {
-      var subString = self[start..<endIndex]
+    repeat {
+      let subString = self[start..<endIndex]
       if subString.hasPrefix(other) {
         return start
       }
@@ -149,20 +149,10 @@ extension Character {
 
 extension String {
   
-  var lowercaseString : String {
-    // HACK. I think there is no proper way to do this in v0.0.4 w/o resorting
-    //       to Cocoa?
-    return reduce(self, "", { $0 + String($1.asciiLower) })
-  }
-
-}
-
-extension String {
-  
   var isHexDigit : Bool {
     if self == "" { return false }
     
-    for c in self {
+    for c in self.characters {
       if isxdigit(Int32(c.unicodeScalarCodePoint)) == 0 {
         return false
       }

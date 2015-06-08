@@ -20,11 +20,11 @@ public func GET(url: URL, headers: Dictionary<String, String> = [:],
 {
   func isURLOK(url: URL) -> Bool {
     if url.scheme == nil || url.scheme != "http" {
-      println("url has no http scheme?")
+      print("url has no http scheme?")
       return false
     }
     if url.host == nil {
-      println("url has no host?")
+      print("url has no host?")
       return false
     }
     
@@ -34,13 +34,13 @@ public func GET(url: URL, headers: Dictionary<String, String> = [:],
   /* check URL */
   if !isURLOK(url) {
     let rq   = HTTPRequest(method: HTTPMethod.GET, url: "/")
-    var call = HTTPCall(url: url, request: rq)
+    let call = HTTPCall(url: url, request: rq)
     call.stopWithError(.URLMalformed)
     return call
   }
   
   /* prepare request */
-  var request = HTTPRequest(method:  HTTPMethod.GET,
+  let request = HTTPRequest(method:  HTTPMethod.GET,
                             url:     url.pathWithQueryAndFragment,
                             version: version, headers: headers)
   if let hp = url.hostAndPort {
@@ -74,7 +74,7 @@ var callCounter  = 0
 
 public class HTTPCall : Equatable {
   
-  public enum Error : Printable {
+  public enum Error : CustomStringConvertible {
     case DNSLookup, Connect, URLMalformed
     
     public var description : String {
@@ -122,7 +122,7 @@ public class HTTPCall : Equatable {
   }
   deinit {
     if debugOn {
-      println("HC(\(callID)): deinit HTTPCall ...")
+      print("HC(\(callID)): deinit HTTPCall ...")
     }
   }
   
@@ -200,23 +200,23 @@ public class HTTPCall : Equatable {
   
   func unregister() {
     if self.debugOn {
-      println("HC(\(callID)) unregister ...")
+      print("HC(\(callID)) unregister ...")
     }
     dispatch_async(lockQueue) {
-      let idxOrNot = find(runningCalls, self)
+      let idxOrNot = runningCalls.indexOf(self)
       // assert(idxOrNot != nil)
       if let idx = idxOrNot {
         runningCalls.removeAtIndex(idx)
       }
       else {
-        println("HC(\(self.callID)) ERROR: did not find call \(self)")
+        print("HC(\(self.callID)) ERROR: did not find call \(self)")
       }
     }
   }
   
   func stopWithError(error: Error) {
     if self.debugOn {
-      println("HC(\(callID)) stop on error \(self.error)")
+      print("HC(\(callID)) stop on error \(self.error)")
     }
     
     // would like: state = .Fail(error)
@@ -254,7 +254,7 @@ public class HTTPCall : Equatable {
           var addr = address!
           addr.port = self.url.portOrDefault!
           if self.debugOn {
-            println("HC(\(self.callID)) resolved host \(name): \(address)")
+            print("HC(\(self.callID)) resolved host \(name): \(address)")
           }
           self.doConnect(addr)
         }
@@ -270,7 +270,7 @@ public class HTTPCall : Equatable {
     state = .Connect
     
     // FIXME: keep pool
-    let socket = ActiveSocketIPv4()!
+    let socket = ActiveSocketIPv4() // TBD: Fails Swift 2
     
     // this callback setup is not quite right yet, we need to pass over errors
     let ok = socket.connect(address) {
@@ -304,7 +304,7 @@ public class HTTPCall : Equatable {
   
   func handleResponse(res: HTTPResponse, _ con: HTTPConnection) {
     if self.debugOn {
-      println("HC(\(callID)) got response \(res): \(con)")
+      print("HC(\(callID)) got response \(res): \(con)")
     }
     
     self.state = .Done
@@ -330,7 +330,7 @@ public class HTTPCall : Equatable {
   
   func handleClose(fd: Int32) {
     if self.debugOn {
-      println("HC(\(callID)) close \(fd)")
+      print("HC(\(callID)) close \(fd)")
     }
     
     /* Nope, unregister happens at the end of the request */
