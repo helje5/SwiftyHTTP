@@ -168,21 +168,19 @@ public extension String {
 public extension URL {
   
   var pathComponents : [String]? {
-    if let escapedPC = escapedPathComponents {
-      return escapedPC.map { return $0.withoutPercentEscapes }
-    }
-    else {
-      return nil
-    }
+    guard let escapedPC = escapedPathComponents else { return nil }
+    return escapedPC.map { return $0.withoutPercentEscapes }
   }
   
   var escapedPathComponents : [String]? {
-    if path == .None { return nil }
-    let uPath = path!
-    if uPath == ""   { return nil }
+    guard path != .None    else { return nil }
+    guard let uPath = path else { return nil }
+    guard uPath != ""      else { return nil }
     
     let isAbsolute = uPath.hasPrefix("/")
-    let pathComps  = split(uPath, allowEmptySlices: true) { $0 == "/" }
+    let pathComps  =
+      split(uPath.characters, allowEmptySlices: true) { $0 == "/" }
+     .map { String($0) }
     
     /* Note: we cannot just return a leading slash for absolute pathes as we
      *       wouldn't be able to distinguish between an absolute path and a
@@ -190,7 +188,7 @@ public extension URL {
      *   So: Absolute pathes instead start with an empty string.
      */
     var gotAbsolute = isAbsolute ? false : true
-    return filter(pathComps) {
+    return pathComps.filter {
       if $0 != "" || !gotAbsolute {
         if !gotAbsolute { gotAbsolute = true }
         return true
@@ -287,23 +285,23 @@ func parse_url(us: String) -> URL {
     s = s[idx + 3..<s.endIndex]
     
     // cut off path
-    if let idx = s.indexOf("/") {
+    if let idx = s.characters.indexOf("/") {
       ps = s[idx..<s.endIndex] // path part
       s  = s[s.startIndex..<idx]
     }
     
     // s: joe:pwd@host:port
-    if let idx = Swift.find(s, "@") {
+    if let idx = s.characters.indexOf("@") {
       url.userInfo = s[s.startIndex..<idx]
       s = s[idx + 1..<s.endIndex]
     }
     
     // s: host:port
-    if let idx = Swift.find(s, ":") {
+    if let idx = s.characters.indexOf(":") {
       url.host = s[s.startIndex..<idx]
       let portS = s[idx + 1..<s.endIndex]
-      let portO = portS.toInt()
-      println("ports \(portS) is \(portO)")
+      let portO = Int(portS)
+      print("ports \(portS) is \(portO)")
       if let port = portO {
         url.port = port
       }
@@ -318,12 +316,12 @@ func parse_url(us: String) -> URL {
   }
   
   if ps != "" {
-    if let idx = Swift.find(ps, "?") {
+    if let idx = ps.characters.indexOf("?") {
       url.query = ps[idx + 1..<ps.endIndex]
       ps = ps[ps.startIndex..<idx]
     }
     
-    if let idx = Swift.find(ps, "#") {
+    if let idx = ps.characters.indexOf("#") {
       url.fragment = ps[idx + 1..<ps.endIndex]
       ps = ps[ps.startIndex..<idx]
     }
