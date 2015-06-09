@@ -151,7 +151,8 @@ companions - it gives you plenty of extra features you want to have for realz.
 - [ ] Great error handling
   - [x] PS style great error handling
   - [x] println() error handling
-  - [ ] Real error handling
+  - [ ] Swift 2 try/throw/catch
+    - [ ] Real error handling
 - [x] Twisted (no blocking reads or writes)
   - [x] Async reads and writes
     - [x] Never block on reads
@@ -170,6 +171,7 @@ companions - it gives you plenty of extra features you want to have for realz.
   - [x] Extensions on structs
   - [x] Extensions to organize classes
   - [x] Protocols on structs
+  - [ ] Swift 2 protocol extensions
   - [x] Tuples
   - [x] Trailing closures
   - [ ] @Lazy
@@ -209,6 +211,13 @@ companions - it gives you plenty of extra features you want to have for realz.
   - [x] final
   - [x] Nil coalescing operator
   - [ ] dynamic
+  - [ ] Swift 2
+    - [ ] availability
+    - [x] guard
+    - [x] defer
+    - [ ] C function pointers
+    - [x] debugPrint
+    - [x] lowercaseString
 
 ###Why?!
 
