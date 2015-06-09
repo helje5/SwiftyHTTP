@@ -270,12 +270,12 @@ public class HTTPCall : Equatable {
     state = .Connect
     
     // FIXME: keep pool
-    let socket = ActiveSocketIPv4() // TBD: Fails Swift 2
+    let socket = ActiveSocketIPv4()!
     
     // this callback setup is not quite right yet, we need to pass over errors
     let ok = socket.connect(address) {
       if self.debugOn {
-        println("HC(\(self.callID)) connected to \(socket.remoteAddress)")
+        debugPrint("HC(\(self.callID)) connected to \(socket.remoteAddress)")
       }
       
       self.connection = HTTPConnection(socket)
@@ -289,7 +289,7 @@ public class HTTPCall : Equatable {
         // TBD: is the timing of this quite right?
         self.state = .Receive
         if self.debugOn {
-          println("HC(\(self.callID)) did send request \(self.request)")
+          debugPrint("HC(\(self.callID)) did send request \(self.request)")
         }
       }
       
