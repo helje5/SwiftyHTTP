@@ -57,7 +57,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     /* logger middleware */
     httpd.use { rq, res, _, _ in
-      println("\(rq.method) \(rq.url) \(res.status)")
+      print("\(rq.method) \(rq.url) \(res.status)")
     }
     
     
