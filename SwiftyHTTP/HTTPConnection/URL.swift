@@ -61,13 +61,9 @@ public struct URL {
   }
   
   public var hostAndPort : String? {
-    if let h = host {
-      if let p = port {
-        return "\(h):\(p)"
-      }
-      return h
-    }
-    return nil
+    guard let h = host else { return nil }
+    guard let p = port else { return h   }
+    return "\(h):\(p)"
   }
   
   public var portOrDefault : Int? { // what's a nice name for this?
@@ -112,9 +108,7 @@ public extension URL { // String representation
     }
     
     if let v = scheme {
-      if host == nil {
-        return nil
-      }
+      guard host != nil else { return nil }
       
       us = "\(v)://"
       if let v = userInfo {
@@ -301,7 +295,7 @@ func parse_url(us: String) -> URL {
       url.host = s[s.startIndex..<idx]
       let portS = s[idx + 1..<s.endIndex]
       let portO = Int(portS)
-      print("ports \(portS) is \(portO)")
+      debugPrint("ports \(portS) is \(portO)")
       if let port = portO {
         url.port = port
       }
@@ -336,7 +330,7 @@ func parse_url(us: String) -> URL {
 
 func percentUnescape(src: String) -> String {
   // Lame implementation. Likely really slow.
-  if src == "" { return "" }
+  guard src != "" else { return "" }
   
   var dest = ""
   
@@ -345,14 +339,14 @@ func percentUnescape(src: String) -> String {
   
   while cursor != endIdx {
     if src[cursor] == "%" { // %40 = @
-      let v0idx = cursor.successor()
-      if v0idx == endIdx {
+      let   v0idx = cursor.successor()
+      guard v0idx != endIdx else {
         dest += src[cursor..<endIdx]
         break
       }
       
-      let v1idx = v0idx.successor()
-      if v1idx == endIdx {
+      let   v1idx = v0idx.successor()
+      guard v1idx != endIdx else {
         dest += src[cursor..<endIdx]
         break
       }
@@ -360,7 +354,7 @@ func percentUnescape(src: String) -> String {
       let hex = src[v0idx...v1idx]
       
       if !hex.isHexDigit {
-        print("Invalid percent escapes: \(src)")
+        debugPrint("Invalid percent escapes: \(src)")
         dest += src[cursor...v1idx]
       }
       else {

@@ -103,8 +103,8 @@ public final class HTTPParser {
       // Now hitting this, not quite sure why. Maybe a Safari feature?
       let s = http_errno_name(errno)
       let d = http_errno_description(errno)
-      print("BYTES consumed \(bytesConsumed) from \(buffer)[\(len)] " +
-              "ERRNO: \(err) \(s) \(d)")
+      debugPrint("BYTES consumed \(bytesConsumed) from \(buffer)[\(len)] " +
+                 "ERRNO: \(err) \(s) \(d)")
     }
     return err
   }
@@ -256,7 +256,7 @@ public final class HTTPParser {
       self.clearState()
     }
     else { // FIXME: PS style great error handling
-      print("Unexpected message? \(parser.type)")
+      debugPrint("Unexpected message? \(parser.type)")
       assert(parser.type == 0 || parser.type == 1)
     }
     
@@ -292,7 +292,7 @@ public final class HTTPParser {
       return 0
     }
     else {
-      print("did not parse a message ...")
+      debugPrint("did not parse a message ...")
       return 42
     }
   }

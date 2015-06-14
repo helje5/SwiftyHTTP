@@ -43,7 +43,7 @@ public extension String {
   static func fromCString
     (cs: UnsafePointer<CChar>, length: Int!) -> String?
   {
-    if length == .None { // no length given, use \0 standard variant
+    guard length != .None else { // no length given, use \0 standard variant
       return String.fromCString(cs)
     }
     
@@ -61,7 +61,7 @@ public extension String {
     // hh: lame
     // convert from [UInt8] to [CChar] CString to String
     // FIXME: return Optional
-    if data.count == 0 {
+    guard data.count > 0 else {
       return ""
     }
     

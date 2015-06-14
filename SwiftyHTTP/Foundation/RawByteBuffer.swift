@@ -33,9 +33,7 @@ public class RawByteBuffer {
   }
   
   public func asByteArray() -> [UInt8] {
-    if count == 0 {
-      return []
-    }
+    guard count > 0 else { return [] }
     
     // having to assign a value is slow
     var a = [UInt8](count: count, repeatedValue: 0)
@@ -49,18 +47,18 @@ public class RawByteBuffer {
   }
   
   public func ensureCapacity(newCapacity: Int) {
-    if newCapacity > capacity {
-      let newsize = newCapacity + 1024
-      let newbuf  = UnsafeMutablePointer<RawByte>.alloc(newsize + extra)
-      
-      if (count > 0) {
-        memcpy(newbuf, buffer, count)
-      }
-      
-      buffer.dealloc(capacity + extra)
-      buffer   = newbuf
-      capacity = newsize
+    guard newCapacity > capacity else { return }
+    
+    let newsize = newCapacity + 1024
+    let newbuf  = UnsafeMutablePointer<RawByte>.alloc(newsize + extra)
+    
+    if (count > 0) {
+      memcpy(newbuf, buffer, count)
     }
+    
+    buffer.dealloc(capacity + extra)
+    buffer   = newbuf
+    capacity = newsize
   }
   
   public func reset() {
@@ -68,10 +66,10 @@ public class RawByteBuffer {
   }
   
   public func addBytes(src: UnsafePointer<Void>, length: Int) {
-    // println("add \(length) count: \(count) capacity: \(capacity)")
-    if length < 1 {
+    // debugPrint("add \(length) count: \(count) capacity: \(capacity)")
+    guard length > 0 else {
       // This is fine, happens for empty bodies (like in OPTION requests)
-      // println("NO LENGTH?")
+      // debugPrint("NO LENGTH?")
       return
     }
     ensureCapacity(count + length)
@@ -79,7 +77,7 @@ public class RawByteBuffer {
     let dest = buffer + count
     memcpy(UnsafeMutablePointer<Void>(dest), src, length)
     count += length
-    // println("--- \(length) count: \(count) capacity: \(capacity)")
+    // debugPrint("--- \(length) count: \(count) capacity: \(capacity)")
   }
   
   public func add(cs: UnsafePointer<CChar>, length: Int? = nil) {
@@ -92,9 +90,7 @@ public class RawByteBuffer {
   }
   
   public func asString() -> String? {
-    if buffer == nil {
-      return nil
-    }
+    guard buffer != nil else { return nil }
     
     let cptr = UnsafeMutablePointer<CChar>(buffer)
     cptr[count] = 0 // null terminate, buffer is always bigger than it claims

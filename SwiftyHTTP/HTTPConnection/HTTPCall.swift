@@ -11,19 +11,19 @@ import Dispatch
 /**
  * Sample:
  *   GET("http://www.apple.com/")
- *     .done   { println("got \($0): \($1)")     }
- *     .fail   { println("failed \($0): \($1)")  }
- *     .always { println("we are done here ...") }
+ *     .done   { print("got \($0): \($1)")     }
+ *     .fail   { print("failed \($0): \($1)")  }
+ *     .always { print("we are done here ...") }
  */
 public func GET(url: URL, headers: Dictionary<String, String> = [:],
                 version: ( Int, Int ) = HTTPv11) -> HTTPCall
 {
   func isURLOK(url: URL) -> Bool {
-    if url.scheme == nil || url.scheme != "http" {
+    guard url.scheme != nil && url.scheme == "http" else {
       print("url has no http scheme?")
       return false
     }
-    if url.host == nil {
+    guard url.host != nil else {
       print("url has no host?")
       return false
     }
@@ -32,7 +32,7 @@ public func GET(url: URL, headers: Dictionary<String, String> = [:],
   }
   
   /* check URL */
-  if !isURLOK(url) {
+  guard isURLOK(url) else {
     let rq   = HTTPRequest(method: HTTPMethod.GET, url: "/")
     let call = HTTPCall(url: url, request: rq)
     call.stopWithError(.URLMalformed)

@@ -29,7 +29,7 @@ Server using the Node.JS like Connect bonus class:
 ```Swift
 let httpd = Connect()
   .use { rq, res, _, next in
-    println("\(rq.method) \(rq.url) \(res.status)")
+    print("\(rq.method) \(rq.url) \(res.status)")
     next()
   }
   .use("/hello") { rq, res, con, next in
@@ -47,15 +47,15 @@ Client (do not use this, use NSURLSession!):
 ```Swift
 GET("http://www.apple.com/")
   .done {
-    println()
-    println("request  \($0)")
-    println("response \($1)")
-    println("body:\n\($1.bodyAsString)")
+    print()
+    print("request  \($0)")
+    print("response \($1)")
+    print("body:\n\($1.bodyAsString)")
   }
   .fail {
-    println("failed \($0): \($1)")
+    print("failed \($0): \($1)")
   }
-  .always { println("---") }
+  .always { print("---") }
 ```
 
 
@@ -147,7 +147,7 @@ companions - it gives you plenty of extra features you want to have for realz.
 - [x] Max line length: 80 characters
 - [ ] Great error handling
   - [x] PS style great error handling
-  - [x] println() error handling
+  - [x] print() error handling
   - [ ] Swift 2 try/throw/catch
     - [ ] Real error handling
 - [x] Twisted (no blocking reads or writes)

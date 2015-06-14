@@ -33,20 +33,20 @@ public class HTTPMessage {
   
   public subscript(key: String?) -> String? {
     get {
-      if key != nil {
-        let lcName = key!.lowercaseString
-        for line in header {
-          if line.lcName == lcName {
-            return line.value
-          }
+      guard let lKey = key else { return nil }
+      
+      let lcName = lKey.lowercaseString
+      for line in header {
+        if line.lcName == lcName {
+          return line.value
         }
       }
       return nil
     }
     set { // Note: no multivalue-append, which is sometimes useful
-      if key == nil { return }
+      guard let lKey = key else { return }
       
-      let lcName = key!.lowercaseString
+      let lcName = lKey.lowercaseString
       if let v = newValue {
         for line in header {
           if line.lcName == lcName {
