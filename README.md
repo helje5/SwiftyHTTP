@@ -96,12 +96,9 @@ Just a local copy of the SwiftSockets project - I wish GIT had proper externals
 
 #####Parser
 
-This uses the C HTTP parser which is also used in Node.JS. I couldn't
-directly use it being C callback driven - a feature (currently?)
-unsupported by Swift.
-The fix was to rewrite the parser to use C blocks instead of function pointers.
-Along that way I also removed some great features of the parser, like no
-malloc() at all :->
+This uses the C HTTP parser which is also used in Node.JS. It had to modified
+a tinsy bit - the Swift C bridge doesn't support bitfields. Those had to be
+removed from the http_parser struct.
 
 It also contains the main request/response classes: HTTPRequest and
 HTTPResponse, both subclasses of HTTPMessage.

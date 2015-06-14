@@ -17,6 +17,7 @@ public final class HTTPParser {
   }
   
   var parser     = http_parser()
+  var settings   = http_parser_settings()
   let buffer     = RawByteBuffer(capacity: 4096)
   var parseState = ParseState.Idle
   
@@ -36,9 +37,12 @@ public final class HTTPParser {
       case .Both:     cType = HTTP_BOTH
     }
     http_parser_init(&parser, cType)
-  }
-  deinit {
-    http_parser_free(&parser) // still required to release blocks
+    
+    /* configure callbacks */
+    
+    // TBD: what is the better way to do this?
+    let ud = unsafeBitCast(self, UnsafeMutablePointer<Void>.self)
+    parser.data = ud
   }
   
   
@@ -90,9 +94,9 @@ public final class HTTPParser {
       wireUpCallbacks()
     }
     
-    let bytesConsumed = http_parser_execute(&parser, buffer, len)
+    let bytesConsumed = http_parser_execute(&parser, &settings, buffer, len)
     
-    let errno = parser.http_errno
+    let errno = http_errno(parser.http_errno)
     let err   = HTTPParserError(errno)
     
     if err != .OK {
@@ -235,7 +239,7 @@ public final class HTTPParser {
     let minor = parser.http_minor
     
     if isRequest {
-      let method  = HTTPParser.parserCodeToMethod(parser.method)
+      let method  = HTTPParser.parserCodeToMethod(http_method(parser.method))
       
       message = HTTPRequest(method: method!, url: url!,
                             version: ( Int(major), Int(minor) ),
@@ -296,38 +300,44 @@ public final class HTTPParser {
   /* callbacks */
   
   func wireUpCallbacks() {
-    // http_cb      = (UnsafeMutablePointer<http_parser>) -> Int32
-    // http_data_cb = (UnsafeMutablePointer<http_parser>, 
-    //                 UnsafePointer<Int8>, UInt) -> Int32
     // Note: CString is NOT a real C string, it's length terminated
-    http_parser_set_on_message_begin(&parser, {
-      [unowned self] (_: UnsafeMutablePointer<http_parser>) -> Int32 in
-      self.message  = nil
-      self.clearState()
+    
+    settings.on_message_begin = { parser in
+      let me = unsafeBitCast(parser.memory.data, HTTPParser.self)
+      me.message = nil
+      me.clearState()
       return 0
-    })
-    http_parser_set_on_message_complete(&parser, {
-      [unowned self] (_: UnsafeMutablePointer<http_parser>) -> Int32 in
-      self.messageFinished()
-     })
-    http_parser_set_on_headers_complete(&parser) {
-      [unowned self] (_: UnsafeMutablePointer<http_parser>) -> Int32 in
-      self.headerFinished()
+    }
+    settings.on_message_complete = { parser in
+      let me = unsafeBitCast(parser.memory.data, HTTPParser.self)
+      me.messageFinished()
+      return 0
+    }
+    settings.on_headers_complete = { parser in
+      let me = unsafeBitCast(parser.memory.data, HTTPParser.self)
+      me.headerFinished()
+      return 0
     }
     
-    // UnsafeMutablePointer<http_parser>, _: http_data_cb!
-    // typealias http_data_cb = (UnsafeMutablePointer<http_parser>, UnsafePointer<Int8>, Int) -> Int32
-    http_parser_set_on_url(&parser) { [unowned self] in
-      self.processDataForState(ParseState.URL, d: $1, l: $2)
+    settings.on_url = { parser, data, len in
+      let me = unsafeBitCast(parser.memory.data, HTTPParser.self)
+      me.processDataForState(ParseState.URL, d: data, l: len)
+      return 0
     }
-    http_parser_set_on_header_field(&parser) { [unowned self] in
-      self.processDataForState(ParseState.HeaderName, d: $1, l: $2)
+    settings.on_header_field = { parser, data, len in
+      let me = unsafeBitCast(parser.memory.data, HTTPParser.self)
+      me.processDataForState(ParseState.HeaderName, d: data, l: len)
+      return 0
     }
-    http_parser_set_on_header_value(&parser) { [unowned self] in
-      self.processDataForState(ParseState.HeaderValue, d: $1, l: $2)
+    settings.on_header_value = { parser, data, len in
+      let me = unsafeBitCast(parser.memory.data, HTTPParser.self)
+      me.processDataForState(ParseState.HeaderValue, d: data, l: len)
+      return 0
     }
-    http_parser_set_on_body(&parser) { [unowned self] in
-      self.processDataForState(ParseState.Body, d: $1, l: $2)
+    settings.on_body = { parser, data, len in
+      let me = unsafeBitCast(parser.memory.data, HTTPParser.self)
+      me.processDataForState(ParseState.Body, d: data, l: len)
+      return 0
     }
   }
 }
