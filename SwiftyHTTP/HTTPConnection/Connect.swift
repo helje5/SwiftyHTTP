@@ -38,15 +38,23 @@ public class Connect : HTTPServer {
   func doRequest(request: HTTPRequest, response: HTTPResponse,
                  connection: HTTPConnection) -> Void
   {
+    // first lookup all middleware matching the request (i.e. the URL prefix
+    // matches)
     let matchingMiddleware = middlewarez.filter { $0.matchesRequest(request) }
-    var i = 0 // capture position
     
-    let endNext : Next = { args in let noop = args }
-    var next    : Next = { args in let noop = args }
+    let endNext : Next = { _ in } // a noop middleware next-block handle
+    var next    : Next = { _ in } // cannot be let as it's self-referencing
+    
+    var i = 0 // capture position in matching-middleware array (shared)
     next = {
       args in
+      
+      // grab next item from matching middleware array
       let middleware = matchingMiddleware[i].middleware
-      i = i + 1
+      i = i + 1 // this is shared between the blocks, move position in array
+      
+      // call the middleware - which gets the handle to go to the 'next'
+      // middleware. the latter can be the 'endNext' which won't do anything.
       middleware(request, response, connection,
                  (i == matchingMiddleware.count) ? endNext : next)
     }
@@ -73,9 +81,7 @@ struct MiddlewareEntry {
   
   func matchesRequest(request: HTTPRequest) -> Bool {
     if let prefix = urlPrefix {
-      if !request.path.hasPrefix(prefix) {
-        return false
-      }
+      guard request.path.hasPrefix(prefix) else { return false }
     }
     
     return true

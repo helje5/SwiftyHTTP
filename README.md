@@ -29,7 +29,7 @@ Server using the Node.JS like Connect bonus class:
 ```Swift
 let httpd = Connect()
   .use { rq, res, _, next in
-    println("\(rq.method) \(rq.url) \(res.status)")
+    print("\(rq.method) \(rq.url) \(res.status)")
     next()
   }
   .use("/hello") { rq, res, con, next in
@@ -47,15 +47,15 @@ Client (do not use this, use NSURLSession!):
 ```Swift
 GET("http://www.apple.com/")
   .done {
-    println()
-    println("request  \($0)")
-    println("response \($1)")
-    println("body:\n\($1.bodyAsString)")
+    print()
+    print("request  \($0)")
+    print("response \($1)")
+    print("body:\n\($1.bodyAsString)")
   }
   .fail {
-    println("failed \($0): \($1)")
+    print("failed \($0): \($1)")
   }
-  .always { println("---") }
+  .always { print("---") }
 ```
 
 
@@ -96,12 +96,9 @@ Just a local copy of the SwiftSockets project - I wish GIT had proper externals
 
 #####Parser
 
-This uses the C HTTP parser which is also used in Node.JS. I couldn't
-directly use it being C callback driven - a feature (currently?)
-unsupported by Swift.
-The fix was to rewrite the parser to use C blocks instead of function pointers.
-Along that way I also removed some great features of the parser, like no
-malloc() at all :->
+This uses the C HTTP parser which is also used in Node.JS. It had to modified
+a tinsy bit - the Swift C bridge doesn't support bitfields. Those had to be
+removed from the http_parser struct.
 
 It also contains the main request/response classes: HTTPRequest and
 HTTPResponse, both subclasses of HTTPMessage.
@@ -150,8 +147,9 @@ companions - it gives you plenty of extra features you want to have for realz.
 - [x] Max line length: 80 characters
 - [ ] Great error handling
   - [x] PS style great error handling
-  - [x] println() error handling
-  - [ ] Real error handling
+  - [x] print() error handling
+  - [ ] Swift 2 try/throw/catch
+    - [ ] Real error handling
 - [x] Twisted (no blocking reads or writes)
   - [x] Async reads and writes
     - [x] Never block on reads
@@ -170,6 +168,7 @@ companions - it gives you plenty of extra features you want to have for realz.
   - [x] Extensions on structs
   - [x] Extensions to organize classes
   - [x] Protocols on structs
+  - [ ] Swift 2 protocol extensions
   - [x] Tuples
   - [x] Trailing closures
   - [ ] @Lazy
@@ -209,6 +208,13 @@ companions - it gives you plenty of extra features you want to have for realz.
   - [x] final
   - [x] Nil coalescing operator
   - [ ] dynamic
+  - [ ] Swift 2
+    - [ ] availability
+    - [x] guard
+    - [x] defer
+    - [ ] C function pointers
+    - [x] debugPrint
+    - [x] lowercaseString
 
 ###Why?!
 

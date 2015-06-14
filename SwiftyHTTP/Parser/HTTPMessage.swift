@@ -33,20 +33,20 @@ public class HTTPMessage {
   
   public subscript(key: String?) -> String? {
     get {
-      if key != nil {
-        let lcName = key!.lowercaseString
-        for line in header {
-          if line.lcName == lcName {
-            return line.value
-          }
+      guard let lKey = key else { return nil }
+      
+      let lcName = lKey.lowercaseString
+      for line in header {
+        if line.lcName == lcName {
+          return line.value
         }
       }
       return nil
     }
     set { // Note: no multivalue-append, which is sometimes useful
-      if key == nil { return }
+      guard let lKey = key else { return }
       
-      let lcName = key!.lowercaseString
+      let lcName = lKey.lowercaseString
       if let v = newValue {
         for line in header {
           if line.lcName == lcName {
@@ -160,7 +160,7 @@ public class HTTPMessage {
       s += " body=#\(b.count)"
     }
     else if let b = _stringBodyCache {
-      s += " body=c#\(count(b))"
+      s += " body=c#\(b.characters.count)"
     }
     
     s += " H: \(headers)"
@@ -168,7 +168,7 @@ public class HTTPMessage {
   }
 }
 
-extension HTTPMessage: Printable {
+extension HTTPMessage: CustomStringConvertible {
   
   public var description: String {
     return "<Message:" + descriptionAttributes() + ">"

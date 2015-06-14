@@ -57,7 +57,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     /* logger middleware */
     httpd.use { rq, res, _, _ in
-      println("\(rq.method) \(rq.url) \(res.status)")
+      print("\(rq.method) \(rq.url) \(res.status)")
     }
     
     
@@ -102,7 +102,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   
   func log(string: String) {
     // log to shell
-    println(string)
+    print(string)
     
     // log to view. Careful, must run in main thread!
     dispatch_async(dispatch_get_main_queue()) {
