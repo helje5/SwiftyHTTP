@@ -33,8 +33,6 @@ public class Connect : HTTPServer {
     return self
   }
   
-  // FIXME: complete me
-  
   func doRequest(request: HTTPRequest, response: HTTPResponse,
                  connection: HTTPConnection) -> Void
   {
