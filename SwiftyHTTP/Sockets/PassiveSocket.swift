@@ -87,10 +87,8 @@ public class PassiveSocket<T: SocketAddress>: Socket<T> {
     return true
   }
   
-  typealias TypedActiveSocket = ActiveSocket<T>
-  
   public func listen(queue: dispatch_queue_t, backlog: Int = 5,
-                     accept: ( TypedActiveSocket ) -> Void)
+                     accept: ( ActiveSocket<T> ) -> Void)
     -> Bool
   {
     guard let lfd = fd else { return false }
@@ -125,7 +123,7 @@ public class PassiveSocket<T: SocketAddress>: Socket<T> {
           // we pass over the queue, seems convenient. Not sure what kind of
           // queue setup a typical server would want to have
           let newSocket =
-            TypedActiveSocket(fd: newFD, remoteAddress: baddr, queue: queue)
+                ActiveSocket<T>(fd: newFD, remoteAddress: baddr, queue: queue)
           newSocket.isSigPipeDisabled = true
           
           accept(newSocket)
