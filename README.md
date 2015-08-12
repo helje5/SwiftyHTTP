@@ -12,9 +12,6 @@ project. In most real world Swift apps you have access to Cocoa, use it.
 project. Any suggestions on how to improve the code are welcome. I expect
 lots and lots :-)
 
-**Note**: This branch should work with Swift 0.2 beta3, but crashes the beta4
-compiler.
-
 ###First things first: Samples
 
 Server:

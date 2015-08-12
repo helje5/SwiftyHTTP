@@ -85,7 +85,7 @@ public class HTTPConnection {
   }
   */
   
-  public func onClose(cb: ((Int32) -> Void)?) -> Self {
+  public func onClose(cb: ((FileDescriptor) -> Void)?) -> Self {
     // FIXME: what if the socket was closed already? Need to check for isValid?
     socket.onClose(cb)
     return self

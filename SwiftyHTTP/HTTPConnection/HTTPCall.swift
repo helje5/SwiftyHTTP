@@ -328,7 +328,7 @@ public class HTTPCall : Equatable {
     }
   }
   
-  func handleClose(fd: Int32) {
+  func handleClose(fd: FileDescriptor) {
     if self.debugOn {
       print("HC(\(callID)) close \(fd)")
     }
