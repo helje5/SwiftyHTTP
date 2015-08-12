@@ -11,6 +11,10 @@ import Darwin
 /// This essentially wraps the Integer representing a file descriptor in a
 /// struct for the whole reason to attach methods to it.
 public struct FileDescriptor: IntegerLiteralConvertible, NilLiteralConvertible {
+
+  public static let stdin  = FileDescriptor(STDIN_FILENO)
+  public static let stdout = FileDescriptor(STDOUT_FILENO)
+  public static let stderr = FileDescriptor(STDERR_FILENO)
   
   public let fd : Int32
   
@@ -84,12 +88,19 @@ public struct FileDescriptor: IntegerLiteralConvertible, NilLiteralConvertible {
   
   public var isValid   : Bool { return fd >= 0 }
   
+  public var isStdInOutErr : Bool {
+    return fd == STDIN_FILENO || fd == STDOUT_FILENO || fd == STDERR_FILENO
+  }
+  
   
   // MARK: - Description
   
   // must live in the main-class as 'declarations in extensions cannot be
   // overridden yet' (Same in Swift 2.0)
   func descriptionAttributes() -> String {
+    if fd == STDIN_FILENO  { return " stdin"  }
+    if fd == STDOUT_FILENO { return " stdout" }
+    if fd == STDERR_FILENO { return " stderr" }
     let s = fd >= 0 ? " fd=\(fd)" : " closed"
     return s
   }
