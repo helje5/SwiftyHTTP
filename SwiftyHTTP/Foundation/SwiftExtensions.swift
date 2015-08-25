@@ -8,12 +8,12 @@
 
 import Darwin
 
-// This allows you to do: str[str.startIndex..idx+4]
+// This allows you to do: str[str.startIndex..idx+4] (TBD: still req with S2?)
 public func +<T: ForwardIndexType>(idx: T, distance: T.Distance) -> T {
-  return advance(idx, distance)
+  return idx.advancedBy(distance)
 }
 public func +<T: ForwardIndexType>(distance: T.Distance, idx: T) -> T {
-  return advance(idx, distance)
+  return idx.advancedBy(distance)
 }
 
 public func -<T:BidirectionalIndexType where T.Distance : SignedIntegerType>
