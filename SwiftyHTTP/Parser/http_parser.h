@@ -202,22 +202,13 @@ enum http_errno {
 /* Get an http_errno value from an http_parser */
 #define HTTP_PARSER_ERRNO(p)            ((enum http_errno) (p)->http_errno)
 
-
 struct http_parser {
   /** PRIVATE **/
-#if HH_SWIFT_SUPPORTS_BITSETS
   unsigned int type : 2;         /* enum http_parser_type */
   unsigned int flags : 7;        /* F_* values from 'flags' enum; semi-public */
   unsigned int state : 7;        /* enum state from http_parser.c */
   unsigned int header_state : 8; /* enum header_state from http_parser.c */
   unsigned int index : 8;        /* index into current matcher */
-#else
-  unsigned int type;         /* enum http_parser_type */
-  unsigned int flags;        /* F_* values from 'flags' enum; semi-public */
-  unsigned int state;        /* enum state from http_parser.c */
-  unsigned int header_state; /* enum header_state from http_parser.c */
-  unsigned int index;        /* index into current matcher */
-#endif
 
   uint32_t nread;          /* # bytes read in various scenarios */
   uint64_t content_length; /* # bytes in body (0 if no Content-Length header) */
@@ -225,15 +216,9 @@ struct http_parser {
   /** READ-ONLY **/
   unsigned short http_major;
   unsigned short http_minor;
-#if HH_SWIFT_SUPPORTS_BITSETS
   unsigned int status_code : 16; /* responses only */
   unsigned int method : 8;       /* requests only */
   unsigned int http_errno : 7;
-#else
-  unsigned int status_code; /* responses only */
-  unsigned int method;      /* requests only */
-  unsigned int http_errno;
-#endif
 
   /* 1 = Upgrade header was present and the parser has exited because of that.
    * 0 = No upgrade header present.
