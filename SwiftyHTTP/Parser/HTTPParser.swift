@@ -444,26 +444,3 @@ public enum HTTPParserError : CustomStringConvertible {
     }
   }
 }
-
-
-/* hack to make some structs work */
-// FIXME: can't figure out how to access errcode.value. Maybe because it
-//        is not 'public'?
-
-extension http_errno : Equatable {
-  // struct: init(_ value: UInt32); var value: UInt32;
-}
-extension http_method : Equatable {
-  // struct: init(_ value: UInt32); var value: UInt32;
-}
-public func ==(lhs: http_errno, rhs: http_errno) -> Bool {
-  // this just recurses (of course):
-  //   return lhs == rhs
-  // this failes, maybe because it's not public?:
-  //   return lhs.value == rhs.value
-  // Hard hack, does it actually work? :-)
-  return isByteEqual(lhs, rhs: rhs)
-}
-public func ==(lhs: http_method, rhs: http_method) -> Bool {
-  return isByteEqual(lhs, rhs: rhs)
-}
