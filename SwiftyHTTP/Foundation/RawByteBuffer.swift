@@ -10,7 +10,7 @@ import Darwin
 
 public class RawByteBuffer {
   
-  public var buffer   : UnsafeMutablePointer<RawByte>
+  public var buffer   : UnsafeMutablePointer<UInt8>
   public var capacity : Int
   public var count    : Int
   let extra = 2
@@ -20,7 +20,7 @@ public class RawByteBuffer {
     self.capacity = capacity
     
     if (self.capacity > 0) {
-      buffer  = UnsafeMutablePointer<RawByte>.alloc(self.capacity + extra)
+      buffer  = UnsafeMutablePointer<UInt8>.alloc(self.capacity + extra)
     }
     else {
       buffer = nil
@@ -50,7 +50,7 @@ public class RawByteBuffer {
     guard newCapacity > capacity else { return }
     
     let newsize = newCapacity + 1024
-    let newbuf  = UnsafeMutablePointer<RawByte>.alloc(newsize + extra)
+    let newbuf  = UnsafeMutablePointer<UInt8>.alloc(newsize + extra)
     
     if (count > 0) {
       memcpy(newbuf, buffer, count)

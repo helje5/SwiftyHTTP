@@ -29,8 +29,9 @@ public func -<T:BidirectionalIndexType where T.Distance : SignedIntegerType>
 
 // Hack to compare values if we don't have access to the members of the struct,
 // eg http_errno in v0.0.4
-public func isByteEqual<T>(var lhs: T, var rhs: T) -> Bool {
-  return memcmp(&lhs, &rhs, sizeof(T)) == 0
+public func isByteEqual<T>(lhs: T, rhs: T) -> Bool {
+  var vLhs = lhs, vRhs = rhs // sigh, needs var below
+  return memcmp(&vLhs, &vRhs, sizeof(T)) == 0
 }
 
 
@@ -96,7 +97,7 @@ extension String {
       if subString.hasPrefix(other) {
         return start
       }
-      start++ // why does this work?
+      start = start.successor()
     } while start != endIndex
     
     return nil

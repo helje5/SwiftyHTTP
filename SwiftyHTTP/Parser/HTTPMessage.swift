@@ -63,7 +63,7 @@ public class HTTPMessage {
             header.removeAtIndex(cursor)
             return
           }
-          cursor++
+          cursor += 1
         }
       }
     }

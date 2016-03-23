@@ -1,12 +1,16 @@
 //
 //  ActiveSocket.swift
-//  ARISockets
+//  SwiftSockets
 //
 //  Created by Helge Hess on 6/11/14.
-//  Copyright (c) 2014 Always Right Institute. All rights reserved.
+//  Copyright (c) 2014-2015 Always Right Institute. All rights reserved.
 //
 
+#if os(Linux)
+import Glibc
+#else
 import Darwin
+#endif
 import Dispatch
 
 public typealias ActiveSocketIPv4 = ActiveSocket<sockaddr_in>
@@ -83,7 +87,7 @@ public class ActiveSocket<T: SocketAddress>: Socket<T> {
                                  // though it should work right away?
   }
   */
-  public convenience init?(type: Int32 = SOCK_STREAM) {
+  public convenience init?(type: Int32 = sys_SOCK_STREAM) {
     // TODO: copy of Socket.init(type:), but required to compile. Not sure
     // what's going on with init inheritance here. Do I *have to* read the
     // manual???
@@ -127,7 +131,7 @@ public class ActiveSocket<T: SocketAddress>: Socket<T> {
       // Seen this crash - if close() is called from within the readCB?
       readCB = nil // break potential cycles
       if debugClose { debugPrint("   shutdown read channel ...") }
-      Darwin.shutdown(fd.fd, SHUT_RD);
+      sysShutdown(fd.fd, sys_SHUT_RD);
       
       didCloseRead = true
     }
@@ -147,7 +151,7 @@ public class ActiveSocket<T: SocketAddress>: Socket<T> {
   
   /* connect */
   
-  public func connect(address: T, onConnect: () -> Void) -> Bool {
+  public func connect(address: T, onConnect: ( ActiveSocket<T> ) -> Void) -> Bool {
     // FIXME: make connect() asynchronous via GCD
     
     guard !isConnected else {
@@ -163,7 +167,7 @@ public class ActiveSocket<T: SocketAddress>: Socket<T> {
     let lfd = fd.fd
     let rc = withUnsafePointer(&addr) { ptr -> Int32 in
       let bptr = UnsafePointer<sockaddr>(ptr) // cast
-      return Darwin.connect(lfd, bptr, socklen_t(addr.len)) //only returns block
+      return sysConnect(lfd, bptr, socklen_t(addr.len)) //only returns block
     }
     
     guard rc == 0 else {
@@ -172,7 +176,7 @@ public class ActiveSocket<T: SocketAddress>: Socket<T> {
     }
     
     remoteAddress = addr
-    onConnect()
+    onConnect(self)
     
     return true
   }
@@ -213,8 +217,19 @@ public class ActiveSocket<T: SocketAddress>: Socket<T> {
   }
 }
 
-
 extension ActiveSocket : OutputStreamType { // writing
+  
+  public func write(string: String) {
+    string.withCString { (cstr: UnsafePointer<Int8>) -> Void in
+      let len = Int(strlen(cstr))
+      if len > 0 {
+        self.asyncWrite(cstr, length: len)
+      }
+    }
+  }
+}
+
+public extension ActiveSocket { // writing
   
   // no let in extensions: let debugAsyncWrites = false
   var debugAsyncWrites : Bool { return false }
@@ -232,7 +247,7 @@ extension ActiveSocket : OutputStreamType { // writing
   }
   
   public func write(data: dispatch_data_t) {
-    sendCount++
+    sendCount += 1
     if debugAsyncWrites { debugPrint("async send[\(data)]") }
     
     // in here we capture self, which I think is right.
@@ -272,9 +287,13 @@ extension ActiveSocket : OutputStreamType { // writing
     
     // the default destructor is supposed to copy the data. Not good, but
     // handling ownership is going to be messy
-    guard let asyncData = dispatch_data_create(buffer,bufsize, queue,nil) else {
+#if os(Linux)
+    let asyncData = dispatch_data_create(buffer, bufsize, queue!, nil)
+#else /* os(Darwin) */ // TBD
+    guard let asyncData = dispatch_data_create(buffer, bufsize, queue!, nil) else {
       return false
     }
+#endif /* os(Darwin) */
     
     write(asyncData)
     return true
@@ -297,10 +316,15 @@ extension ActiveSocket : OutputStreamType { // writing
     
     // the default destructor is supposed to copy the data. Not good, but
     // handling ownership is going to be messy
-    guard let asyncData = dispatch_data_create(buffer,bufsize, queue,nil) else {
+#if os(Linux)
+    let asyncData = dispatch_data_create(buffer, bufsize, queue!, nil);
+#else /* os(Darwin) */
+    guard let asyncData = dispatch_data_create(buffer, bufsize,
+                            queue!, nil) else {
       return false
     }
-    
+#endif /* os(Darwin) */
+
     write(asyncData)
     return true
   }
@@ -315,19 +339,10 @@ extension ActiveSocket : OutputStreamType { // writing
     return writeCount
   }
   
-  public func write(string: String) {
-    string.withCString { (cstr: UnsafePointer<Int8>) -> Void in
-      let len = Int(strlen(cstr))
-      if len > 0 {
-        self.asyncWrite(cstr, length: len)
-      }
-    }
-  }
-  
 }
 
 
-extension ActiveSocket { // Reading
+public extension ActiveSocket { // Reading
   
   // Note: Swift doesn't allow the readBuffer in here.
   
@@ -345,7 +360,7 @@ extension ActiveSocket { // Reading
     
     // FIXME: If I just close the Terminal which hosts telnet this continues
     //        to read garbage from the server. Even with SIGPIPE off.
-    readCount = Darwin.read(fd.fd, readBufferPtr, bufsize)
+    readCount = sysRead(fd.fd, readBufferPtr, bufsize)
     guard readCount >= 0 else {
       readBufferPtr[0] = 0
       return ( readCount, bptr, errno )
@@ -384,7 +399,7 @@ extension ActiveSocket { // Reading
       DISPATCH_SOURCE_TYPE_READ,
       UInt(fd.fd), // is this going to bite us?
       0,
-      queue
+      queue!
     )
     guard readSource != nil else {
       print("Could not create dispatch source for socket \(self)")
@@ -400,14 +415,19 @@ extension ActiveSocket { // Reading
     }
     
     /* actually start listening ... */
+#if os(Linux)
+    // TBD: what is the better way?
+    dispatch_resume(unsafeBitCast(readSource!, dispatch_object_t.self))
+#else /* os(Darwin) */
     dispatch_resume(readSource!)
+#endif /* os(Darwin) */
     
     return true
   }
   
 }
 
-extension ActiveSocket { // ioctl
+public extension ActiveSocket { // ioctl
   
   var numberOfBytesAvailableForReading : Int? {
     return fd.numberOfBytesAvailableForReading

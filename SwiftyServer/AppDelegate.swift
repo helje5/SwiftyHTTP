@@ -26,7 +26,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     /* request counter middleware */
     httpd.use { _, _, _, next in
-      self.requestCounter++
+      self.requestCounter += 1
       next()
     }
     

@@ -115,7 +115,7 @@ public class HTTPCall : Equatable {
     
     var nextID = 0
     dispatch_sync(lockQueue) {
-      callCounter++
+      callCounter += 1
       nextID = callCounter // cannot use self.callID in here
     }
     self.callID = nextID
@@ -273,7 +273,7 @@ public class HTTPCall : Equatable {
     let socket = ActiveSocketIPv4()!
     
     // this callback setup is not quite right yet, we need to pass over errors
-    let ok = socket.connect(address) {
+    let ok = socket.connect(address) {_ in
       if self.debugOn {
         debugPrint("HC(\(self.callID)) connected to \(socket.remoteAddress)")
       }
