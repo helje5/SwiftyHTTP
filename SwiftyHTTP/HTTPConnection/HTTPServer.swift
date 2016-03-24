@@ -60,7 +60,7 @@ public class HTTPServer : HTTPConnectionPool {
     // using Self or Self? seems to crash the compiler
     
     socket = PassiveSocket(address: sockaddr_in(port: port))
-    if !socket.isValid {
+    guard socket.isValid else {
       log("could not create socket ...")
       assert(socket.isValid)
       return self

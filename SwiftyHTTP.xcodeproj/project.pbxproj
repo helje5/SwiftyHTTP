@@ -17,6 +17,7 @@
 		E848E9CF196302BD00F63423 /* HTTPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E848E9CA196302BD00F63423 /* HTTPServer.swift */; };
 		E848E9D0196302BD00F63423 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = E848E9CB196302BD00F63423 /* Connect.swift */; };
 		E848E9D2196302BD00F63423 /* HTTPConnectionPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = E848E9CD196302BD00F63423 /* HTTPConnectionPool.swift */; };
+		E84DE27D1B5FCF4D007884FC /* FileDescriptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E84DE27C1B5FCF4D007884FC /* FileDescriptor.swift */; };
 		E86F4A691961E708008FA186 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86F4A681961E708008FA186 /* main.swift */; };
 		E86F4A6B1961E708008FA186 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86F4A6A1961E708008FA186 /* AppDelegate.swift */; };
 		E86F4A6D1961E708008FA186 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E86F4A6C1961E708008FA186 /* Images.xcassets */; };
@@ -70,6 +71,7 @@
 		E848E9CA196302BD00F63423 /* HTTPServer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HTTPServer.swift; path = HTTPConnection/HTTPServer.swift; sourceTree = "<group>"; };
 		E848E9CB196302BD00F63423 /* Connect.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Connect.swift; path = HTTPConnection/Connect.swift; sourceTree = "<group>"; };
 		E848E9CD196302BD00F63423 /* HTTPConnectionPool.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HTTPConnectionPool.swift; path = HTTPConnection/HTTPConnectionPool.swift; sourceTree = "<group>"; };
+		E84DE27C1B5FCF4D007884FC /* FileDescriptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileDescriptor.swift; sourceTree = "<group>"; };
 		E86F4A641961E708008FA186 /* SwiftyClient.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftyClient.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E86F4A671961E708008FA186 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E86F4A681961E708008FA186 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
@@ -233,6 +235,7 @@
 				E8BEE1F1195B169F001499EE /* Socket.swift */,
 				E8BEE1F2195B169F001499EE /* SocketAddress.swift */,
 				E81DC1F91965A5D500BD826B /* DNS.swift */,
+				E84DE27C1B5FCF4D007884FC /* FileDescriptor.swift */,
 				E8BEE1F3195B169F001499EE /* UnixUtils.swift */,
 				E8BEE20C195C4363001499EE /* UnixBridge.c */,
 			);
@@ -344,7 +347,8 @@
 		E8BEE1BC195B152D001499EE /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0600;
+				LastSwiftUpdateCheck = 0700;
+				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "Always Right Institute";
 				TargetAttributes = {
 					E86F4A631961E708008FA186 = {
@@ -434,6 +438,7 @@
 				E8BEE20E195C4363001499EE /* UnixBridge.c in Sources */,
 				E8BEE1FE195B169F001499EE /* ActiveSocket.swift in Sources */,
 				E8D5E6E1196AAE250088F65E /* HTTPCall.swift in Sources */,
+				E84DE27D1B5FCF4D007884FC /* FileDescriptor.swift in Sources */,
 				E8BEE200195B169F001499EE /* Socket.swift in Sources */,
 				E8BEE201195B169F001499EE /* SocketAddress.swift in Sources */,
 				E83305A3195B7ABE00CCBDF5 /* HTTPResponse.swift in Sources */,
@@ -503,6 +508,7 @@
 				INFOPLIST_FILE = SwiftyClient/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				METAL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "de.alwaysrightinstitute.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -516,6 +522,7 @@
 				INFOPLIST_FILE = SwiftyClient/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				METAL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "de.alwaysrightinstitute.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -540,6 +547,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -614,6 +622,7 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				PRODUCT_BUNDLE_IDENTIFIER = "de.alwaysrightinstitute.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -635,6 +644,7 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				PRODUCT_BUNDLE_IDENTIFIER = "de.alwaysrightinstitute.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -656,6 +666,7 @@
 				INFOPLIST_FILE = SwiftyServer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				METAL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "de.alwaysrightinstitute.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -669,6 +680,7 @@
 				INFOPLIST_FILE = SwiftyServer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				METAL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "de.alwaysrightinstitute.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

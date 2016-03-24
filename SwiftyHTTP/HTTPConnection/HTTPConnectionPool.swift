@@ -11,13 +11,14 @@ import Dispatch
 public class HTTPConnectionPool {
   
   let lockQueue   = dispatch_get_main_queue()
-  var openSockets = Dictionary<Int32, HTTPConnection>(minimumCapacity: 8)
+  var openSockets =
+        Dictionary<FileDescriptor, HTTPConnection>(minimumCapacity: 8)
   
   func registerConnection(con: HTTPConnection) {
     // now we need to keep the socket around!!
     dispatch_async(lockQueue) {
       if con.socket.isValid {
-        self.openSockets[con.socket.fd!] = con
+        self.openSockets[con.socket.fd] = con
       
         con.onRequest  { [unowned self] in self.handleRequest ($0, $1)   }
            .onResponse { [unowned self] in self.handleResponse($0, $1)   }
@@ -26,7 +27,7 @@ public class HTTPConnectionPool {
     }
   }
   
-  func unregisterConnection(fd: Int32) {
+  func unregisterConnection(fd: FileDescriptor) {
     dispatch_async(lockQueue) {
       let rc = self.openSockets.removeValueForKey(fd)
       if rc != nil {
@@ -56,7 +57,7 @@ public class HTTPConnectionPool {
       cb(s)
     }
     else {
-      println(s)
+      print(s)
     }
   }
   public func log() {

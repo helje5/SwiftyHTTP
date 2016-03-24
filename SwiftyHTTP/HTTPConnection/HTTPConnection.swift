@@ -53,7 +53,7 @@ public class HTTPConnection {
     //        0 bytes, it should fail with an EWOULDBLOCK
     self.handleIncomingData(self.socket, expectedLength: 1)
     
-    if debugOn { println("HC: did init \(self)") }
+    if debugOn { debugPrint("HC: did init \(self)") }
   }
     
   
@@ -85,7 +85,7 @@ public class HTTPConnection {
   }
   */
   
-  public func onClose(cb: ((Int32) -> Void)?) -> Self {
+  public func onClose(cb: ((FileDescriptor) -> Void)?) -> Self {
     // FIXME: what if the socket was closed already? Need to check for isValid?
     socket.onClose(cb)
     return self
@@ -97,7 +97,7 @@ public class HTTPConnection {
   /* close the connection */
   
   func close(reason: String?) -> Self {
-    if debugOn { println("HC: closing \(self)") }
+    if debugOn { debugPrint("HC: closing \(self)") }
     socket.close() // this is calling master.unregister ...
     socket.onRead(nil)
     parser.resetEventHandlers()
@@ -118,9 +118,9 @@ public class HTTPConnection {
     // on a different thread.
     // Technically it shouldn't happen as we reset the read closure in the
     // socket close()? Go figure! ;-)
-    do {
+    repeat {
       let (count, block, errno) = socket.read()
-      if debugOn { println("HC: read \(count) \(errno)") }
+      if debugOn { debugPrint("HC: read \(count) \(errno)") }
       
       if count < 0 && errno == EWOULDBLOCK {
         break
@@ -166,7 +166,7 @@ extension HTTPConnection { /* send HTTP messages */
     }
     s += "\r\n"
     socket.write(s)
-    // println("Headers:\r\n \(s)")
+    // debugPrint("Headers:\r\n \(s)")
     return self
   }
   
@@ -184,7 +184,7 @@ extension HTTPConnection { /* send HTTP messages */
     let requestLine = "\(rq.method.method) \(rq.url) " +
                       "HTTP/\(rq.version.major).\(rq.version.minor)\r\n"
     
-    if debugOn { println("HC: sending request \(rq) \(self)") }
+    if debugOn { debugPrint("HC: sending request \(rq) \(self)") }
     
     socket.write(requestLine)
     sendHeaders(rq)
@@ -193,7 +193,7 @@ extension HTTPConnection { /* send HTTP messages */
       lcb()
     }
     
-    if debugOn { println("HC: did enqueue request \(rq) \(self)") }
+    if debugOn { debugPrint("HC: did enqueue request \(rq) \(self)") }
     return self
   }
   
@@ -204,7 +204,7 @@ extension HTTPConnection { /* send HTTP messages */
     let statusLine = "HTTP/\(res.version.major).\(res.version.minor)" +
                      " \(res.status.status) \(res.status.statusText)\r\n"
     
-    if debugOn { println("HC: sending response \(res) \(self)") }
+    if debugOn { debugPrint("HC: sending response \(res) \(self)") }
     socket.write(statusLine)
     
     sendHeaders(res)
@@ -213,14 +213,14 @@ extension HTTPConnection { /* send HTTP messages */
       lcb()
     }
     
-    if debugOn { println("HC: did enqueue response \(res) \(self)") }
+    if debugOn { debugPrint("HC: did enqueue response \(res) \(self)") }
     return self
   }
   
 }
 
 
-extension HTTPConnection : Printable {
+extension HTTPConnection : CustomStringConvertible {
   
   public var description : String {
     return "<HTTPConnection \(socket)>"

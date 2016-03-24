@@ -6,9 +6,20 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
-
-// class crashes compiler
-struct HTTPEventQueue<T> {
+/**
+ * HTTPEventQueue
+ *
+ * Usage:
+ *   func onRequest(cb: ((HTTPRequest, HTTPConnection) -> Void)?) -> Self {
+ *     requestQueue.on = cb
+ *     return self
+ *   }
+ *
+ * This object queues up all 'events' until a callback is registered. E.g. in
+ * the sample all HTTP requests until an onRequest handler is set. This way
+ * a connection can start up w/o being wired up fully.
+ */
+class HTTPEventQueue<T> {
   
   // unowned would be better, but this gives an init sequence issue?
   weak var connection : HTTPConnection!
@@ -33,7 +44,7 @@ struct HTTPEventQueue<T> {
     }
   }
 
-  mutating func emit(o: T) {
+  func emit(o: T) {
     // locking
     if let cb = on {
       cb(o, connection)

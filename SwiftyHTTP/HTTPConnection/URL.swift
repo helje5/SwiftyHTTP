@@ -42,13 +42,13 @@ public struct URL {
   }
   
   public var isEmpty : Bool {
-    if let s = scheme   { return false }
-    if let s = userInfo { return false }
-    if let s = host     { return false }
+    if let _ = scheme   { return false }
+    if let _ = userInfo { return false }
+    if let _ = host     { return false }
     // intentionally no port check, only in combination with host
-    if let s = path     { return false }
-    if let s = fragment { return false }
-    if let s = query    { return false }
+    if let _ = path     { return false }
+    if let _ = fragment { return false }
+    if let _ = query    { return false }
     return true
   }
   
@@ -61,13 +61,9 @@ public struct URL {
   }
   
   public var hostAndPort : String? {
-    if let h = host {
-      if let p = port {
-        return "\(h):\(p)"
-      }
-      return h
-    }
-    return nil
+    guard let h = host else { return nil }
+    guard let p = port else { return h   }
+    return "\(h):\(p)"
   }
   
   public var portOrDefault : Int? { // what's a nice name for this?
@@ -112,9 +108,7 @@ public extension URL { // String representation
     }
     
     if let v = scheme {
-      if host == nil {
-        return nil
-      }
+      guard host != nil else { return nil }
       
       us = "\(v)://"
       if let v = userInfo {
@@ -123,7 +117,7 @@ public extension URL { // String representation
       
       us += host!
       
-      if let v = port {
+      if let _ = port {
         us += ":\(port)"
       }
     }
@@ -168,21 +162,18 @@ public extension String {
 public extension URL {
   
   var pathComponents : [String]? {
-    if let escapedPC = escapedPathComponents {
-      return escapedPC.map { return $0.withoutPercentEscapes }
-    }
-    else {
-      return nil
-    }
+    guard let escapedPC = escapedPathComponents else { return nil }
+    return escapedPC.map { return $0.withoutPercentEscapes }
   }
   
   var escapedPathComponents : [String]? {
-    if path == .None { return nil }
-    let uPath = path!
-    if uPath == ""   { return nil }
+    guard path != .None    else { return nil }
+    guard let uPath = path else { return nil }
+    guard uPath != ""      else { return nil }
     
     let isAbsolute = uPath.hasPrefix("/")
-    let pathComps  = split(uPath, allowEmptySlices: true) { $0 == "/" }
+    let pathComps  = uPath.characters.split("/", allowEmptySlices: true)
+                                     .map { String($0) }
     
     /* Note: we cannot just return a leading slash for absolute pathes as we
      *       wouldn't be able to distinguish between an absolute path and a
@@ -190,7 +181,7 @@ public extension URL {
      *   So: Absolute pathes instead start with an empty string.
      */
     var gotAbsolute = isAbsolute ? false : true
-    return filter(pathComps) {
+    return pathComps.filter {
       if $0 != "" || !gotAbsolute {
         if !gotAbsolute { gotAbsolute = true }
         return true
@@ -239,7 +230,7 @@ public extension URL { // /etc/services
   
 }
 
-extension URL : Printable {
+extension URL : CustomStringConvertible {
   
   public var description : String {
     if let s = toString() {
@@ -287,23 +278,23 @@ func parse_url(us: String) -> URL {
     s = s[idx + 3..<s.endIndex]
     
     // cut off path
-    if let idx = Swift.find(s, "/") {
+    if let idx = s.characters.indexOf("/") {
       ps = s[idx..<s.endIndex] // path part
       s  = s[s.startIndex..<idx]
     }
     
     // s: joe:pwd@host:port
-    if let idx = Swift.find(s, "@") {
+    if let idx = s.characters.indexOf("@") {
       url.userInfo = s[s.startIndex..<idx]
       s = s[idx + 1..<s.endIndex]
     }
     
     // s: host:port
-    if let idx = Swift.find(s, ":") {
+    if let idx = s.characters.indexOf(":") {
       url.host = s[s.startIndex..<idx]
       let portS = s[idx + 1..<s.endIndex]
-      let portO = portS.toInt()
-      println("ports \(portS) is \(portO)")
+      let portO = Int(portS)
+      debugPrint("ports \(portS) is \(portO)")
       if let port = portO {
         url.port = port
       }
@@ -318,12 +309,12 @@ func parse_url(us: String) -> URL {
   }
   
   if ps != "" {
-    if let idx = Swift.find(ps, "?") {
+    if let idx = ps.characters.indexOf("?") {
       url.query = ps[idx + 1..<ps.endIndex]
       ps = ps[ps.startIndex..<idx]
     }
     
-    if let idx = Swift.find(ps, "#") {
+    if let idx = ps.characters.indexOf("#") {
       url.fragment = ps[idx + 1..<ps.endIndex]
       ps = ps[ps.startIndex..<idx]
     }
@@ -338,7 +329,7 @@ func parse_url(us: String) -> URL {
 
 func percentUnescape(src: String) -> String {
   // Lame implementation. Likely really slow.
-  if src == "" { return "" }
+  guard src != "" else { return "" }
   
   var dest = ""
   
@@ -347,14 +338,14 @@ func percentUnescape(src: String) -> String {
   
   while cursor != endIdx {
     if src[cursor] == "%" { // %40 = @
-      let v0idx = cursor.successor()
-      if v0idx == endIdx {
+      let   v0idx = cursor.successor()
+      guard v0idx != endIdx else {
         dest += src[cursor..<endIdx]
         break
       }
       
-      let v1idx = v0idx.successor()
-      if v1idx == endIdx {
+      let   v1idx = v0idx.successor()
+      guard v1idx != endIdx else {
         dest += src[cursor..<endIdx]
         break
       }
@@ -362,7 +353,7 @@ func percentUnescape(src: String) -> String {
       let hex = src[v0idx...v1idx]
       
       if !hex.isHexDigit {
-        println("Invalid percent escapes: \(src)")
+        debugPrint("Invalid percent escapes: \(src)")
         dest += src[cursor...v1idx]
       }
       else {

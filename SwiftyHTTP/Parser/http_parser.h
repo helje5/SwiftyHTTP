@@ -26,11 +26,12 @@ extern "C" {
 
 /* Also update SONAME in the Makefile whenever you change these. */
 #define HTTP_PARSER_VERSION_MAJOR 2
-#define HTTP_PARSER_VERSION_MINOR 3
+#define HTTP_PARSER_VERSION_MINOR 6
 #define HTTP_PARSER_VERSION_PATCH 0
 
 #include <sys/types.h>
-#if defined(_WIN32) && !defined(__MINGW32__) && (!defined(_MSC_VER) || _MSC_VER<1600)
+#if defined(_WIN32) && !defined(__MINGW32__) && \
+  (!defined(_MSC_VER) || _MSC_VER<1600) && !defined(__WINE__)
 #include <BaseTsd.h>
 #include <stddef.h>
 typedef __int8 int8_t;
@@ -64,6 +65,7 @@ typedef unsigned __int64 uint64_t;
 #endif
 
 typedef struct http_parser http_parser;
+typedef struct http_parser_settings http_parser_settings;
 
 
 /* Callbacks should return non-zero to indicate an error. The parser will
@@ -75,12 +77,12 @@ typedef struct http_parser http_parser;
  * HEAD request which may contain 'Content-Length' or 'Transfer-Encoding:
  * chunked' headers that indicate the presence of a body.
  *
- * http_data_cb does not return data chunks. It will be call arbitrarally
+ * http_data_cb does not return data chunks. It will be called arbitrarily
  * many times for each string. E.G. you might get 10 callbacks for "on_url"
  * each providing just a few characters more data.
  */
-typedef int (^http_data_cb) (http_parser*, const char *at, size_t length);
-typedef int (^http_cb) (http_parser*);
+typedef int (*http_data_cb) (http_parser*, const char *at, size_t length);
+typedef int (*http_cb) (http_parser*);
 
 
 /* Request Methods */
@@ -94,7 +96,7 @@ typedef int (^http_cb) (http_parser*);
   XX(5,  CONNECT,     CONNECT)      \
   XX(6,  OPTIONS,     OPTIONS)      \
   XX(7,  TRACE,       TRACE)        \
-  /* webdav */                      \
+  /* WebDAV */                      \
   XX(8,  COPY,        COPY)         \
   XX(9,  LOCK,        LOCK)         \
   XX(10, MKCOL,       MKCOL)        \
@@ -103,21 +105,28 @@ typedef int (^http_cb) (http_parser*);
   XX(13, PROPPATCH,   PROPPATCH)    \
   XX(14, SEARCH,      SEARCH)       \
   XX(15, UNLOCK,      UNLOCK)       \
+  XX(16, BIND,        BIND)         \
+  XX(17, REBIND,      REBIND)       \
+  XX(18, UNBIND,      UNBIND)       \
+  XX(19, ACL,         ACL)          \
   /* subversion */                  \
-  XX(16, REPORT,      REPORT)       \
-  XX(17, MKACTIVITY,  MKACTIVITY)   \
-  XX(18, CHECKOUT,    CHECKOUT)     \
-  XX(19, MERGE,       MERGE)        \
+  XX(20, REPORT,      REPORT)       \
+  XX(21, MKACTIVITY,  MKACTIVITY)   \
+  XX(22, CHECKOUT,    CHECKOUT)     \
+  XX(23, MERGE,       MERGE)        \
   /* upnp */                        \
-  XX(20, MSEARCH,     M-SEARCH)     \
-  XX(21, NOTIFY,      NOTIFY)       \
-  XX(22, SUBSCRIBE,   SUBSCRIBE)    \
-  XX(23, UNSUBSCRIBE, UNSUBSCRIBE)  \
+  XX(24, MSEARCH,     M-SEARCH)     \
+  XX(25, NOTIFY,      NOTIFY)       \
+  XX(26, SUBSCRIBE,   SUBSCRIBE)    \
+  XX(27, UNSUBSCRIBE, UNSUBSCRIBE)  \
   /* RFC-5789 */                    \
-  XX(24, PATCH,       PATCH)        \
-  XX(25, PURGE,       PURGE)        \
+  XX(28, PATCH,       PATCH)        \
+  XX(29, PURGE,       PURGE)        \
   /* CalDAV */                      \
-  XX(26, MKCALENDAR,  MKCALENDAR)   \
+  XX(30, MKCALENDAR,  MKCALENDAR)   \
+  /* RFC-2068, section 19.6.1.2 */  \
+  XX(31, LINK,        LINK)         \
+  XX(32, UNLINK,      UNLINK)       \
 
 enum http_method
   {
@@ -135,14 +144,15 @@ enum flags
   { F_CHUNKED               = 1 << 0
   , F_CONNECTION_KEEP_ALIVE = 1 << 1
   , F_CONNECTION_CLOSE      = 1 << 2
-  , F_TRAILING              = 1 << 3
-  , F_UPGRADE               = 1 << 4
-  , F_SKIPBODY              = 1 << 5
+  , F_CONNECTION_UPGRADE    = 1 << 3
+  , F_TRAILING              = 1 << 4
+  , F_UPGRADE               = 1 << 5
+  , F_SKIPBODY              = 1 << 6
   };
 
 
 /* Map for errno-related constants
- * 
+ *
  * The provided argument should be a macro that takes 2 arguments.
  */
 #define HTTP_ERRNO_MAP(XX)                                           \
@@ -158,6 +168,8 @@ enum flags
   XX(CB_body, "the on_body callback failed")                         \
   XX(CB_message_complete, "the on_message_complete callback failed") \
   XX(CB_status, "the on_status callback failed")                     \
+  XX(CB_chunk_header, "the on_chunk_header callback failed")         \
+  XX(CB_chunk_complete, "the on_chunk_complete callback failed")     \
                                                                      \
   /* Parsing-related errors */                                       \
   XX(INVALID_EOF_STATE, "stream ended at an unexpected time")        \
@@ -198,32 +210,14 @@ enum http_errno {
 /* Get an http_errno value from an http_parser */
 #define HTTP_PARSER_ERRNO(p)            ((enum http_errno) (p)->http_errno)
 
-// hh change: made anonymous
-typedef struct http_parser_settings http_parser_settings;
-extern void http_parser_set_on_message_begin   (http_parser *, http_cb);
-extern void http_parser_set_on_url             (http_parser *, http_data_cb);
-extern void http_parser_set_on_status          (http_parser *, http_data_cb);
-extern void http_parser_set_on_header_field    (http_parser *, http_data_cb);
-extern void http_parser_set_on_header_value    (http_parser *, http_data_cb);
-extern void http_parser_set_on_headers_complete(http_parser *, http_cb);
-extern void http_parser_set_on_body            (http_parser *, http_data_cb);
-extern void http_parser_set_on_message_complete(http_parser *, http_cb);
- 
+
 struct http_parser {
   /** PRIVATE **/
-#if HH_SWIFT_SUPPORTS_BITSETS
   unsigned int type : 2;         /* enum http_parser_type */
-  unsigned int flags : 6;        /* F_* values from 'flags' enum; semi-public */
-  unsigned int state : 8;        /* enum state from http_parser.c */
+  unsigned int flags : 7;        /* F_* values from 'flags' enum; semi-public */
+  unsigned int state : 7;        /* enum state from http_parser.c */
   unsigned int header_state : 8; /* enum header_state from http_parser.c */
   unsigned int index : 8;        /* index into current matcher */
-#else
-  unsigned char type;         /* enum http_parser_type */
-  unsigned char flags;        /* F_* values from 'flags' enum; semi-public */
-  unsigned char state;        /* enum state from http_parser.c */
-  unsigned char header_state; /* enum header_state from http_parser.c */
-  unsigned char index;        /* index into current matcher */
-#endif
 
   uint32_t nread;          /* # bytes read in various scenarios */
   uint64_t content_length; /* # bytes in body (0 if no Content-Length header) */
@@ -231,15 +225,9 @@ struct http_parser {
   /** READ-ONLY **/
   unsigned short http_major;
   unsigned short http_minor;
-#if HH_SWIFT_SUPPORTS_BITSETS
   unsigned int status_code : 16; /* responses only */
   unsigned int method : 8;       /* requests only */
   unsigned int http_errno : 7;
-#else
-  unsigned short  status_code; /* responses only */
-  unsigned char   method;      /* requests only */
-  enum http_errno http_errno;
-#endif
 
   /* 1 = Upgrade header was present and the parser has exited because of that.
    * 0 = No upgrade header present.
@@ -247,11 +235,26 @@ struct http_parser {
    * error checking.
    */
   unsigned int upgrade : 1;
-  
-  http_parser_settings *cb;
-  
+
   /** PUBLIC **/
   void *data; /* A pointer to get hook to the "connection" or "socket" object */
+};
+
+
+struct http_parser_settings {
+  http_cb      on_message_begin;
+  http_data_cb on_url;
+  http_data_cb on_status;
+  http_data_cb on_header_field;
+  http_data_cb on_header_value;
+  http_cb      on_headers_complete;
+  http_data_cb on_body;
+  http_cb      on_message_complete;
+  /* When on_chunk_header is called, the current chunk length is stored
+   * in parser->content_length.
+   */
+  http_cb      on_chunk_header;
+  http_cb      on_chunk_complete;
 };
 
 
@@ -293,15 +296,22 @@ struct http_parser_url {
  *   unsigned major = (version >> 16) & 255;
  *   unsigned minor = (version >> 8) & 255;
  *   unsigned patch = version & 255;
- *   printf("http_parser v%u.%u.%u\n", major, minor, version);
+ *   printf("http_parser v%u.%u.%u\n", major, minor, patch);
  */
 unsigned long http_parser_version(void);
 
 void http_parser_init(http_parser *parser, enum http_parser_type type);
-void http_parser_free(http_parser *parser);
 
 
+/* Initialize http_parser_settings members to 0
+ */
+void http_parser_settings_init(http_parser_settings *settings);
+
+
+/* Executes the parser. Returns number of parsed bytes. Sets
+ * `parser->http_errno` on error. */
 size_t http_parser_execute(http_parser *parser,
+                           const http_parser_settings *settings,
                            const char *data,
                            size_t len);
 
@@ -322,6 +332,9 @@ const char *http_errno_name(enum http_errno err);
 
 /* Return a string description of the given error */
 const char *http_errno_description(enum http_errno err);
+
+/* Initialize all http_parser_url members to 0 */
+void http_parser_url_init(struct http_parser_url *u);
 
 /* Parse a URL; return nonzero on failure */
 int http_parser_parse_url(const char *buf, size_t buflen,

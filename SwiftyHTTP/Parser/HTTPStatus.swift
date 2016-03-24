@@ -226,7 +226,7 @@ public extension HTTPStatus {
   
 }
 
-extension HTTPStatus : Printable {
+extension HTTPStatus : CustomStringConvertible {
   
   public var description: String {
     return "\(status) \(statusText)"

@@ -8,19 +8,19 @@
 
 import Darwin
 
-// This allows you to do: str[str.startIndex..idx+4]
+// This allows you to do: str[str.startIndex..idx+4] (TBD: still req with S2?)
 public func +<T: ForwardIndexType>(idx: T, distance: T.Distance) -> T {
-  return advance(idx, distance)
+  return idx.advancedBy(distance)
 }
 public func +<T: ForwardIndexType>(distance: T.Distance, idx: T) -> T {
-  return advance(idx, distance)
+  return idx.advancedBy(distance)
 }
 
 public func -<T:BidirectionalIndexType where T.Distance : SignedIntegerType>
   (idx: T, distance: T.Distance) -> T
 {
   var cursor = idx
-  for i in 0..<distance {
+  for _ in 0..<distance {
     cursor = cursor.predecessor()
   }
   return cursor
@@ -29,8 +29,9 @@ public func -<T:BidirectionalIndexType where T.Distance : SignedIntegerType>
 
 // Hack to compare values if we don't have access to the members of the struct,
 // eg http_errno in v0.0.4
-public func isByteEqual<T>(var lhs: T, var rhs: T) -> Bool {
-  return memcmp(&lhs, &rhs, sizeof(T)) == 0
+public func isByteEqual<T>(lhs: T, rhs: T) -> Bool {
+  var vLhs = lhs, vRhs = rhs // sigh, needs var below
+  return memcmp(&vLhs, &vRhs, sizeof(T)) == 0
 }
 
 
@@ -43,12 +44,12 @@ public extension String {
   static func fromCString
     (cs: UnsafePointer<CChar>, length: Int!) -> String?
   {
-    if length == .None { // no length given, use \0 standard variant
+    guard length != .None else { // no length given, use \0 standard variant
       return String.fromCString(cs)
     }
     
     let buflen = length + 1
-    var buf    = UnsafeMutablePointer<CChar>.alloc(buflen)
+    let buf    = UnsafeMutablePointer<CChar>.alloc(buflen)
     memcpy(buf, cs, length)
     buf[length] = 0 // zero terminate
     let s = String.fromCString(buf)
@@ -61,7 +62,7 @@ public extension String {
     // hh: lame
     // convert from [UInt8] to [CChar] CString to String
     // FIXME: return Optional
-    if data.count == 0 {
+    guard data.count > 0 else {
       return ""
     }
     
@@ -91,12 +92,12 @@ extension String {
     // FIXME: make this a generic
     var start = startIndex
     
-    do {
-      var subString = self[start..<endIndex]
+    repeat {
+      let subString = self[start..<endIndex]
       if subString.hasPrefix(other) {
         return start
       }
-      start++ // why does this work?
+      start = start.successor()
     } while start != endIndex
     
     return nil
@@ -149,20 +150,10 @@ extension Character {
 
 extension String {
   
-  var lowercaseString : String {
-    // HACK. I think there is no proper way to do this in v0.0.4 w/o resorting
-    //       to Cocoa?
-    return reduce(self, "", { $0 + String($1.asciiLower) })
-  }
-
-}
-
-extension String {
-  
   var isHexDigit : Bool {
     if self == "" { return false }
     
-    for c in self {
+    for c in self.characters {
       if isxdigit(Int32(c.unicodeScalarCodePoint)) == 0 {
         return false
       }
