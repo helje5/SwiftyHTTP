@@ -61,7 +61,7 @@ GET("http://www.apple.com/")
 
 ###Targets
 
-Updated to use Swift v0.2.6 (aka Xcode 7b6).
+Updated to use Swift v0.2.2 (aka Xcode 7.3).
 
 The project includes three targets:
 - SwiftyHTTP
@@ -81,7 +81,7 @@ A framework containing the HTTP classes and relevant extensions. It has a few
 
 #####Foundation
 
-This has just the 'RawByteBuffer' class. Which is kinda like a RawByte array.
+This has just the 'RawByteBuffer' class. Which is kinda like a UInt8 array.
 I bet there are better ways to implement this! Please suggest some! :-)
 
 Also a few - highly inefficient - extensions to convert between String's and
@@ -215,6 +215,11 @@ companions - it gives you plenty of extra features you want to have for realz.
     - [ ] C function pointers
     - [x] debugPrint
     - [x] lowercaseString
+  - [x] #if os(Linux)
+  - [ ] #if swift(>=2.2)
+- [ ] Swift Package Manager
+  - [ ] GNUmakefile support
+- [ ] Linux support
 
 ###Why?!
 
