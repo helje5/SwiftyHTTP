@@ -41,9 +41,7 @@ public func isByteEqual<T>(lhs: T, rhs: T) -> Bool {
 
 public extension String {
   
-  static func fromCString
-    (cs: UnsafePointer<CChar>, length: Int!) -> String?
-  {
+  static func fromCString(cs: UnsafePointer<CChar>, length: Int!) -> String? {
     guard length != .None else { // no length given, use \0 standard variant
       return String.fromCString(cs)
     }
