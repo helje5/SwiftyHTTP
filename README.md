@@ -1,6 +1,10 @@
 SwiftyHTTP
 ==========
 
+Note: I'm probably not going to update this any further - 
+If you need a Swift networking toolset for the server side,
+consider: [**Noze.io**](http://noze.io/).
+
 A simple GCD based HTTP library for Swift. This project is 'pure' Swift/C,
 it does not use any bridged Objective-C classes.
 
