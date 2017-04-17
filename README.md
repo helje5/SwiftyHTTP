@@ -16,7 +16,7 @@ project. In most real world Swift apps you have access to Cocoa, use it.
 project. Any suggestions on how to improve the code are welcome. I expect
 lots and lots :-)
 
-###First things first: Samples
+### First things first: Samples
 
 Server:
 ```Swift
@@ -63,7 +63,7 @@ GET("http://www.apple.com/")
 ```
 
 
-###Targets
+### Targets
 
 Updated to use Swift v0.2.2 (aka Xcode 7.3).
 
@@ -74,7 +74,7 @@ The project includes three targets:
 
 I suggest you start out looking at the SwiftyServer.
 
-####SwiftyHTTP
+#### SwiftyHTTP
 
 A framework containing the HTTP classes and relevant extensions. It has a few
 'subprojects':
@@ -83,7 +83,7 @@ A framework containing the HTTP classes and relevant extensions. It has a few
 - Parser
 - HTTP
 
-#####Foundation
+##### Foundation
 
 This has just the 'RawByteBuffer' class. Which is kinda like a UInt8 array.
 I bet there are better ways to implement this! Please suggest some! :-)
@@ -93,12 +93,12 @@ CString's. I would love some suggestions on those as well.
 
 But remember: NSxyz is forbidden for this venture! :-)
 
-#####Sockets
+##### Sockets
 
 Just a local copy of the SwiftSockets project - I wish GIT had proper externals
 ;-) (https://github.com/AlwaysRightInstitute/SwiftSockets)
 
-#####Parser
+##### Parser
 
 This uses the C HTTP parser which is also used in Node.JS. It had to modified
 a tinsy bit - the Swift C bridge doesn't support bitfields. Those had to be
@@ -109,7 +109,7 @@ HTTPResponse, both subclasses of HTTPMessage.
 And enums for HTTP status values (like `💰Required`) and request methods (GET
 etc).
 
-#####HTTP
+##### HTTP
 
 HTTPConnectionPool is an abstract base class and manages open connections,
 either incoming or outgoing. The HTTPConnection sits on top of the SwiftSockets
@@ -128,7 +128,7 @@ Find a sample above.
 Finally there is a simple HTTP client. Doesn't do anything fancy. Do not - ever
 - use this. Use NSURLSession and companions.
 
-####SwiftyServer
+#### SwiftyServer
 
 Great httpd server - great in counting the requests it got sent. This is not
 actually serving any files ;-) Comes along as a Cocoa app. Compile it, run it,
@@ -136,7 +136,7 @@ then connect to it in the browser via http://127.0.0.1:1337/Awesome-O!
 
 ![](http://i.imgur.com/4ShGZXS.png)
 
-####SwiftyClient
+#### SwiftyClient
 
 Just a demo on how to do HTTP requests via SwiftyHTTP. No, it doesn't do JSON
 decoding and such.
@@ -146,7 +146,7 @@ companions - it gives you plenty of extra features you want to have for realz.
 
 ![](http://i.imgur.com/ny0PSKH.png)
 
-###Goals
+### Goals
 
 - [x] Max line length: 80 characters
 - [ ] Great error handling
@@ -225,7 +225,7 @@ companions - it gives you plenty of extra features you want to have for realz.
   - [ ] GNUmakefile support
 - [ ] Linux support
 
-###Why?!
+### Why?!
 
 This is an experiment to get acquainted with Swift. To check whether something
 real can be implemented in 'pure' Swift. Meaning, without using any Objective-C
@@ -233,7 +233,7 @@ Cocoa classes (no NS'ism).
 Or in other words: Can you use Swift without writing all the 'real' code in
 wrapped Objective-C? :-)
 
-###Contact
+### Contact
 
 [@helje5](http://twitter.com/helje5) | helge@alwaysrightinstitute.com
 
