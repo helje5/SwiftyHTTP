@@ -149,15 +149,10 @@ open class PassiveSocket<T: SocketAddress>: Socket<T> {
 
     // cannot convert value of type 'dispatch_source_t' (aka 'COpaquePointer')
     // to expected argument type 'dispatch_object_t'
-#if os(Linux)
-    // TBD: what is the better way?
-    dispatch_resume(unsafeBitCast(listenSource, dispatch_object_t.self))
-#else /* os(Darwin) */
-    listenSource.resume()
-#endif /* os(Darwin) */
+    listenSource?.resume()
     
     guard listen(backlog) else {
-      listenSource.cancel()
+      listenSource?.cancel()
       return false
     }
     

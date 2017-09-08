@@ -267,6 +267,10 @@ extension String {
   
 }
 
+private func index(string: String, c: Character) -> String.Index? {
+  return string.characters.index(of: c)
+}
+
 func parse_url(_ us: String) -> URL {
   // yes, yes, I know. Pleaze send me a proper version ;-)
   var url = URL()
@@ -275,26 +279,26 @@ func parse_url(_ us: String) -> URL {
   
   if let idx = s.strstr("://") {
     url.scheme = s[s.startIndex..<idx]
-    s = s[idx + 3..<s.endIndex]
+    s = s[s.index(idx, offsetBy:3)..<s.endIndex]
     
     // cut off path
-    if let idx = s.characters.index(of: "/") {
+    if let idx = index(string: s, c: "/") {
       ps = s[idx..<s.endIndex] // path part
       s  = s[s.startIndex..<idx]
     }
     
     // s: joe:pwd@host:port
-    if let idx = s.characters.index(of: "@") {
+    if let idx = index(string: s, c: "@") {
       url.userInfo = s[s.startIndex..<idx]
-      s = s[idx + 1..<s.endIndex]
+      s = s[s.index(after:idx)..<s.endIndex]
     }
     
     // s: host:port
-    if let idx = s.characters.index(of: ":") {
+    if let idx = index(string: s, c: ":") {
       url.host = s[s.startIndex..<idx]
-      let portS = s[idx + 1..<s.endIndex]
+      let portS = s[s.index(after:idx)..<s.endIndex]
       let portO = Int(portS)
-      debugPrint("ports \(portS) is \(portO)")
+      debugPrint("ports \(portS) is \(portO as Optional)")
       if let port = portO {
         url.port = port
       }
@@ -309,13 +313,13 @@ func parse_url(_ us: String) -> URL {
   }
   
   if ps != "" {
-    if let idx = ps.characters.index(of: "?") {
-      url.query = ps[idx + 1..<ps.endIndex]
+    if let idx = index(string: ps, c: "?") {
+      url.query = ps[ps.index(after:idx)..<ps.endIndex]
       ps = ps[ps.startIndex..<idx]
     }
     
-    if let idx = ps.characters.index(of: "#") {
-      url.fragment = ps[idx + 1..<ps.endIndex]
+    if let idx = index(string: ps, c: "#") {
+      url.fragment = ps[ps.index(after:idx)..<ps.endIndex]
       ps = ps[ps.startIndex..<idx]
     }
     
@@ -327,7 +331,7 @@ func parse_url(_ us: String) -> URL {
 }
 
 
-func percentUnescape(_ src: String) -> String {
+func percentUnescape(string src: String) -> String {
   // Lame implementation. Likely really slow.
   guard src != "" else { return "" }
   
@@ -338,36 +342,46 @@ func percentUnescape(_ src: String) -> String {
   
   while cursor != endIdx {
     if src[cursor] == "%" { // %40 = @
-      let   v0idx = src.index(after: cursor)
+      let   v0idx = src.index(after:cursor)
       guard v0idx != endIdx else {
         dest += src[cursor..<endIdx]
         break
       }
       
-      let   v1idx = src.index(after: v0idx)
+      let   v1idx = src.index(after:v0idx)
       guard v1idx != endIdx else {
         dest += src[cursor..<endIdx]
         break
       }
       
-      let hex = src[v0idx...v1idx]
+      // funny thing
+      let hex   = src[v0idx..<src.index(after:v1idx)]
+      var isHex = true
+      for c in hex.utf8 { // UTF-8 is fine because any UTF-8 is not hex
+        guard (c >= 48 && c <= 57) || (c >= 65 && c <= 70)
+           || (c >= 97 || c <= 102) else {
+          isHex = false
+          break
+        }
+      }
       
-      if !hex.isHexDigit {
+      if !isHex {
         debugPrint("Invalid percent escapes: \(src)")
-        dest += src[cursor...v1idx]
+        // funny thing
+        dest += src[cursor..<src.index(after:v1idx)]
       }
       else {
         let code = hex.withCString {
           ( cs : UnsafePointer<CChar> ) -> Int in
           return strtol(cs, nil, 16)
         }
-        dest.append(String(UnicodeScalar(code)))
+        dest.append(String(UnicodeScalar(code)!)) // TBD: !
       }
-      cursor = src.index(after: v1idx)
+      cursor = src.index(after:v1idx)
     }
     else {
       dest.append(src[cursor])
-      cursor =  src.index(after: cursor)
+      cursor = src.index(after:cursor)
     }
   }
   return dest

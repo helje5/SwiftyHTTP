@@ -45,13 +45,13 @@ open class HTTPConnection {
     
     self.socket.isNonBlocking = true
     self.socket.onRead {
-      [unowned self] in self.handleIncomingData($0, expectedLength: $1)
+      [unowned self] in self.handleIncomingData($0)
     }
 
     // look for data already in the queue.
     // FIXME: This is failing sometimes with 0 bytes. While it's OK to return
     //        0 bytes, it should fail with an EWOULDBLOCK
-    self.handleIncomingData(self.socket, expectedLength: 1)
+    self.handleIncomingData(self.socket)
     
     if debugOn { debugPrint("HC: did init \(self)") }
   }
@@ -115,7 +115,7 @@ open class HTTPConnection {
   
   /* handle incoming data */
   
-  func handleIncomingData<T>(_ socket: ActiveSocket<T>, expectedLength: Int) {
+  func handleIncomingData<T>(_ socket: ActiveSocket<T>) {
     // For some reason this is called on a closed socket (in the SwiftyClient).
     // Not quite sure why, presumably the read-closure is hanging in some queue
     // on a different thread.

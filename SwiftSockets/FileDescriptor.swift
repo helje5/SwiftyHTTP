@@ -12,10 +12,7 @@ import Glibc
 import Darwin
 #endif
 
-
-#if os(Linux) // OSX has this
-extension POSIXError : ErrorType {}
-#endif
+extension POSIXErrorCode : Error {}
 
 /// This essentially wraps the Integer representing a file descriptor in a
 /// struct for the whole reason to attach methods to it.
@@ -46,7 +43,7 @@ public struct FileDescriptor: ExpressibleByIntegerLiteral, ExpressibleByNilLiter
   {
     let fd = sysOpen(path, flags)
     guard fd >= 0 else {
-      return ( POSIXError(_nsError: sysErrno)!, nil )
+      return ( POSIXErrorCode(rawValue: sysErrno)!, nil )
     }
     
     return ( nil, FileDescriptor(fd) )
@@ -64,7 +61,7 @@ public struct FileDescriptor: ExpressibleByIntegerLiteral, ExpressibleByNilLiter
     
     let readCount = sysRead(fd, &buf, count)
     guard readCount >= 0 else {
-      return ( POSIXError(_nsError: sysErrno)!, nil )
+      return ( POSIXErrorCode(rawValue: sysErrno)!, nil )
     }
     
     if readCount == 0 { return ( nil, [] ) } // EOF
@@ -86,7 +83,7 @@ public struct FileDescriptor: ExpressibleByIntegerLiteral, ExpressibleByNilLiter
     let writeCount = sysWrite(fd, buffer, lCount)
     
     guard writeCount >= 0 else {
-      return ( POSIXError(_nsError: sysErrno)!, 0 )
+      return ( POSIXErrorCode(rawValue: sysErrno)!, 0 )
     }
     
     return ( nil, writeCount )

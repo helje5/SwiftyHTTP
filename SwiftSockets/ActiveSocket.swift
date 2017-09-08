@@ -53,7 +53,7 @@ open class ActiveSocket<T: SocketAddress>: Socket<T> {
   var sendCount      : Int                 = 0
   var closeRequested : Bool                = false
   var didCloseRead   : Bool                = false
-  var readCB         : ((ActiveSocket, Int) -> Void)? = nil
+  var readCB         : ((ActiveSocket) -> Void)? = nil
   
   // let the socket own the read buffer, what is the best buffer type?
   //var readBuffer     : [CChar] =  [CChar](count: 4096 + 2, repeatedValue: 42)
@@ -186,7 +186,7 @@ open class ActiveSocket<T: SocketAddress>: Socket<T> {
   /* read */
   
   @discardableResult
-  open func onRead(_ cb: ((ActiveSocket, Int) -> Void)?) -> Self {
+  open func onRead(_ cb: ((ActiveSocket) -> Void)?) -> Self {
     let hadCB    = readCB != nil
     let hasNewCB = cb != nil
     
@@ -401,10 +401,9 @@ public extension ActiveSocket { // Reading
     }
     
     // TBD: do we create a retain cycle here (self vs self.readSource)
-    readSource!.onEvent { [unowned self]
-      _, readCount in
+    readSource?.setEventHandler { [unowned self] in
       if let cb = self.readCB {
-        cb(self, Int(readCount))
+        cb(self)
       }
     }
     
