@@ -8,9 +8,9 @@
 
 import Darwin
 
-public class HTTPConnection {
+open class HTTPConnection {
   
-  public let socket : ActiveSocketIPv4
+  open let socket : ActiveSocketIPv4
   
   let debugOn = false
   let parser  : HTTPParser
@@ -59,11 +59,11 @@ public class HTTPConnection {
   
   /* callbacks */
   
-  public func onRequest(cb: ((HTTPRequest, HTTPConnection) -> Void)?) -> Self {
+  open func onRequest(_ cb: ((HTTPRequest, HTTPConnection) -> Void)?) -> Self {
     requestQueue.on = cb
     return self
   }
-  public func onResponse(cb: ((HTTPResponse, HTTPConnection) -> Void)?) -> Self {
+  open func onResponse(_ cb: ((HTTPResponse, HTTPConnection) -> Void)?) -> Self {
     responseQueue.on = cb
     return self
   }
@@ -85,25 +85,25 @@ public class HTTPConnection {
   }
   */
   
-  public func onClose(cb: ((FileDescriptor) -> Void)?) -> Self {
+  open func onClose(_ cb: ((FileDescriptor) -> Void)?) -> Self {
     // FIXME: what if the socket was closed already? Need to check for isValid?
     socket.onClose(cb)
     return self
   }
   
-  public var isValid : Bool { return self.socket.isValid }
+  open var isValid : Bool { return self.socket.isValid }
   
   
   /* close the connection */
   
-  func close(reason: String?) -> Self {
+  func close(_ reason: String?) -> Self {
     if debugOn { debugPrint("HC: closing \(self)") }
     socket.close() // this is calling master.unregister ...
     socket.onRead(nil)
     parser.resetEventHandlers()
     return self
   }
-  public func close() {
+  open func close() {
     // cannot assign default-arg to reason, makes it a kw arg
     close(nil)
   }
@@ -112,7 +112,7 @@ public class HTTPConnection {
   
   /* handle incoming data */
   
-  func handleIncomingData<T>(socket: ActiveSocket<T>, expectedLength: Int) {
+  func handleIncomingData<T>(_ socket: ActiveSocket<T>, expectedLength: Int) {
     // For some reason this is called on a closed socket (in the SwiftyClient).
     // Not quite sure why, presumably the read-closure is hanging in some queue
     // on a different thread.
@@ -133,7 +133,7 @@ public class HTTPConnection {
       
       /* feed HTTP parser */
       let rc = parser.write(block, count)
-      if rc != .OK {
+      if rc != .ok {
         close("Got parser error: \(rc)")
         return
       }
@@ -151,13 +151,13 @@ public class HTTPConnection {
 
 extension HTTPConnection { /* send HTTP messages */
   
-  func fixupHeaders(m: HTTPMessage) {
+  func fixupHeaders(_ m: HTTPMessage) {
     if let bodyBuffer = m.bodyAsByteArray {
       m["Content-Length"] = String(bodyBuffer.count)
     }
   }
   
-  func sendHeaders(m: HTTPMessage) -> Self {
+  func sendHeaders(_ m: HTTPMessage) -> Self {
     // this sends things as UTF-8 which is only right in the very lastest
     // HTTP revision (before HTTP headers have been Latin1)
     var s = ""
@@ -170,14 +170,14 @@ extension HTTPConnection { /* send HTTP messages */
     return self
   }
   
-  func sendBody(r: HTTPMessage) {
+  func sendBody(_ r: HTTPMessage) {
     let bodyBuffer = r.bodyAsByteArray
     if let bb = bodyBuffer {
       socket.asyncWrite(bb);
     }
   }
   
-  public func sendRequest(rq: HTTPRequest, cb: (()->Void)? = nil) -> Self {
+  public func sendRequest(_ rq: HTTPRequest, cb: (()->Void)? = nil) -> Self {
     // FIXME: it's inefficient to do that many writes
     fixupHeaders(rq)
     
@@ -197,7 +197,7 @@ extension HTTPConnection { /* send HTTP messages */
     return self
   }
   
-  public func sendResponse(res: HTTPResponse, cb: (()->Void)? = nil) -> Self {
+  public func sendResponse(_ res: HTTPResponse, cb: (()->Void)? = nil) -> Self {
     // FIXME: it's inefficient to do that many writes
     fixupHeaders(res)
     

@@ -15,10 +15,10 @@ import Dispatch
  *     .fail   { print("failed \($0): \($1)")  }
  *     .always { print("we are done here ...") }
  */
-public func GET(url: URL, headers: Dictionary<String, String> = [:],
+public func GET(_ url: URL, headers: Dictionary<String, String> = [:],
                 version: ( Int, Int ) = HTTPv11) -> HTTPCall
 {
-  func isURLOK(url: URL) -> Bool {
+  func isURLOK(_ url: URL) -> Bool {
     guard url.scheme != nil && url.scheme == "http" else {
       print("url has no http scheme?")
       return false
@@ -33,14 +33,14 @@ public func GET(url: URL, headers: Dictionary<String, String> = [:],
   
   /* check URL */
   guard isURLOK(url) else {
-    let rq   = HTTPRequest(method: HTTPMethod.GET, url: "/")
+    let rq   = HTTPRequest(method: HTTPMethod.get, url: "/")
     let call = HTTPCall(url: url, request: rq)
-    call.stopWithError(.URLMalformed)
+    call.stopWithError(.urlMalformed)
     return call
   }
   
   /* prepare request */
-  let request = HTTPRequest(method:  HTTPMethod.GET,
+  let request = HTTPRequest(method:  HTTPMethod.get,
                             url:     url.pathWithQueryAndFragment,
                             version: version, headers: headers)
   if let hp = url.hostAndPort {
@@ -57,7 +57,7 @@ public func GET(url: URL, headers: Dictionary<String, String> = [:],
   return call
 }
 
-public func GET(url: String, headers: Dictionary<String, String> = [:],
+public func GET(_ url: String, headers: Dictionary<String, String> = [:],
                 version: ( Int, Int ) = HTTPv11) -> HTTPCall
 {
   return GET(parse_url(url), headers: headers, version: version)
@@ -65,46 +65,46 @@ public func GET(url: String, headers: Dictionary<String, String> = [:],
 
 
 
-let dnsQueue     = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)
-let lockQueue    = dispatch_queue_create("com.ari.SwiftyHTTPCall", nil)!
+let dnsQueue     = DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.default)
+let lockQueue    = DispatchQueue(label: "com.ari.SwiftyHTTPCall", attributes: [])
 var runningCalls = [HTTPCall]()
 let userAgent    = "AlwaysRightInstitute-SwiftyHTTP/0.42 (Macintozh) (Roxx)"
 
 var callCounter  = 0
 
-public class HTTPCall : Equatable {
+open class HTTPCall : Equatable {
   
   public enum Error : CustomStringConvertible {
-    case DNSLookup, Connect, URLMalformed
+    case dnsLookup, connect, urlMalformed
     
     public var description : String {
       switch self {
-        case DNSLookup:    return "DNS lookup failed"
-        case Connect:      return "Could not connect to server"
-        case URLMalformed: return "Given URL cannot be processed"
+        case .dnsLookup:    return "DNS lookup failed"
+        case .connect:      return "Could not connect to server"
+        case .urlMalformed: return "Given URL cannot be processed"
       }
     }
   }
   
   enum State {
-    case Idle
-    case DNSLookup, Connect, Send, Receive
+    case idle
+    case dnsLookup, connect, send, receive
     // case Fail(Error) // didn't quite get this to work right
     // eg, this doesn't work anymore: assert(state == .Idle)?
-    case Fail
-    case Done // case Done(HTTPResponse)
+    case fail
+    case done // case Done(HTTPResponse)
     
     var isFinished : Bool {
-      return self == .Fail || self == .Done
+      return self == .fail || self == .done
     }
   }
   
-  public let url     : URL
-  public let request : HTTPRequest
+  open let url     : URL
+  open let request : HTTPRequest
   let debugOn        = true
   let callID         : Int
   
-  var state          : State  = .Idle
+  var state          : State  = .idle
   var error          : Error? = nil // FIXME: should be an associated value
   var connection     : HTTPConnection?
   var response       : HTTPResponse?
@@ -114,7 +114,7 @@ public class HTTPCall : Equatable {
     self.request = request
     
     var nextID = 0
-    dispatch_sync(lockQueue) {
+    lockQueue.sync {
       callCounter += 1
       nextID = callCounter // cannot use self.callID in here
     }
@@ -129,11 +129,11 @@ public class HTTPCall : Equatable {
   
   /* callbacks (check for incorrect locking) */
   
-  public func done(cb: ( HTTPRequest, HTTPResponse ) -> Void) -> Self {
-    if state == .Done {
+  open func done(_ cb: @escaping ( HTTPRequest, HTTPResponse ) -> Void) -> Self {
+    if state == .done {
       cb(request, response!)
     }
-    else if state == .Fail {
+    else if state == .fail {
       // noop
     }
     else {
@@ -141,11 +141,11 @@ public class HTTPCall : Equatable {
     }
     return self
   }
-  public func fail(cb: ( HTTPRequest, Error ) -> Void) -> Self {
-    if state == .Fail {
+  open func fail(_ cb: @escaping ( HTTPRequest, Error ) -> Void) -> Self {
+    if state == .fail {
       cb(request, error!)
     }
-    else if state == .Done {
+    else if state == .done {
       // noop
     }
     else {
@@ -153,7 +153,7 @@ public class HTTPCall : Equatable {
     }
     return self
   }
-  public func always(cb: ( HTTPRequest, HTTPResponse?, Error? ) -> Void) -> Self {
+  open func always(_ cb: @escaping ( HTTPRequest, HTTPResponse?, Error? ) -> Void) -> Self {
     if state.isFinished {
       cb(request, response, error)
     }
@@ -170,27 +170,27 @@ public class HTTPCall : Equatable {
   
   /* convenience callbacks with less arguments */
   
-  public func done(cb: ( HTTPResponse ) -> Void) -> Self {
+  open func done(_ cb: @escaping ( HTTPResponse ) -> Void) -> Self {
     return done { _, res in cb(res) }
   }
-  public func fail(cb: ( Error ) -> Void) -> Self {
+  open func fail(_ cb: @escaping ( Error ) -> Void) -> Self {
     return fail { _, res in cb(res) }
   }
-  public func always(cb: ( HTTPResponse?, Error? ) -> Void) -> Self {
+  open func always(_ cb: @escaping ( HTTPResponse?, Error? ) -> Void) -> Self {
     return always { _, res, error in cb(res, error) }
   }
-  public func always(cb: () -> Void) -> Self {
+  open func always(_ cb: @escaping () -> Void) -> Self {
     return always { _, _, _ in cb() }
   }
   
   
   /* main runner */
   
-  public func run() {
-    assert(state == State.Idle)
+  open func run() {
+    assert(state == State.idle)
     
     /* keep reference around, even if the caller does not */
-    dispatch_async(lockQueue) {
+    lockQueue.async {
       runningCalls.append(self)
     }
     
@@ -202,11 +202,11 @@ public class HTTPCall : Equatable {
     if self.debugOn {
       print("HC(\(callID)) unregister ...")
     }
-    dispatch_async(lockQueue) {
-      let idxOrNot = runningCalls.indexOf(self)
+    lockQueue.async {
+      let idxOrNot = runningCalls.index(of: self)
       // assert(idxOrNot != nil)
       if let idx = idxOrNot {
-        runningCalls.removeAtIndex(idx)
+        runningCalls.remove(at: idx)
       }
       else {
         print("HC(\(self.callID)) ERROR: did not find call \(self)")
@@ -214,14 +214,14 @@ public class HTTPCall : Equatable {
     }
   }
   
-  func stopWithError(error: Error) {
+  func stopWithError(_ error: Error) {
     if self.debugOn {
       print("HC(\(callID)) stop on error \(self.error)")
     }
     
     // would like: state = .Fail(error)
     self.error = error
-    self.state = .Fail
+    self.state = .fail
     
     if let cb = failCB {
       cb(request, error)
@@ -244,10 +244,10 @@ public class HTTPCall : Equatable {
   /* sub-operations */
   
   func doLookup() {
-    assert(state == .Idle)
-    state = .DNSLookup
+    assert(state == .idle)
+    state = .dnsLookup
     
-    dispatch_async(dnsQueue) { () -> Void in
+    dnsQueue.async { () -> Void in
       gethoztbyname(self.url.host!, flags: AI_CANONNAME) {
         ( name, _, address : sockaddr_in? ) -> Void in
         if address != nil {
@@ -259,15 +259,15 @@ public class HTTPCall : Equatable {
           self.doConnect(addr)
         }
         else {
-          self.stopWithError(.DNSLookup)
+          self.stopWithError(.dnsLookup)
         }
       }
     }
   }
   
-  func doConnect(address: sockaddr_in) {
-    assert(state == .DNSLookup)
-    state = .Connect
+  func doConnect(_ address: sockaddr_in) {
+    assert(state == .dnsLookup)
+    state = .connect
     
     // FIXME: keep pool
     let socket = ActiveSocketIPv4()!
@@ -283,11 +283,11 @@ public class HTTPCall : Equatable {
         .onClose(self.handleClose)
       
       /* send HTTP request */
-      self.state = .Send
+      self.state = .send
       
       self.connection!.sendRequest(self.request) {
         // TBD: is the timing of this quite right?
-        self.state = .Receive
+        self.state = .receive
         if self.debugOn {
           debugPrint("HC(\(self.callID)) did send request \(self.request)")
         }
@@ -298,16 +298,16 @@ public class HTTPCall : Equatable {
     }
     
     if !ok {
-      stopWithError(.Connect)
+      stopWithError(.connect)
     }
   }
   
-  func handleResponse(res: HTTPResponse, _ con: HTTPConnection) {
+  func handleResponse(_ res: HTTPResponse, _ con: HTTPConnection) {
     if self.debugOn {
       print("HC(\(callID)) got response \(res): \(con)")
     }
     
-    self.state = .Done
+    self.state = .done
     
     if let cb = successCB {
       cb(request, res)
@@ -328,7 +328,7 @@ public class HTTPCall : Equatable {
     }
   }
   
-  func handleClose(fd: FileDescriptor) {
+  func handleClose(_ fd: FileDescriptor) {
     if self.debugOn {
       print("HC(\(callID)) close \(fd)")
     }

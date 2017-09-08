@@ -6,9 +6,9 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
-public class HTTPResponse : HTTPMessage {
+open class HTTPResponse : HTTPMessage {
   
-  public var status : HTTPStatus
+  open var status : HTTPStatus
   
   public init(status: HTTPStatus, version: ( Int, Int ) = HTTPv11,
               headers: Dictionary<String, String> = [:] )

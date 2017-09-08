@@ -8,15 +8,15 @@
 
 import Dispatch
 
-public class HTTPConnectionPool {
+open class HTTPConnectionPool {
   
-  let lockQueue   = dispatch_get_main_queue()
+  let lockQueue   = DispatchQueue.main
   var openSockets =
         Dictionary<FileDescriptor, HTTPConnection>(minimumCapacity: 8)
   
-  func registerConnection(con: HTTPConnection) {
+  func registerConnection(_ con: HTTPConnection) {
     // now we need to keep the socket around!!
-    dispatch_async(lockQueue) {
+    lockQueue.async {
       if con.socket.isValid {
         self.openSockets[con.socket.fd] = con
       
@@ -27,9 +27,9 @@ public class HTTPConnectionPool {
     }
   }
   
-  func unregisterConnection(fd: FileDescriptor) {
-    dispatch_async(lockQueue) {
-      let rc = self.openSockets.removeValueForKey(fd)
+  func unregisterConnection(_ fd: FileDescriptor) {
+    lockQueue.async {
+      let rc = self.openSockets.removeValue(forKey: fd)
       if rc != nil {
         self.log("closed socket \(fd).")
         self.log("-----")
@@ -40,10 +40,10 @@ public class HTTPConnectionPool {
   
   /* overrides for subclasses */
   
-  func handleRequest(request: HTTPRequest, _ con: HTTPConnection) {
+  func handleRequest(_ request: HTTPRequest, _ con: HTTPConnection) {
     log("Subclass should handle request: \(request)")
   }
-  func handleResponse(response: HTTPResponse, _ con: HTTPConnection) {
+  func handleResponse(_ response: HTTPResponse, _ con: HTTPConnection) {
     log("Subclass should handle response: \(response)")
   }
 
@@ -52,7 +52,7 @@ public class HTTPConnectionPool {
 
   var logger : (( String ) -> Void)? = nil
   
-  public func log(s: String) {
+  open func log(_ s: String) {
     if let cb = logger {
       cb(s)
     }
@@ -60,12 +60,12 @@ public class HTTPConnectionPool {
       print(s)
     }
   }
-  public func log() {
+  open func log() {
      // if I do (_ s: String = "") the compiler crashes
     log("")
   }
 
-  public func onLog(cb: (String) -> Void) -> Self {
+  open func onLog(_ cb: @escaping (String) -> Void) -> Self {
     logger = cb
     return self
   }

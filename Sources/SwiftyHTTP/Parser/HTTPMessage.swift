@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Always Right Institute. All rights reserved.
 //
 
-public class HTTPMessage {
+open class HTTPMessage {
   
   class HeaderLine { // a class, so we work with references, not copies?
     let name:   String
@@ -15,7 +15,7 @@ public class HTTPMessage {
     
     init(_ name: String, _ value: String) {
       self.name   = name
-      self.lcName = name.lowercaseString
+      self.lcName = name.lowercased()
       self.value  = value
     }
   }
@@ -31,11 +31,11 @@ public class HTTPMessage {
     }
   }
   
-  public subscript(key: String?) -> String? {
+  open subscript(key: String?) -> String? {
     get {
       guard let lKey = key else { return nil }
       
-      let lcName = lKey.lowercaseString
+      let lcName = lKey.lowercased()
       for line in header {
         if line.lcName == lcName {
           return line.value
@@ -46,7 +46,7 @@ public class HTTPMessage {
     set { // Note: no multivalue-append, which is sometimes useful
       guard let lKey = key else { return }
       
-      let lcName = lKey.lowercaseString
+      let lcName = lKey.lowercased()
       if let v = newValue {
         for line in header {
           if line.lcName == lcName {
@@ -60,7 +60,7 @@ public class HTTPMessage {
         var cursor = header.startIndex
         while cursor != header.endIndex {
           if header[cursor].lcName == lcName {
-            header.removeAtIndex(cursor)
+            header.remove(at: cursor)
             return
           }
           cursor += 1
@@ -69,7 +69,7 @@ public class HTTPMessage {
     }
   }
   
-  public var headers : Dictionary<String, String> {
+  open var headers : Dictionary<String, String> {
     var headers = Dictionary<String, String>()
     for line in header {
       headers[line.name] = line.value
@@ -80,11 +80,11 @@ public class HTTPMessage {
   
   /* body handling */
   
-  public var hasBody : Bool {
+  open var hasBody : Bool {
     return _byteBodyCache != nil || _stringBodyCache != nil
   }
   
-  public var bodyAsByteArray : Array<UInt8>? {
+  open var bodyAsByteArray : Array<UInt8>? {
     get {
       if _byteBodyCache != nil {
         return _byteBodyCache
@@ -103,7 +103,7 @@ public class HTTPMessage {
       _stringBodyCache = nil
     }
   }
-  public var bodyAsString : String? {
+  open var bodyAsString : String? {
     get {
       if _stringBodyCache != nil {
         return _stringBodyCache
@@ -129,7 +129,7 @@ public class HTTPMessage {
   
   /* persistent connections */
   
-  public var closeConnection : Bool {
+  open var closeConnection : Bool {
     if version.major == 0 {
       return true
     }
@@ -137,7 +137,7 @@ public class HTTPMessage {
       return true
     }
     else if let v = self["Connection"] {
-      if v.lowercaseString == "close" {
+      if v.lowercased() == "close" {
         return true
       }
     }

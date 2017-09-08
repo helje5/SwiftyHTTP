@@ -167,12 +167,12 @@ public extension URL {
   }
   
   var escapedPathComponents : [String]? {
-    guard path != .None    else { return nil }
+    guard path != .none    else { return nil }
     guard let uPath = path else { return nil }
     guard uPath != ""      else { return nil }
     
     let isAbsolute = uPath.hasPrefix("/")
-    let pathComps  = uPath.characters.split("/", allowEmptySlices: true)
+    let pathComps  = uPath.characters.split(separator: "/", omittingEmptySubsequences: false)
                                      .map { String($0) }
     
     /* Note: we cannot just return a leading slash for absolute pathes as we
@@ -196,7 +196,7 @@ public extension URL {
 
 public extension URL { // /etc/services
   
-  public static func schemeForPort(port: Int) -> String? {
+  public static func schemeForPort(_ port: Int) -> String? {
     // read /etc/services? but this doesn't have a proper 1337?
     switch port {
       case    7: return "echo"
@@ -212,7 +212,7 @@ public extension URL { // /etc/services
     }
   }
   
-  public static func portForScheme(scheme: String) -> Int? {
+  public static func portForScheme(_ scheme: String) -> Int? {
     // read /etc/services? but this doesn't have a proper 1337?
     switch scheme {
       case "echo":   return 7;
@@ -243,7 +243,7 @@ extension URL : CustomStringConvertible {
   
 }
 
-extension URL : StringLiteralConvertible {
+extension URL : ExpressibleByStringLiteral {
   
   public init(stringLiteral value: StringLiteralType) {
     self.init(value)
@@ -267,7 +267,7 @@ extension String {
   
 }
 
-func parse_url(us: String) -> URL {
+func parse_url(_ us: String) -> URL {
   // yes, yes, I know. Pleaze send me a proper version ;-)
   var url = URL()
   var s   = us
@@ -278,19 +278,19 @@ func parse_url(us: String) -> URL {
     s = s[idx + 3..<s.endIndex]
     
     // cut off path
-    if let idx = s.characters.indexOf("/") {
+    if let idx = s.characters.index(of: "/") {
       ps = s[idx..<s.endIndex] // path part
       s  = s[s.startIndex..<idx]
     }
     
     // s: joe:pwd@host:port
-    if let idx = s.characters.indexOf("@") {
+    if let idx = s.characters.index(of: "@") {
       url.userInfo = s[s.startIndex..<idx]
       s = s[idx + 1..<s.endIndex]
     }
     
     // s: host:port
-    if let idx = s.characters.indexOf(":") {
+    if let idx = s.characters.index(of: ":") {
       url.host = s[s.startIndex..<idx]
       let portS = s[idx + 1..<s.endIndex]
       let portO = Int(portS)
@@ -309,12 +309,12 @@ func parse_url(us: String) -> URL {
   }
   
   if ps != "" {
-    if let idx = ps.characters.indexOf("?") {
+    if let idx = ps.characters.index(of: "?") {
       url.query = ps[idx + 1..<ps.endIndex]
       ps = ps[ps.startIndex..<idx]
     }
     
-    if let idx = ps.characters.indexOf("#") {
+    if let idx = ps.characters.index(of: "#") {
       url.fragment = ps[idx + 1..<ps.endIndex]
       ps = ps[ps.startIndex..<idx]
     }
@@ -327,7 +327,7 @@ func parse_url(us: String) -> URL {
 }
 
 
-func percentUnescape(src: String) -> String {
+func percentUnescape(_ src: String) -> String {
   // Lame implementation. Likely really slow.
   guard src != "" else { return "" }
   
@@ -338,13 +338,13 @@ func percentUnescape(src: String) -> String {
   
   while cursor != endIdx {
     if src[cursor] == "%" { // %40 = @
-      let   v0idx = cursor.successor()
+      let   v0idx = <#T##Collection corresponding to `cursor`##Collection#>.index(after: cursor)
       guard v0idx != endIdx else {
         dest += src[cursor..<endIdx]
         break
       }
       
-      let   v1idx = v0idx.successor()
+      let   v1idx = <#T##String.CharacterView corresponding to `v0idx`##String.CharacterView#>.index(after: v0idx)
       guard v1idx != endIdx else {
         dest += src[cursor..<endIdx]
         break
@@ -361,13 +361,13 @@ func percentUnescape(src: String) -> String {
           ( cs : UnsafePointer<CChar> ) -> Int in
           return strtol(cs, nil, 16)
         }
-        dest.append(UnicodeScalar(code))
+        dest.append(String(UnicodeScalar(code)))
       }
-      cursor = v1idx.successor()
+      cursor = <#T##String.CharacterView corresponding to `v1idx`##String.CharacterView#>.index(after: v1idx)
     }
     else {
       dest.append(src[cursor])
-      cursor =  cursor.successor()
+      cursor =  <#T##Collection corresponding to `cursor`##Collection#>.index(after: cursor)
     }
   }
   return dest

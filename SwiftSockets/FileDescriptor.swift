@@ -19,7 +19,7 @@ extension POSIXError : ErrorType {}
 
 /// This essentially wraps the Integer representing a file descriptor in a
 /// struct for the whole reason to attach methods to it.
-public struct FileDescriptor: IntegerLiteralConvertible, NilLiteralConvertible {
+public struct FileDescriptor: ExpressibleByIntegerLiteral, ExpressibleByNilLiteral {
 
   public static let stdin  = FileDescriptor(STDIN_FILENO)
   public static let stdout = FileDescriptor(STDOUT_FILENO)
@@ -41,12 +41,12 @@ public struct FileDescriptor: IntegerLiteralConvertible, NilLiteralConvertible {
   
   // MARK: - Operations
   
-  public static func open(path: String, flags: CInt)
-                     -> ( ErrorType?, FileDescriptor? )
+  public static func open(_ path: String, flags: CInt)
+                     -> ( Error?, FileDescriptor? )
   {
     let fd = sysOpen(path, flags)
     guard fd >= 0 else {
-      return ( POSIXError(rawValue: sysErrno)!, nil )
+      return ( POSIXError(_nsError: sysErrno)!, nil )
     }
     
     return ( nil, FileDescriptor(fd) )
@@ -56,15 +56,15 @@ public struct FileDescriptor: IntegerLiteralConvertible, NilLiteralConvertible {
     sysClose(fd)
   }
   
-  public func read(count: Int) -> ( ErrorType?, [ UInt8 ]? ) {
+  public func read(_ count: Int) -> ( Error?, [ UInt8 ]? ) {
     // TODO: inefficient init. Also: reuse buffers.
-    var buf = [ UInt8 ](count: count, repeatedValue: 0)
+    var buf = [ UInt8 ](repeating: 0, count: count)
     
     // synchronous
     
     let readCount = sysRead(fd, &buf, count)
     guard readCount >= 0 else {
-      return ( POSIXError(rawValue: sysErrno)!, nil )
+      return ( POSIXError(_nsError: sysErrno)!, nil )
     }
     
     if readCount == 0 { return ( nil, [] ) } // EOF
@@ -74,8 +74,8 @@ public struct FileDescriptor: IntegerLiteralConvertible, NilLiteralConvertible {
     return ( nil, buf )
   }
   
-  public func write<T>(buffer: [ T ], count: Int = -1)
-                -> ( ErrorType?, Int )
+  public func write<T>(_ buffer: [ T ], count: Int = -1)
+                -> ( Error?, Int )
   {
     guard buffer.count > 0 else { return ( nil, 0 ) }
     
@@ -86,7 +86,7 @@ public struct FileDescriptor: IntegerLiteralConvertible, NilLiteralConvertible {
     let writeCount = sysWrite(fd, buffer, lCount)
     
     guard writeCount >= 0 else {
-      return ( POSIXError(rawValue: sysErrno)!, 0 )
+      return ( POSIXError(_nsError: sysErrno)!, 0 )
     }
     
     return ( nil, writeCount )
@@ -167,7 +167,7 @@ public extension FileDescriptor {
   
   public var isDataAvailable: Bool { return pollFlag(POLLRDNORM) }
   
-  public func pollFlag(flag: Int32) -> Bool {
+  public func pollFlag(_ flag: Int32) -> Bool {
     let rc: Int32? = poll(flag, timeout: 0)
     if let flags = rc {
       if (flags & flag) != 0 {
@@ -187,7 +187,7 @@ public extension FileDescriptor {
   // Swift doesn't allow let's in here?!
   var debugPoll : Bool { return false }
   
-  public func poll(events: Int32, timeout: UInt? = 0) -> Int32? {
+  public func poll(_ events: Int32, timeout: UInt? = 0) -> Int32? {
     // This is declared as Int32 because the POLLRDNORM and such are
     guard isValid else { return nil }
     
@@ -220,7 +220,7 @@ public extension FileDescriptor {
   }
 }
 
-private func pollMaskToString(mask16: Int16) -> String {
+private func pollMaskToString(_ mask16: Int16) -> String {
   var s = ""
   let mask = Int32(mask16)
   if 0 != (mask & POLLIN)     { s += " IN"  }
@@ -260,7 +260,7 @@ extension FileDescriptor: CustomStringConvertible {
 
 // MARK: - Boolean
 
-extension FileDescriptor: BooleanType { // TBD: Swift doesn't want us to do this
+extension FileDescriptor { // TBD: Swift doesn't want us to do this
   
   public var boolValue : Bool {
     return isValid

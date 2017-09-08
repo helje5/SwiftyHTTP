@@ -18,12 +18,12 @@ import Dispatch
  *
  * PassiveSockets are 'listening' sockets, ActiveSockets are open connections.
  */
-public class Socket<T: SocketAddress> {
+open class Socket<T: SocketAddress> {
   
-  public var fd           : FileDescriptor = nil
-  public var boundAddress : T?      = nil
-  public var isValid      : Bool { return fd.isValid }
-  public var isBound      : Bool { return boundAddress != nil }
+  open var fd           : FileDescriptor = nil
+  open var boundAddress : T?      = nil
+  open var isValid      : Bool { return fd.isValid }
+  open var isBound      : Bool { return boundAddress != nil }
   
   var closeCB  : ((FileDescriptor) -> Void)? = nil
   var closedFD : FileDescriptor? = nil // for delayed callback
@@ -50,7 +50,7 @@ public class Socket<T: SocketAddress> {
   
   let debugClose = false
   
-  public func close() {
+  open func close() {
     if fd.isValid {
       closedFD = fd
       if debugClose { print("Closing socket \(closedFD) for good ...") }
@@ -72,7 +72,7 @@ public class Socket<T: SocketAddress> {
     boundAddress = nil
   }
   
-  public func onClose(cb: ((FileDescriptor) -> Void)?) -> Self {
+  open func onClose(_ cb: ((FileDescriptor) -> Void)?) -> Self {
     if let fd = closedFD { // socket got closed before event-handler attached
       if let lcb = cb {
         lcb(fd)
@@ -90,7 +90,7 @@ public class Socket<T: SocketAddress> {
   
   /* bind the socket. */
   
-  public func bind(address: T) -> Bool {
+  open func bind(_ address: T) -> Bool {
     guard fd.isValid else { return false }
     
     guard !isBound else {
@@ -101,7 +101,7 @@ public class Socket<T: SocketAddress> {
     // Note: must be 'var' for ptr stuff, can't use let
     var addr = address
 
-    let rc = withUnsafePointer(&addr) { ptr -> Int32 in
+    let rc = withUnsafePointer(to: &addr) { ptr -> Int32 in
       let bptr = UnsafePointer<sockaddr>(ptr) // cast
       return sysBind(fd.fd, bptr, socklen_t(addr.len))
     }
@@ -116,16 +116,16 @@ public class Socket<T: SocketAddress> {
     return rc == 0 ? true : false
   }
   
-  public func getsockname() -> T? {
+  open func getsockname() -> T? {
     return _getaname(sysGetsockname)
   }
-  public func getpeername() -> T? {
+  open func getpeername() -> T? {
     return _getaname(sysGetpeername)
   }
   
   typealias GetNameFN = ( Int32, UnsafeMutablePointer<sockaddr>,
                           UnsafeMutablePointer<socklen_t>) -> Int32
-  func _getaname(nfn: GetNameFN) -> T? {
+  func _getaname(_ nfn: GetNameFN) -> T? {
     guard fd.isValid else { return nil }
     
     // FIXME: tried to encapsulate this in a sockaddrbuf which does all the
@@ -135,7 +135,7 @@ public class Socket<T: SocketAddress> {
     
     // Note: we are not interested in the length here, would be relevant
     //       for AF_UNIX sockets
-    let rc = withUnsafeMutablePointer(&baddr) {
+    let rc = withUnsafeMutablePointer(to: &baddr) {
       ptr -> Int32 in
       let bptr = UnsafeMutablePointer<sockaddr>(ptr) // cast
       return nfn(fd.fd, bptr, &baddrlen)
@@ -230,14 +230,14 @@ extension Socket { // Socket Options
   /* socket options (TBD: would we use subscripts for such?) */
   
   
-  public func setSocketOption(option: Int32, value: Int32) -> Bool {
+  public func setSocketOption(_ option: Int32, value: Int32) -> Bool {
     if !isValid {
       return false
     }
     
     var buf = value
     let rc  = setsockopt(fd.fd, SOL_SOCKET, option,
-                         &buf, socklen_t(sizeof(Int32)))
+                         &buf, socklen_t(MemoryLayout<Int32>.size))
     
     if rc != 0 { // ps: Great Error Handling
       print("Could not set option \(option) on socket \(self)")
@@ -247,13 +247,13 @@ extension Socket { // Socket Options
   
   // TBD: Can't overload optionals in a useful way?
   // func getSocketOption(option: Int32) -> Int32
-  public func getSocketOption(option: Int32) -> Int32? {
+  public func getSocketOption(_ option: Int32) -> Int32? {
     if !isValid {
       return nil
     }
     
     var buf    = Int32(0)
-    var buflen = socklen_t(sizeof(Int32))
+    var buflen = socklen_t(MemoryLayout<Int32>.size)
     
     let rc = getsockopt(fd.fd, SOL_SOCKET, option, &buf, &buflen)
     if rc != 0 { // ps: Great Error Handling
@@ -263,10 +263,10 @@ extension Socket { // Socket Options
     return buf
   }
   
-  public func setSocketOption(option: Int32, value: Bool) -> Bool {
+  public func setSocketOption(_ option: Int32, value: Bool) -> Bool {
     return setSocketOption(option, value: value ? 1 : 0)
   }
-  public func getSocketOption(option: Int32) -> Bool {
+  public func getSocketOption(_ option: Int32) -> Bool {
     let v: Int32? = getSocketOption(option)
     return v != nil ? (v! == 0 ? false : true) : false
   }
@@ -278,9 +278,9 @@ extension Socket { // poll()
   
   public var isDataAvailable: Bool { return fd.isDataAvailable }
   
-  public func pollFlag(flag: Int32) -> Bool { return fd.pollFlag(flag) }
+  public func pollFlag(_ flag: Int32) -> Bool { return fd.pollFlag(flag) }
   
-  public func poll(events: Int32, timeout: UInt? = 0) -> Int32? {
+  public func poll(_ events: Int32, timeout: UInt? = 0) -> Int32? {
     return fd.poll(events, timeout: timeout)
   }
   
@@ -296,7 +296,7 @@ extension Socket: CustomStringConvertible {
 }
 
 
-extension Socket: BooleanType { // TBD: Swift doesn't want us to do this
+extension Socket { // TBD: Swift doesn't want us to do this
   
   public var boolValue : Bool {
     return isValid

@@ -9,19 +9,19 @@
 import Darwin
 
 // This allows you to do: str[str.startIndex..idx+4] (TBD: still req with S2?)
-public func +<T: ForwardIndexType>(idx: T, distance: T.Distance) -> T {
-  return idx.advancedBy(distance)
+public func +<T: Comparable>(idx: T, distance: T.Distance) -> T {
+  return <#T##Collection corresponding to `idx`##Collection#>.index(idx, offsetBy: distance)
 }
-public func +<T: ForwardIndexType>(distance: T.Distance, idx: T) -> T {
-  return idx.advancedBy(distance)
+public func +<T: Comparable>(distance: T.Distance, idx: T) -> T {
+  return <#T##Collection corresponding to `idx`##Collection#>.index(idx, offsetBy: distance)
 }
 
-public func -<T:BidirectionalIndexType where T.Distance : SignedIntegerType>
-  (idx: T, distance: T.Distance) -> T
+public func -<T:Comparable>
+  (idx: T, distance: T.Distance) -> T where T.Distance : SignedInteger
 {
   var cursor = idx
   for _ in 0..<distance {
-    cursor = cursor.predecessor()
+    cursor = <#T##BidirectionalCollection corresponding to `cursor`##BidirectionalCollection#>.index(before: cursor)
   }
   return cursor
 }
@@ -29,9 +29,9 @@ public func -<T:BidirectionalIndexType where T.Distance : SignedIntegerType>
 
 // Hack to compare values if we don't have access to the members of the struct,
 // eg http_errno in v0.0.4
-public func isByteEqual<T>(lhs: T, rhs: T) -> Bool {
+public func isByteEqual<T>(_ lhs: T, rhs: T) -> Bool {
   var vLhs = lhs, vRhs = rhs // sigh, needs var below
-  return memcmp(&vLhs, &vRhs, sizeof(T)) == 0
+  return memcmp(&vLhs, &vRhs, MemoryLayout<T>.size) == 0
 }
 
 
@@ -41,21 +41,21 @@ public func isByteEqual<T>(lhs: T, rhs: T) -> Bool {
 
 public extension String {
   
-  static func fromCString(cs: UnsafePointer<CChar>, length: Int!) -> String? {
-    guard length != .None else { // no length given, use \0 standard variant
-      return String.fromCString(cs)
+  static func fromCString(_ cs: UnsafePointer<CChar>, length: Int!) -> String? {
+    guard length != .none else { // no length given, use \0 standard variant
+      return String(cString: cs)
     }
     
     let buflen = length + 1
-    let buf    = UnsafeMutablePointer<CChar>.alloc(buflen)
+    let buf    = UnsafeMutablePointer<CChar>.allocate(capacity: buflen)
     memcpy(buf, cs, length)
     buf[length] = 0 // zero terminate
-    let s = String.fromCString(buf)
-    buf.dealloc(buflen)
+    let s = String(cString: buf)
+    buf.deallocate(capacity: buflen)
     return s
   }
   
-  static func fromDataInCStringEncoding(data: [UInt8]) -> String {
+  static func fromDataInCStringEncoding(_ data: [UInt8]) -> String {
     // The main thing here is that the data is zero-terminated
     // hh: lame
     // convert from [UInt8] to [CChar] CString to String
@@ -64,11 +64,11 @@ public extension String {
       return ""
     }
     
-    var cstr = [CChar](count: data.count + 1, repeatedValue: 0)
+    var cstr = [CChar](repeating: 0, count: data.count + 1)
     memcpy(&cstr, data, data.count)
     cstr[data.count] = 0 // 0-terminate
     
-    return String.fromCString(cstr)!
+    return String(cString: cstr)
   }
   
   func dataInCStringEncoding() -> [UInt8] {
@@ -77,7 +77,7 @@ public extension String {
       if len < 1 {
         return [UInt8]()
       }
-      var buf = [UInt8](count: len, repeatedValue: 0)
+      var buf = [UInt8](repeating: 0, count: len)
       memcpy(&buf, cstr, len)
       return buf
     }
@@ -86,7 +86,7 @@ public extension String {
 
 extension String {
   
-  func strstr(other: String) -> String.Index? {
+  func strstr(_ other: String) -> String.Index? {
     // FIXME: make this a generic
     var start = startIndex
     
@@ -95,7 +95,7 @@ extension String {
       if subString.hasPrefix(other) {
         return start
       }
-      start = start.successor()
+      start = <#T##Collection corresponding to `start`##Collection#>.index(after: start)
     } while start != endIndex
     
     return nil
@@ -103,7 +103,7 @@ extension String {
 
 }
 
-extension Int32 : BooleanType {
+extension Int32  {
   
   public var boolValue : Bool {
     return self != 0
@@ -135,12 +135,12 @@ extension Character {
   
   var asciiLower : Character {
     return self.isASCIIUpper
-      ? Character(UnicodeScalar(self.unicodeScalarCodePoint + 32))
+      ? Character(UnicodeScalar(self.unicodeScalarCodePoint + 32)!)
       : self
   }
   var asciiUpper : Character {
     return self.isASCIILower
-      ? Character(UnicodeScalar(self.unicodeScalarCodePoint - 32))
+      ? Character(UnicodeScalar(self.unicodeScalarCodePoint - 32)!)
       : self
   }
 

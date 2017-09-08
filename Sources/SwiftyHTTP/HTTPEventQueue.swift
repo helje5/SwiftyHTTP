@@ -35,7 +35,7 @@ class HTTPEventQueue<T> {
       if let cb = on {
         // locking
         let queueCopy = queue
-        queue.removeAll(keepCapacity: true)
+        queue.removeAll(keepingCapacity: true)
       
         for o in queueCopy {
           cb(o, connection)
@@ -44,7 +44,7 @@ class HTTPEventQueue<T> {
     }
   }
 
-  func emit(o: T) {
+  func emit(_ o: T) {
     // locking
     if let cb = on {
       cb(o, connection)

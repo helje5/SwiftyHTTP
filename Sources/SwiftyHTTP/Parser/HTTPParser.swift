@@ -7,19 +7,19 @@
 //
 
 public enum HTTPParserType {
-  case Request, Response, Both
+  case request, response, both
 }
 
 public final class HTTPParser {
   
   enum ParseState {
-    case Idle, URL, HeaderName, HeaderValue, Body
+    case idle, url, headerName, headerValue, body
   }
   
   var parser     = http_parser()
   var settings   = http_parser_settings()
   let buffer     = RawByteBuffer(capacity: 4096)
-  var parseState = ParseState.Idle
+  var parseState = ParseState.idle
   
   var isWiredUp  = false
   var url        : String?
@@ -29,39 +29,39 @@ public final class HTTPParser {
   
   var message    : HTTPMessage?
   
-  public init(type: HTTPParserType = .Both) {
+  public init(type: HTTPParserType = .both) {
     var cType: http_parser_type
     switch type {
-      case .Request:  cType = HTTP_REQUEST
-      case .Response: cType = HTTP_RESPONSE
-      case .Both:     cType = HTTP_BOTH
+      case .request:  cType = HTTP_REQUEST
+      case .response: cType = HTTP_RESPONSE
+      case .both:     cType = HTTP_BOTH
     }
     http_parser_init(&parser, cType)
     
     /* configure callbacks */
     
     // TBD: what is the better way to do this?
-    let ud = unsafeBitCast(self, UnsafeMutablePointer<Void>.self)
+    let ud = unsafeBitCast(self, to: UnsafeMutableRawPointer.self)
     parser.data = ud
   }
   
   
   /* callbacks */
   
-  public func onRequest(cb: ((HTTPRequest) -> Void)?) -> Self {
+  public func onRequest(_ cb: ((HTTPRequest) -> Void)?) -> Self {
     requestCB = cb
     return self
   }
-  public func onResponse(cb: ((HTTPResponse) -> Void)?) -> Self {
+  public func onResponse(_ cb: ((HTTPResponse) -> Void)?) -> Self {
     responseCB = cb
     return self
   }
-  public func onHeaders(cb: ((HTTPMessage) -> Bool)?) -> Self {
+  public func onHeaders(_ cb: ((HTTPMessage) -> Bool)?) -> Self {
     headersCB = cb
     return self
   }
   public func onBodyData
-    (cb: ((HTTPMessage, UnsafePointer<CChar>, UInt) -> Bool)?) -> Self
+    (_ cb: ((HTTPMessage, UnsafePointer<CChar>, UInt) -> Bool)?) -> Self
   {
     bodyDataCB = cb
     return self
@@ -85,7 +85,7 @@ public final class HTTPParser {
   }
   
   public func write
-    (buffer: UnsafePointer<CChar>, _ count: Int) -> HTTPParserError
+    (_ buffer: UnsafePointer<CChar>, _ count: Int) -> HTTPParserError
   {
     // Note: the parser doesn't expect this to be 0-terminated.
     let len = count
@@ -99,7 +99,7 @@ public final class HTTPParser {
     let errno = http_errno(parser.http_errno)
     let err   = HTTPParserError(errno)
     
-    if err != .OK {
+    if err != .ok {
       // Now hitting this, not quite sure why. Maybe a Safari feature?
       let s = http_errno_name(errno)
       let d = http_errno_description(errno)
@@ -109,7 +109,7 @@ public final class HTTPParser {
     return err
   }
   
-  public func write(buffer: [CChar]) -> HTTPParserError {
+  public func write(_ buffer: [CChar]) -> HTTPParserError {
     let count = buffer.count
     return write(buffer, count)
   }
@@ -121,11 +121,11 @@ public final class HTTPParser {
     self.url      = nil
     self.lastName = nil
     self.body     = nil
-    self.headers.removeAll(keepCapacity: true)
+    self.headers.removeAll(keepingCapacity: true)
   }
   
-  public func addData(data: UnsafePointer<Int8>, length: Int) -> Int32 {
-    if parseState == .Body && bodyDataCB != nil && message != nil {
+  public func addData(_ data: UnsafePointer<Int8>, length: Int) -> Int32 {
+    if parseState == .body && bodyDataCB != nil && message != nil {
       return bodyDataCB!(message!, data, UInt(length)) ? 42 : 0
     }
     else {
@@ -135,14 +135,14 @@ public final class HTTPParser {
   }
   
   func processDataForState
-    (state: ParseState, d: UnsafePointer<Int8>, l: Int) -> Int32
+    (_ state: ParseState, d: UnsafePointer<Int8>, l: Int) -> Int32
   {
     if (state == parseState) { // more data for same field
       return addData(d, length: l)
     }
     
     switch parseState {
-      case .HeaderValue:
+      case .headerValue:
         // finished parsing a header
         assert(lastName != nil)
         if let n = lastName {
@@ -151,17 +151,17 @@ public final class HTTPParser {
         buffer.reset()
         lastName = nil
       
-      case .HeaderName:
+      case .headerName:
         assert(lastName == nil)
         lastName = buffer.asString()
         buffer.reset()
       
-      case .URL:
+      case .url:
         assert(url == nil)
         url = buffer.asString()
         buffer.reset()
       
-      case .Body:
+      case .body:
         if bodyDataCB == nil {
           body = buffer.asByteArray()
         }
@@ -181,47 +181,47 @@ public final class HTTPParser {
   public var isRequest  : Bool { return parser.type == 0 }
   public var isResponse : Bool { return parser.type == 1 }
   
-  public class func parserCodeToMethod(rq: UInt8) -> HTTPMethod? {
+  public class func parserCodeToMethod(_ rq: UInt8) -> HTTPMethod? {
     return parserCodeToMethod(http_method(CUnsignedInt(rq)))
   }
-  public class func parserCodeToMethod(rq: http_method) -> HTTPMethod? {
+  public class func parserCodeToMethod(_ rq: http_method) -> HTTPMethod? {
     var method : HTTPMethod?
     // Trying to use HTTP_DELETE gives http_method not convertible to
     // _OptionalNilComparisonType
     switch rq { // hardcode C enum value, defines from http_parser n/a
-      case HTTP_DELETE:      method = HTTPMethod.DELETE
-      case HTTP_GET:         method = HTTPMethod.GET
-      case HTTP_HEAD:        method = HTTPMethod.HEAD
-      case HTTP_POST:        method = HTTPMethod.POST
-      case HTTP_PUT:         method = HTTPMethod.PUT
-      case HTTP_CONNECT:     method = HTTPMethod.CONNECT
-      case HTTP_OPTIONS:     method = HTTPMethod.OPTIONS
-      case HTTP_TRACE:       method = HTTPMethod.TRACE
-      case HTTP_COPY:        method = HTTPMethod.COPY
-      case HTTP_LOCK:        method = HTTPMethod.LOCK
-      case HTTP_MKCOL:       method = HTTPMethod.MKCOL
-      case HTTP_MOVE:        method = HTTPMethod.MOVE
-      case HTTP_PROPFIND:    method = HTTPMethod.PROPFIND
-      case HTTP_PROPPATCH:   method = HTTPMethod.PROPPATCH
-      case HTTP_SEARCH:      method = HTTPMethod.SEARCH
-      case HTTP_UNLOCK:      method = HTTPMethod.UNLOCK
+      case HTTP_DELETE:      method = HTTPMethod.delete
+      case HTTP_GET:         method = HTTPMethod.get
+      case HTTP_HEAD:        method = HTTPMethod.head
+      case HTTP_POST:        method = HTTPMethod.post
+      case HTTP_PUT:         method = HTTPMethod.put
+      case HTTP_CONNECT:     method = HTTPMethod.connect
+      case HTTP_OPTIONS:     method = HTTPMethod.options
+      case HTTP_TRACE:       method = HTTPMethod.trace
+      case HTTP_COPY:        method = HTTPMethod.copy
+      case HTTP_LOCK:        method = HTTPMethod.lock
+      case HTTP_MKCOL:       method = HTTPMethod.mkcol
+      case HTTP_MOVE:        method = HTTPMethod.move
+      case HTTP_PROPFIND:    method = HTTPMethod.propfind
+      case HTTP_PROPPATCH:   method = HTTPMethod.proppatch
+      case HTTP_SEARCH:      method = HTTPMethod.search
+      case HTTP_UNLOCK:      method = HTTPMethod.unlock
         
-      case HTTP_REPORT:      method = HTTPMethod.REPORT((nil, nil))
+      case HTTP_REPORT:      method = HTTPMethod.report((nil, nil))
         // FIXME: peek body ..
         
-      case HTTP_MKACTIVITY:  method = HTTPMethod.MKACTIVITY
-      case HTTP_CHECKOUT:    method = HTTPMethod.CHECKOUT
-      case HTTP_MERGE:       method = HTTPMethod.MERGE
+      case HTTP_MKACTIVITY:  method = HTTPMethod.mkactivity
+      case HTTP_CHECKOUT:    method = HTTPMethod.checkout
+      case HTTP_MERGE:       method = HTTPMethod.merge
         
-      case HTTP_MSEARCH:     method = HTTPMethod.MSEARCH
-      case HTTP_NOTIFY:      method = HTTPMethod.NOTIFY
-      case HTTP_SUBSCRIBE:   method = HTTPMethod.SUBSCRIBE
-      case HTTP_UNSUBSCRIBE: method = HTTPMethod.UNSUBSCRIBE
+      case HTTP_MSEARCH:     method = HTTPMethod.msearch
+      case HTTP_NOTIFY:      method = HTTPMethod.notify
+      case HTTP_SUBSCRIBE:   method = HTTPMethod.subscribe
+      case HTTP_UNSUBSCRIBE: method = HTTPMethod.unsubscribe
         
-      case HTTP_PATCH:      method = HTTPMethod.PATCH
-      case HTTP_PURGE:      method = HTTPMethod.PURGE
+      case HTTP_PATCH:      method = HTTPMethod.patch
+      case HTTP_PURGE:      method = HTTPMethod.purge
       
-      case HTTP_MKCALENDAR: method = HTTPMethod.MKCALENDAR
+      case HTTP_MKCALENDAR: method = HTTPMethod.mkcalendar
       
       default:
         // Note: extra custom methods don't work (I think)
@@ -231,7 +231,7 @@ public final class HTTPParser {
   }
   
   func headerFinished() -> Int32 {
-    self.processDataForState(.Body, d: "", l: 0)
+    self.processDataForState(.body, d: "", l: 0)
     
     message = nil
     
@@ -270,7 +270,7 @@ public final class HTTPParser {
   }
   
   func messageFinished() -> Int32 {
-    self.processDataForState(.Idle, d: "", l: 0)
+    self.processDataForState(.idle, d: "", l: 0)
     
     if let m = message {
       m.bodyAsByteArray = body
@@ -303,40 +303,40 @@ public final class HTTPParser {
     // Note: CString is NOT a real C string, it's length terminated
     
     settings.on_message_begin = { parser in
-      let me = unsafeBitCast(parser.memory.data, HTTPParser.self)
+      let me = unsafeBitCast(parser?.pointee.data, to: HTTPParser.self)
       me.message = nil
       me.clearState()
       return 0
     }
     settings.on_message_complete = { parser in
-      let me = unsafeBitCast(parser.memory.data, HTTPParser.self)
+      let me = unsafeBitCast(parser?.pointee.data, to: HTTPParser.self)
       me.messageFinished()
       return 0
     }
     settings.on_headers_complete = { parser in
-      let me = unsafeBitCast(parser.memory.data, HTTPParser.self)
+      let me = unsafeBitCast(parser?.pointee.data, to: HTTPParser.self)
       me.headerFinished()
       return 0
     }
     
     settings.on_url = { parser, data, len in
-      let me = unsafeBitCast(parser.memory.data, HTTPParser.self)
-      me.processDataForState(ParseState.URL, d: data, l: len)
+      let me = unsafeBitCast(parser?.pointee.data, to: HTTPParser.self)
+      me.processDataForState(ParseState.url, d: data!, l: len)
       return 0
     }
     settings.on_header_field = { parser, data, len in
-      let me = unsafeBitCast(parser.memory.data, HTTPParser.self)
-      me.processDataForState(ParseState.HeaderName, d: data, l: len)
+      let me = unsafeBitCast(parser?.pointee.data, to: HTTPParser.self)
+      me.processDataForState(ParseState.headerName, d: data!, l: len)
       return 0
     }
     settings.on_header_value = { parser, data, len in
-      let me = unsafeBitCast(parser.memory.data, HTTPParser.self)
-      me.processDataForState(ParseState.HeaderValue, d: data, l: len)
+      let me = unsafeBitCast(parser?.pointee.data, to: HTTPParser.self)
+      me.processDataForState(ParseState.headerValue, d: data!, l: len)
       return 0
     }
     settings.on_body = { parser, data, len in
-      let me = unsafeBitCast(parser.memory.data, HTTPParser.self)
-      me.processDataForState(ParseState.Body, d: data, l: len)
+      let me = unsafeBitCast(parser?.pointee.data, to: HTTPParser.self)
+      me.processDataForState(ParseState.body, d: data!, l: len)
       return 0
     }
   }
@@ -352,22 +352,22 @@ extension HTTPParser : CustomStringConvertible {
 public enum HTTPParserError : CustomStringConvertible {
   // manual mapping, Swift doesn't directly bridge the http_parser macros but
   // rather creates constants for them
-  case OK
+  case ok
   case cbMessageBegin, cbURL, cbBody, cbMessageComplete, cbStatus
   case cbHeaderField, cbHeaderValue, cbHeadersComplete
-  case InvalidEOFState, HeaderOverflow, ClosedConnection
-  case InvalidVersion, InvalidStatus, InvalidMethod, InvalidURL
-  case InvalidHost, InvalidPort, InvalidPath, InvalidQueryString
-  case InvalidFragment
-  case LineFeedExpected
-  case InvalidHeaderToken, InvalidContentLength, InvalidChunkSize
-  case InvalidConstant, InvalidInternalState
-  case NotStrict, Paused
-  case Unknown
+  case invalidEOFState, headerOverflow, closedConnection
+  case invalidVersion, invalidStatus, invalidMethod, invalidURL
+  case invalidHost, invalidPort, invalidPath, invalidQueryString
+  case invalidFragment
+  case lineFeedExpected
+  case invalidHeaderToken, invalidContentLength, invalidChunkSize
+  case invalidConstant, invalidInternalState
+  case notStrict, paused
+  case unknown
   
   public init(_ errcode: http_errno) {
     switch (errcode) {
-      case HPE_OK:                     self = .OK
+      case HPE_OK:                     self = .ok
       case HPE_CB_message_begin:       self = .cbMessageBegin
       case HPE_CB_url:                 self = .cbURL
       case HPE_CB_header_field:        self = .cbHeaderField
@@ -376,28 +376,28 @@ public enum HTTPParserError : CustomStringConvertible {
       case HPE_CB_body:                self = .cbBody
       case HPE_CB_message_complete:    self = .cbMessageComplete
       case HPE_CB_status:              self = .cbStatus
-      case HPE_INVALID_EOF_STATE:      self = .InvalidEOFState
-      case HPE_HEADER_OVERFLOW:        self = .HeaderOverflow
-      case HPE_CLOSED_CONNECTION:      self = .ClosedConnection
-      case HPE_INVALID_VERSION:        self = .InvalidVersion
-      case HPE_INVALID_STATUS:         self = .InvalidStatus
-      case HPE_INVALID_METHOD:         self = .InvalidMethod
-      case HPE_INVALID_URL:            self = .InvalidURL
-      case HPE_INVALID_HOST:           self = .InvalidHost
-      case HPE_INVALID_PORT:           self = .InvalidPort
-      case HPE_INVALID_PATH:           self = .InvalidPath
-      case HPE_INVALID_QUERY_STRING:   self = .InvalidQueryString
-      case HPE_INVALID_FRAGMENT:       self = .InvalidFragment
-      case HPE_LF_EXPECTED:            self = .LineFeedExpected
-      case HPE_INVALID_HEADER_TOKEN:   self = .InvalidHeaderToken
-      case HPE_INVALID_CONTENT_LENGTH: self = .InvalidContentLength
-      case HPE_INVALID_CHUNK_SIZE:     self = .InvalidChunkSize
-      case HPE_INVALID_CONSTANT:       self = .InvalidConstant
-      case HPE_INVALID_INTERNAL_STATE: self = .InvalidInternalState
-      case HPE_STRICT:                 self = .NotStrict
-      case HPE_PAUSED:                 self = .Paused
-      case HPE_UNKNOWN:                self = .Unknown
-      default: self = .Unknown
+      case HPE_INVALID_EOF_STATE:      self = .invalidEOFState
+      case HPE_HEADER_OVERFLOW:        self = .headerOverflow
+      case HPE_CLOSED_CONNECTION:      self = .closedConnection
+      case HPE_INVALID_VERSION:        self = .invalidVersion
+      case HPE_INVALID_STATUS:         self = .invalidStatus
+      case HPE_INVALID_METHOD:         self = .invalidMethod
+      case HPE_INVALID_URL:            self = .invalidURL
+      case HPE_INVALID_HOST:           self = .invalidHost
+      case HPE_INVALID_PORT:           self = .invalidPort
+      case HPE_INVALID_PATH:           self = .invalidPath
+      case HPE_INVALID_QUERY_STRING:   self = .invalidQueryString
+      case HPE_INVALID_FRAGMENT:       self = .invalidFragment
+      case HPE_LF_EXPECTED:            self = .lineFeedExpected
+      case HPE_INVALID_HEADER_TOKEN:   self = .invalidHeaderToken
+      case HPE_INVALID_CONTENT_LENGTH: self = .invalidContentLength
+      case HPE_INVALID_CHUNK_SIZE:     self = .invalidChunkSize
+      case HPE_INVALID_CONSTANT:       self = .invalidConstant
+      case HPE_INVALID_INTERNAL_STATE: self = .invalidInternalState
+      case HPE_STRICT:                 self = .notStrict
+      case HPE_PAUSED:                 self = .paused
+      case HPE_UNKNOWN:                self = .unknown
+      default: self = .unknown
     }
   }
   
@@ -405,41 +405,41 @@ public enum HTTPParserError : CustomStringConvertible {
   
   public var errorDescription : String {
     switch self {
-      case OK:                   return "Success"
-      case cbMessageBegin:       return "The on_message_begin callback failed"
-      case cbURL:                return "The on_url callback failed"
-      case cbBody:               return "The on_body callback failed"
-      case cbMessageComplete:
+      case .ok:                   return "Success"
+      case .cbMessageBegin:       return "The on_message_begin callback failed"
+      case .cbURL:                return "The on_url callback failed"
+      case .cbBody:               return "The on_body callback failed"
+      case .cbMessageComplete:
         return "The on_message_complete callback failed"
-      case cbStatus:             return "The on_status callback failed"
-      case cbHeaderField:        return "The on_header_field callback failed"
-      case cbHeaderValue:        return "The on_header_value callback failed"
-      case cbHeadersComplete:
+      case .cbStatus:             return "The on_status callback failed"
+      case .cbHeaderField:        return "The on_header_field callback failed"
+      case .cbHeaderValue:        return "The on_header_value callback failed"
+      case .cbHeadersComplete:
         return "The on_headers_complete callback failed"
       
-      case InvalidEOFState:      return "Stream ended at an unexpected time"
-      case HeaderOverflow:
+      case .invalidEOFState:      return "Stream ended at an unexpected time"
+      case .headerOverflow:
         return "Too many header bytes seen; overflow detected"
-      case ClosedConnection:
+      case .closedConnection:
         return "Data received after completed connection: close message"
-      case InvalidVersion:       return "Invalid HTTP version"
-      case InvalidStatus:        return "Invalid HTTP status code"
-      case InvalidMethod:        return "Invalid HTTP method"
-      case InvalidURL:           return "Invalid URL"
-      case InvalidHost:          return "Invalid host"
-      case InvalidPort:          return "Invalid port"
-      case InvalidPath:          return "Invalid path"
-      case InvalidQueryString:   return "Invalid query string"
-      case InvalidFragment:      return "Invalid fragment"
-      case LineFeedExpected:     return "LF character expected"
-      case InvalidHeaderToken:   return "Invalid character in header"
-      case InvalidContentLength:
+      case .invalidVersion:       return "Invalid HTTP version"
+      case .invalidStatus:        return "Invalid HTTP status code"
+      case .invalidMethod:        return "Invalid HTTP method"
+      case .invalidURL:           return "Invalid URL"
+      case .invalidHost:          return "Invalid host"
+      case .invalidPort:          return "Invalid port"
+      case .invalidPath:          return "Invalid path"
+      case .invalidQueryString:   return "Invalid query string"
+      case .invalidFragment:      return "Invalid fragment"
+      case .lineFeedExpected:     return "LF character expected"
+      case .invalidHeaderToken:   return "Invalid character in header"
+      case .invalidContentLength:
         return "Invalid character in content-length header"
-      case InvalidChunkSize:     return "Invalid character in chunk size header"
-      case InvalidConstant:      return "Invalid constant string"
-      case InvalidInternalState: return "Encountered unexpected internal state"
-      case NotStrict:            return "Strict mode assertion failed"
-      case Paused:               return "Parser is paused"
+      case .invalidChunkSize:     return "Invalid character in chunk size header"
+      case .invalidConstant:      return "Invalid constant string"
+      case .invalidInternalState: return "Encountered unexpected internal state"
+      case .notStrict:            return "Strict mode assertion failed"
+      case .paused:               return "Parser is paused"
       default:                   return "Unknown Error"
     }
   }

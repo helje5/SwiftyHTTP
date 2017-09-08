@@ -13,7 +13,7 @@
  *
  * Note: no error handling
  */
-public class Connect : HTTPServer {
+open class Connect : HTTPServer {
   
   var middlewarez = [MiddlewareEntry]()
   
@@ -24,16 +24,16 @@ public class Connect : HTTPServer {
     }
   }
   
-  public func use(cb: Middleware) -> Self {
+  open func use(_ cb: @escaping Middleware) -> Self {
     middlewarez.append(MiddlewareEntry(middleware: cb))
     return self
   }
-  public func use(prefix: String, _ cb: Middleware) -> Self {
+  open func use(_ prefix: String, _ cb: @escaping Middleware) -> Self {
     middlewarez.append(MiddlewareEntry(urlPrefix: prefix, middleware: cb))
     return self
   }
   
-  func doRequest(request: HTTPRequest, response: HTTPResponse,
+  func doRequest(_ request: HTTPRequest, response: HTTPResponse,
                  connection: HTTPConnection) -> Void
   {
     // first lookup all middleware matching the request (i.e. the URL prefix
@@ -67,17 +67,17 @@ struct MiddlewareEntry {
   let urlPrefix  : String?
   let middleware : Middleware
   
-  init(middleware: Middleware) {
+  init(middleware: @escaping Middleware) {
     self.middleware = middleware
     self.urlPrefix  = nil
   }
   
-  init(urlPrefix: String, middleware: Middleware) {
+  init(urlPrefix: String, middleware: @escaping Middleware) {
     self.urlPrefix  = urlPrefix
     self.middleware = middleware
   }
   
-  func matchesRequest(request: HTTPRequest) -> Bool {
+  func matchesRequest(_ request: HTTPRequest) -> Bool {
     if let prefix = urlPrefix {
       guard request.path.hasPrefix(prefix) else { return false }
     }

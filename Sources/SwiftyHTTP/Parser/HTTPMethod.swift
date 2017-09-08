@@ -9,71 +9,71 @@
 public enum HTTPMethod : Equatable {
   // Either inherit from Int (and have raw values) OR have cases with arguments
   
-  case GET, HEAD, PUT, DELETE, POST, OPTIONS
+  case get, head, put, delete, post, options
   
-  case PROPFIND, PROPPATCH, MKCOL
+  case propfind, proppatch, mkcol
   
-  case REPORT((String?, String?)) // tuple: ns, tag
+  case report((String?, String?)) // tuple: ns, tag
   
-  case MKCALENDAR
+  case mkcalendar
   
-  case BATCH // ;-)
+  case batch // ;-)
   
-  case CONNECT, TRACE
-  case COPY, MOVE
-  case LOCK, UNLOCK
-  case SEARCH
+  case connect, trace
+  case copy, move
+  case lock, unlock
+  case search
   
-  case MKACTIVITY, CHECKOUT, MERGE
-  case MSEARCH, NOTIFY, SUBSCRIBE, UNSUBSCRIBE
+  case mkactivity, checkout, merge
+  case msearch, notify, subscribe, unsubscribe
   
-  case PATCH, PURGE
+  case patch, purge
   
-  case Extension(String)
+  case `extension`(String)
 
 
   public init(string: String) {
     switch string {
-      case "GET":         self = .GET
-      case "HEAD":        self = .HEAD
-      case "PUT":         self = .PUT
-      case "DELETE":      self = .DELETE
-      case "POST":        self = .POST
-      case "OPTIONS":     self = .OPTIONS
+      case "GET":         self = .get
+      case "HEAD":        self = .head
+      case "PUT":         self = .put
+      case "DELETE":      self = .delete
+      case "POST":        self = .post
+      case "OPTIONS":     self = .options
       
-      case "PROPFIND":    self = .PROPFIND
-      case "PROPPATCH":   self = .PROPPATCH
-      case "MKCOL":       self = .MKCOL
+      case "PROPFIND":    self = .propfind
+      case "PROPPATCH":   self = .proppatch
+      case "MKCOL":       self = .mkcol
       
-      case "REPORT":      self = .REPORT( ( nil, nil ) )
+      case "REPORT":      self = .report( ( nil, nil ) )
       
-      case "MKCALENDAR":  self = .MKCALENDAR
+      case "MKCALENDAR":  self = .mkcalendar
       
-      case "BATCH":       self = .BATCH
+      case "BATCH":       self = .batch
       
-      case "CONNECT":     self = .CONNECT
-      case "TRACE":       self = .TRACE
+      case "CONNECT":     self = .connect
+      case "TRACE":       self = .trace
       
-      case "COPY":        self = .COPY
-      case "MOVE":        self = .MOVE
-      case "LOCK":        self = .LOCK
-      case "UNLOCK":      self = .UNLOCK
+      case "COPY":        self = .copy
+      case "MOVE":        self = .move
+      case "LOCK":        self = .lock
+      case "UNLOCK":      self = .unlock
       
-      case "SEARCH":      self = .SEARCH
+      case "SEARCH":      self = .search
       
-      case "MKACTIVITY":  self = .MKACTIVITY
-      case "CHECKOUT":    self = .CHECKOUT
-      case "MERGE":       self = .MERGE
+      case "MKACTIVITY":  self = .mkactivity
+      case "CHECKOUT":    self = .checkout
+      case "MERGE":       self = .merge
       
-      case "M-SEARCH":    self = .MSEARCH
-      case "NOTIFY":      self = .NOTIFY
-      case "SUBSCRIBE":   self = .SUBSCRIBE
-      case "UNSUBSCRIBE": self = .UNSUBSCRIBE
+      case "M-SEARCH":    self = .msearch
+      case "NOTIFY":      self = .notify
+      case "SUBSCRIBE":   self = .subscribe
+      case "UNSUBSCRIBE": self = .unsubscribe
       
-      case "PATCH":       self = .PATCH
-      case "PURGE":       self = .PURGE
+      case "PATCH":       self = .patch
+      case "PURGE":       self = .purge
       
-      default:            self = .Extension(string)
+      default:            self = .extension(string)
     }
   }
   
@@ -83,59 +83,59 @@ public extension HTTPMethod {
 
   public var method: String {
     switch self {
-      case .GET:        return "GET"
-      case .HEAD:       return "HEAD"
-      case .PUT:        return "PUT"
-      case .DELETE:     return "DELETE"
-      case .POST:       return "POST"
-      case .OPTIONS:    return "OPTIONS"
+      case .get:        return "GET"
+      case .head:       return "HEAD"
+      case .put:        return "PUT"
+      case .delete:     return "DELETE"
+      case .post:       return "POST"
+      case .options:    return "OPTIONS"
         
-      case .PROPFIND:   return "PROPFIND"
-      case .PROPPATCH:  return "PROPPATCH"
-      case .MKCOL:      return "MKCOL"
+      case .propfind:   return "PROPFIND"
+      case .proppatch:  return "PROPPATCH"
+      case .mkcol:      return "MKCOL"
         
-      case .REPORT:     return "REPORT"
+      case .report:     return "REPORT"
         
-      case .MKCALENDAR: return "MKCALENDAR"
+      case .mkcalendar: return "MKCALENDAR"
         
-      case .BATCH:      return "BATCH"
+      case .batch:      return "BATCH"
 
-      case .CONNECT:    return "CONNECT"
-      case .TRACE:      return "TRACE"
+      case .connect:    return "CONNECT"
+      case .trace:      return "TRACE"
       
-      case .COPY:       return "COPY"
-      case .MOVE:       return "MOVE"
-      case .LOCK:       return "LOCK"
-      case .UNLOCK:     return "UNLOCK"
+      case .copy:       return "COPY"
+      case .move:       return "MOVE"
+      case .lock:       return "LOCK"
+      case .unlock:     return "UNLOCK"
       
-      case .SEARCH:     return "SEARCH"
+      case .search:     return "SEARCH"
       
-      case .MKACTIVITY: return "MKACTIVITY"
-      case .CHECKOUT:   return "CHECKOUT"
-      case .MERGE:      return "MERGE"
+      case .mkactivity: return "MKACTIVITY"
+      case .checkout:   return "CHECKOUT"
+      case .merge:      return "MERGE"
       
-      case .MSEARCH:    return "M-SEARCH"
-      case .NOTIFY:     return "NOTIFY"
-      case .SUBSCRIBE:  return "SUBSCRIBE"
-      case .UNSUBSCRIBE:return "UNSUBSCRIBE"
+      case .msearch:    return "M-SEARCH"
+      case .notify:     return "NOTIFY"
+      case .subscribe:  return "SUBSCRIBE"
+      case .unsubscribe:return "UNSUBSCRIBE"
 
-      case .PATCH:      return "PATCH"
-      case .PURGE:      return "PURGE"
+      case .patch:      return "PATCH"
+      case .purge:      return "PURGE"
       
-      case .Extension(let v):
+      case .extension(let v):
         return v
     }
   }
   
   public var isSafe: Bool? { // can't say for extension methods
     switch self {
-      case .GET, .HEAD, .OPTIONS:
+      case .get, .head, .options:
         return true
-      case .PROPFIND, .REPORT:
+      case .propfind, .report:
         return true
-      case .BATCH:
+      case .batch:
         return true
-      case .Extension:
+      case .extension:
         return nil // don't know
       default:
         return false
@@ -144,15 +144,15 @@ public extension HTTPMethod {
   
   public var isIdempotent: Bool? { // can't say for extension methods
     switch self {
-      case .GET, .HEAD, .PUT, .DELETE, .OPTIONS:
+      case .get, .head, .put, .delete, .options:
         return true
-      case .PROPFIND, .REPORT, .PROPPATCH:
+      case .propfind, .report, .proppatch:
         return true
-      case .MKCOL, .MKCALENDAR:
+      case .mkcol, .mkcalendar:
         return true
-      case .BATCH:
+      case .batch:
         return true
-      case .Extension:
+      case .extension:
         return nil // don't know
       default:
         return false
@@ -164,7 +164,7 @@ extension HTTPMethod : CustomStringConvertible {
   
   public var description: String {
     switch self {
-      case .REPORT(let ns, let tag):
+      case .report(let ns, let tag):
         return "REPORT[{\(ns)}\(tag)]"
       
       default:
@@ -173,7 +173,7 @@ extension HTTPMethod : CustomStringConvertible {
   }
 }
 
-extension HTTPMethod: StringLiteralConvertible {
+extension HTTPMethod: ExpressibleByStringLiteral {
   // this allows you to do: let addr : in_addr = "192.168.0.1"
   
   public init(stringLiteral value: StringLiteralType) {

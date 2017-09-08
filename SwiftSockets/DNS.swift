@@ -12,7 +12,7 @@ import Darwin
 #endif
 
 func gethoztbyname<T: SocketAddress>
-  (name : String, flags : Int32 = AI_CANONNAME,
+  (_ name : String, flags : Int32 = AI_CANONNAME,
    cb   : ( String, String?, T? ) -> Void)
 {
   // Note: I can't just provide a name and a cb, swiftc will complain.
@@ -35,10 +35,10 @@ func gethoztbyname<T: SocketAddress>
   
   /* copy results - we just take the first match */
   var cn   : String? = nil
-  var addr : T?      = ptr.memory.address()
+  var addr : T?      = ptr.pointee.address()
   if rc == 0 && ptr != nil {
-    cn   = ptr.memory.canonicalName
-    addr = ptr.memory.address()
+    cn   = ptr.pointee.canonicalName
+    addr = ptr.pointee.address()
   }
   
   /* report results */
@@ -62,7 +62,7 @@ func gethoztbyname<T: SocketAddress>
  *      detected right?
  */
 func gethostzbyname<T: SocketAddress>
-  (name : String, flags : Int32 = AI_CANONNAME,
+  (_ name : String, flags : Int32 = AI_CANONNAME,
    cb   : ( String, [ ( cn: String?, address: T? ) ]? ) -> Void
   ) -> Void
 {
@@ -89,7 +89,7 @@ func gethostzbyname<T: SocketAddress>
   
   if rc == 0 && ptr != nil {
     var pairs = Array<hapair>()
-    for info in ptr.memory {
+    for info in ptr.pointee {
       let pair : hapair = ( info.canonicalName, info.address() )
       pairs.append(pair)
     }

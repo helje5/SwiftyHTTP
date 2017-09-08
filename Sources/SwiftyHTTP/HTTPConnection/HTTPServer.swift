@@ -8,34 +8,34 @@
 
 import Dispatch
 
-public class HTTPServer : HTTPConnectionPool {
+open class HTTPServer : HTTPConnectionPool {
   
-  public var port         : Int?           = nil
-  public var socket       : PassiveSocketIPv4!
+  open var port         : Int?           = nil
+  open var socket       : PassiveSocketIPv4!
   
   var handler      : ((HTTPRequest, HTTPResponse, HTTPConnection)->Void)? = nil
-  var handlerQueue : dispatch_queue_t? = nil
+  var handlerQueue : DispatchQueue? = nil
   
-  public func onRequest
-    (cb:(HTTPRequest, HTTPResponse, HTTPConnection)->Void) -> Self
+  open func onRequest
+    (_ cb:@escaping (HTTPRequest, HTTPResponse, HTTPConnection)->Void) -> Self
   {
     handler = cb
     return self
   }
-  public func useQueue(queue: dispatch_queue_t) -> Self {
+  open func useQueue(_ queue: DispatchQueue) -> Self {
     handlerQueue = queue
     return self
   }
 
-  override func handleRequest(request: HTTPRequest, _ con: HTTPConnection) {
+  override func handleRequest(_ request: HTTPRequest, _ con: HTTPConnection) {
     log("Got request: \(request)")
     log()
     
     if let handler = handler {
-      let q = handlerQueue ?? dispatch_get_main_queue()
+      let q = handlerQueue ?? DispatchQueue.main
       
-      dispatch_async(q!) {
-        let response = HTTPResponse(status: .OK, headers: [
+      q.async {
+        let response = HTTPResponse(status: .ok, headers: [
           "Content-Type": "text/html"
         ])
         
@@ -47,7 +47,7 @@ public class HTTPServer : HTTPConnectionPool {
       }
     }
     else {
-      let response = HTTPResponse(status: .InternalServerError, headers: [
+      let response = HTTPResponse(status: .internalServerError, headers: [
         "Content-Type": "text/html"
       ])
       response.bodyAsString = "No handler configured in HTTP server!\r\n"
@@ -56,7 +56,7 @@ public class HTTPServer : HTTPConnectionPool {
     }
   }
   
-  public func listen(port: Int) -> HTTPServer {
+  open func listen(_ port: Int) -> HTTPServer {
     // using Self or Self? seems to crash the compiler
     
     socket = PassiveSocket(address: sockaddr_in(port: port))
@@ -69,7 +69,7 @@ public class HTTPServer : HTTPConnectionPool {
     
     log("Listen socket \(socket) reuse=\(socket.reuseAddress)")
     
-    let queue = dispatch_get_global_queue(0, 0)
+    let queue = DispatchQueue.global(priority: 0)
     
     
     socket.listen(queue, backlog: 5) {
@@ -90,7 +90,7 @@ public class HTTPServer : HTTPConnectionPool {
     return self
   }
   
-  public func stop() {
+  open func stop() {
     if let s = socket {
       s.close()
       socket = nil

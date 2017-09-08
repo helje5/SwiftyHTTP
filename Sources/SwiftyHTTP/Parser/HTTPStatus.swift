@@ -11,39 +11,39 @@ public enum HTTPStatus : Equatable {
   // values. Pretty annoying and results in all the mapping below (which is
   // kinda OK here given that RFCs are static)
   
-  case OK, Created, Accepted, NoContent, ResetContent, PartialContent
-  case MultiStatus, AlreadyReported, IMUsed
+  case ok, created, accepted, noContent, resetContent, partialContent
+  case multiStatus, alreadyReported, imUsed
   
-  case MultipleChoices, MovedPermanently, Found, SeeOther, NotModified
-  case UseProxy, SwitchProxy
-  case TemporaryRedirect
-  case ResumeIncomplete // vs .PermanentRedirect
+  case multipleChoices, movedPermanently, found, seeOther, notModified
+  case useProxy, switchProxy
+  case temporaryRedirect
+  case resumeIncomplete // vs .PermanentRedirect
   
-  case BadRequest, Unauthorized, 💰Required, Forbidden, NotFound
-  case MethodNotAllowed, NotAcceptable
-  case ProxyAuthenticationRequired
-  case RequestTimeout
-  case Conflict, Gone
-  case LengthRequired
-  case PreconditionFailed
-  case RequestEntityTooLarge, RequestURITooLong
-  case UnsupportedMediaType
-  case RequestRangeNotSatisfiable
-  case ExpectationFailed
-  case IAmATeapot // there is no teapot Emoji? only a teacan?
-  case UnprocessableEntity, Locked, FailedDependency, UnorderedCollection
-  case UpgradeRequired, PreconditionRequired
+  case badRequest, unauthorized, 💰Required, forbidden, notFound
+  case methodNotAllowed, notAcceptable
+  case proxyAuthenticationRequired
+  case requestTimeout
+  case conflict, gone
+  case lengthRequired
+  case preconditionFailed
+  case requestEntityTooLarge, requestURITooLong
+  case unsupportedMediaType
+  case requestRangeNotSatisfiable
+  case expectationFailed
+  case iAmATeapot // there is no teapot Emoji? only a teacan?
+  case unprocessableEntity, locked, failedDependency, unorderedCollection
+  case upgradeRequired, preconditionRequired
   
-  case InternalServerError, NotImplemented, BadGateway, ServiceUnavailable
-  case GatewayTimeout, HTTPVersionNotSupported
-  case VariantAlsoNegotiates
-  case InsufficientStorage, LoopDetected
-  case NotExtended
+  case internalServerError, notImplemented, badGateway, serviceUnavailable
+  case gatewayTimeout, httpVersionNotSupported
+  case variantAlsoNegotiates
+  case insufficientStorage, loopDetected
+  case notExtended
   
-  case Extension(Int, String) // status, statusText
+  case `extension`(Int, String) // status, statusText
 }
 
-extension HTTPStatus : BooleanType {
+extension HTTPStatus  {
   
   public var boolValue : Bool {
     return status >= 200 && status < 300
@@ -64,68 +64,68 @@ public extension HTTPStatus {
   
   public init(_ status: Int, _ text: String? = nil) {
     switch status {
-      case 200: self = .OK
-      case 201: self = .Created
-      case 202: self = .Accepted
-      case 204: self = .NoContent
-      case 205: self = .ResetContent
-      case 206: self = .PartialContent
-      case 207: self = .MultiStatus
-      case 208: self = .AlreadyReported
-      case 226: self = .IMUsed // RFC 3229
+      case 200: self = .ok
+      case 201: self = .created
+      case 202: self = .accepted
+      case 204: self = .noContent
+      case 205: self = .resetContent
+      case 206: self = .partialContent
+      case 207: self = .multiStatus
+      case 208: self = .alreadyReported
+      case 226: self = .imUsed // RFC 3229
       
-      case 300: self = .MultipleChoices
-      case 301: self = .MovedPermanently
-      case 302: self = .Found
-      case 303: self = .SeeOther
-      case 304: self = .NotModified
-      case 305: self = .UseProxy
-      case 306: self = .SwitchProxy
-      case 307: self = .TemporaryRedirect
-      case 308: self = .ResumeIncomplete
+      case 300: self = .multipleChoices
+      case 301: self = .movedPermanently
+      case 302: self = .found
+      case 303: self = .seeOther
+      case 304: self = .notModified
+      case 305: self = .useProxy
+      case 306: self = .switchProxy
+      case 307: self = .temporaryRedirect
+      case 308: self = .resumeIncomplete
       
-      case 400: self = .BadRequest
-      case 401: self = .Unauthorized
+      case 400: self = .badRequest
+      case 401: self = .unauthorized
       case 402: self = .💰Required
-      case 403: self = .Forbidden
-      case 404: self = .NotFound
-      case 405: self = .MethodNotAllowed
-      case 406: self = .NotAcceptable
-      case 407: self = .ProxyAuthenticationRequired
-      case 408: self = .RequestTimeout
-      case 409: self = .Conflict
-      case 410: self = .Gone
-      case 411: self = .LengthRequired
-      case 412: self = .PreconditionFailed
-      case 413: self = .RequestEntityTooLarge
-      case 414: self = .RequestURITooLong
-      case 415: self = .UnsupportedMediaType
-      case 416: self = .RequestRangeNotSatisfiable
-      case 417: self = .ExpectationFailed
-      case 418: self = .IAmATeapot
-      case 422: self = .UnprocessableEntity
-      case 423: self = .Locked
-      case 424: self = .FailedDependency
-      case 425: self = .UnorderedCollection
-      case 426: self = .UpgradeRequired
-      case 428: self = .PreconditionRequired
+      case 403: self = .forbidden
+      case 404: self = .notFound
+      case 405: self = .methodNotAllowed
+      case 406: self = .notAcceptable
+      case 407: self = .proxyAuthenticationRequired
+      case 408: self = .requestTimeout
+      case 409: self = .conflict
+      case 410: self = .gone
+      case 411: self = .lengthRequired
+      case 412: self = .preconditionFailed
+      case 413: self = .requestEntityTooLarge
+      case 414: self = .requestURITooLong
+      case 415: self = .unsupportedMediaType
+      case 416: self = .requestRangeNotSatisfiable
+      case 417: self = .expectationFailed
+      case 418: self = .iAmATeapot
+      case 422: self = .unprocessableEntity
+      case 423: self = .locked
+      case 424: self = .failedDependency
+      case 425: self = .unorderedCollection
+      case 426: self = .upgradeRequired
+      case 428: self = .preconditionRequired
       
-      case 500: self = .InternalServerError
-      case 501: self = .NotImplemented
-      case 502: self = .BadGateway
-      case 503: self = .ServiceUnavailable
-      case 504: self = .GatewayTimeout
-      case 505: self = .HTTPVersionNotSupported
-      case 506: self = .VariantAlsoNegotiates
-      case 507: self = .InsufficientStorage
-      case 508: self = .LoopDetected
-      case 510: self = .NotExtended
+      case 500: self = .internalServerError
+      case 501: self = .notImplemented
+      case 502: self = .badGateway
+      case 503: self = .serviceUnavailable
+      case 504: self = .gatewayTimeout
+      case 505: self = .httpVersionNotSupported
+      case 506: self = .variantAlsoNegotiates
+      case 507: self = .insufficientStorage
+      case 508: self = .loopDetected
+      case 510: self = .notExtended
       
       // FIXME: complete me
       
       default:
         let statusText = text ?? HTTPStatus.textForStatus(status)
-        self = .Extension(status, statusText)
+        self = .extension(status, statusText)
     }
   }
   
@@ -133,77 +133,77 @@ public extension HTTPStatus {
     // You ask: How to maintain the reverse list of the above? Emacs macro!
   
     switch self {
-      case .OK:                          return 200
-      case .Created:                     return 201
-      case .Accepted:                    return 202
-      case .NoContent:                   return 204
-      case .ResetContent:                return 205
-      case .PartialContent:              return 206
-      case .MultiStatus:                 return 207
-      case .AlreadyReported:             return 208
-      case .IMUsed:                      return 226 // RFC 3229
+      case .ok:                          return 200
+      case .created:                     return 201
+      case .accepted:                    return 202
+      case .noContent:                   return 204
+      case .resetContent:                return 205
+      case .partialContent:              return 206
+      case .multiStatus:                 return 207
+      case .alreadyReported:             return 208
+      case .imUsed:                      return 226 // RFC 3229
       
-      case .MultipleChoices:             return 300
-      case .MovedPermanently:            return 301
-      case .Found:                       return 302
-      case .SeeOther:                    return 303
-      case .NotModified:                 return 304
-      case .UseProxy:                    return 305
-      case .SwitchProxy:                 return 306
-      case .TemporaryRedirect:           return 307
-      case .ResumeIncomplete:            return 308
+      case .multipleChoices:             return 300
+      case .movedPermanently:            return 301
+      case .found:                       return 302
+      case .seeOther:                    return 303
+      case .notModified:                 return 304
+      case .useProxy:                    return 305
+      case .switchProxy:                 return 306
+      case .temporaryRedirect:           return 307
+      case .resumeIncomplete:            return 308
       
-      case .BadRequest:                  return 400
-      case .Unauthorized:                return 401
+      case .badRequest:                  return 400
+      case .unauthorized:                return 401
       case .💰Required:                  return 402
-      case .Forbidden:                   return 403
-      case .NotFound:                    return 404
-      case .MethodNotAllowed:            return 405
-      case .NotAcceptable:               return 406
-      case .ProxyAuthenticationRequired: return 407
-      case .RequestTimeout:              return 408
-      case .Conflict:                    return 409
-      case .Gone:                        return 410
-      case .LengthRequired:              return 411
-      case .PreconditionFailed:          return 412
-      case .RequestEntityTooLarge:       return 413
-      case .RequestURITooLong:           return 414
-      case .UnsupportedMediaType:        return 415
-      case .RequestRangeNotSatisfiable:  return 416
-      case .ExpectationFailed:           return 417
-      case .IAmATeapot:                  return 418
-      case .UnprocessableEntity:         return 422
-      case .Locked:                      return 423
-      case .FailedDependency:            return 424
-      case .UnorderedCollection:         return 425
-      case .UpgradeRequired:             return 426
-      case .PreconditionRequired:        return 428
+      case .forbidden:                   return 403
+      case .notFound:                    return 404
+      case .methodNotAllowed:            return 405
+      case .notAcceptable:               return 406
+      case .proxyAuthenticationRequired: return 407
+      case .requestTimeout:              return 408
+      case .conflict:                    return 409
+      case .gone:                        return 410
+      case .lengthRequired:              return 411
+      case .preconditionFailed:          return 412
+      case .requestEntityTooLarge:       return 413
+      case .requestURITooLong:           return 414
+      case .unsupportedMediaType:        return 415
+      case .requestRangeNotSatisfiable:  return 416
+      case .expectationFailed:           return 417
+      case .iAmATeapot:                  return 418
+      case .unprocessableEntity:         return 422
+      case .locked:                      return 423
+      case .failedDependency:            return 424
+      case .unorderedCollection:         return 425
+      case .upgradeRequired:             return 426
+      case .preconditionRequired:        return 428
       
-      case .InternalServerError:         return 500
-      case .NotImplemented:              return 501
-      case .BadGateway:                  return 502
-      case .ServiceUnavailable:          return 503
-      case .GatewayTimeout:              return 504
-      case .HTTPVersionNotSupported:     return 505
-      case .VariantAlsoNegotiates:       return 506
-      case .InsufficientStorage:         return 507
-      case .LoopDetected:                return 508
-      case .NotExtended:                 return 510
+      case .internalServerError:         return 500
+      case .notImplemented:              return 501
+      case .badGateway:                  return 502
+      case .serviceUnavailable:          return 503
+      case .gatewayTimeout:              return 504
+      case .httpVersionNotSupported:     return 505
+      case .variantAlsoNegotiates:       return 506
+      case .insufficientStorage:         return 507
+      case .loopDetected:                return 508
+      case .notExtended:                 return 510
       
-      case .Extension(let code, _):      return code
+      case .extension(let code, _):      return code
     }
   }
   
   public var statusText : String {
     switch self {
-      case .Extension(_, let text):
+      case .extension(_, let text):
         return text
       default:
         return HTTPStatus.textForStatus(self.status)
     }
   }
   
-  public static func textForStatus(status: Int) -> String {
+  public static func textForStatus(_ status: Int) -> String {
     // FIXME: complete me for type safety ;-)
     
     switch status {
@@ -234,7 +234,7 @@ extension HTTPStatus : CustomStringConvertible {
   
 }
 
-extension HTTPStatus : IntegerLiteralConvertible {
+extension HTTPStatus : ExpressibleByIntegerLiteral {
   // this allows: let status : HTTPStatus = 418
   
   public init(integerLiteral value: Int) {

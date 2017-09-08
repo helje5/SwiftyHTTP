@@ -50,12 +50,12 @@ public extension in_addr {
     }
     
     let len   = Int(INET_ADDRSTRLEN) + 2
-    var buf   = [CChar](count: len, repeatedValue: 0)
+    var buf   = [CChar](repeating: 0, count: len)
     
     var selfCopy = self // &self doesn't work, because it can be const?
     let cs = inet_ntop(AF_INET, &selfCopy, &buf, socklen_t(len))
     
-    return String.fromCString(cs)!
+    return String(cString: cs!)
   }
   
 }
@@ -73,7 +73,7 @@ extension in_addr : Equatable, Hashable {
   
 }
 
-extension in_addr: StringLiteralConvertible {
+extension in_addr: ExpressibleByStringLiteral {
   // this allows you to do: let addr : in_addr = "192.168.0.1"
 
   public init(stringLiteral value: StringLiteralType) {
@@ -110,7 +110,7 @@ public protocol SocketAddress {
 extension sockaddr_in: SocketAddress {
   
   public static var domain = AF_INET // if you make this a let, swiftc segfaults
-  public static var size   = __uint8_t(sizeof(sockaddr_in))
+  public static var size   = __uint8_t(MemoryLayout<sockaddr_in>.size)
     // how to refer to self?
   
   public init() {
@@ -146,7 +146,7 @@ extension sockaddr_in: SocketAddress {
       }
       else {
         // split string at colon
-        let components = s.characters.split(":", maxSplit: 1).map { String($0) }
+        let components = s.characters.split(separator: ":", maxSplits: 1).map { String($0) }
         if components.count == 2 {
           self.init(address: components[0], port: Int(components[1]))
         }
@@ -218,7 +218,7 @@ extension sockaddr_in: Equatable, Hashable {
  * it requires:
  *   StringInterpolationConvertible
  */
-extension sockaddr_in: StringLiteralConvertible {
+extension sockaddr_in: ExpressibleByStringLiteral {
   
   public init(stringLiteral value: String) {
     self.init(string: value)
@@ -245,7 +245,7 @@ extension sockaddr_in: CustomStringConvertible {
 extension sockaddr_in6: SocketAddress {
   
   public static var domain = AF_INET6
-  public static var size   = __uint8_t(sizeof(sockaddr_in6))
+  public static var size   = __uint8_t(MemoryLayout<sockaddr_in6>.size)
   
   public init() {
 #if os(Linux) // no sin_len on Linux
@@ -278,7 +278,7 @@ extension sockaddr_un: SocketAddress {
   //      technically dynamic (embedded string)
   
   public static var domain = AF_UNIX
-  public static var size   = __uint8_t(sizeof(sockaddr_un)) // CAREFUL
+  public static var size   = __uint8_t(MemoryLayout<sockaddr_un>.size) // CAREFUL
   
   public init() {
 #if os(Linux) // no sin_len on Linux
@@ -344,13 +344,13 @@ public extension addrinfo {
     return ai_next != nil
   }
   public var next : addrinfo? {
-    return hasNext ? ai_next.memory : nil
+    return hasNext ? ai_next.pointee : nil
   }
   
   public var canonicalName : String? {
     guard ai_canonname != nil && ai_canonname[0] != 0 else { return nil }
     
-    return String.fromCString(ai_canonname)
+    return String(cString: ai_canonname)
   }
   
   public var hasAddress : Bool {
@@ -359,7 +359,7 @@ public extension addrinfo {
   
   public var isIPv4 : Bool {
     return hasAddress &&
-           (ai_addr.memory.sa_family == sa_family_t(sockaddr_in.domain))
+           (ai_addr.pointee.sa_family == sa_family_t(sockaddr_in.domain))
   }
   
   public var addressIPv4 : sockaddr_in?  { return address() }
@@ -369,23 +369,23 @@ public extension addrinfo {
   
   public func address<T: SocketAddress>() -> T? {
     guard ai_addr != nil else { return nil }
-    guard ai_addr.memory.sa_family == sa_family_t(T.domain) else { return nil }
+    guard ai_addr.pointee.sa_family == sa_family_t(T.domain) else { return nil }
     
     let aiptr = UnsafePointer<T>(ai_addr) // cast
-    return aiptr.memory // copies the address to the return value
+    return aiptr?.pointee // copies the address to the return value
   }
   
   public var dynamicAddress : SocketAddress? {
     guard hasAddress else { return nil }
     
-    if ai_addr.memory.sa_family == sa_family_t(sockaddr_in.domain) {
+    if ai_addr.pointee.sa_family == sa_family_t(sockaddr_in.domain) {
       let aiptr = UnsafePointer<sockaddr_in>(ai_addr) // cast
-      return aiptr.memory // copies the address to the return value
+      return aiptr?.pointee // copies the address to the return value
     }
     
-    if ai_addr.memory.sa_family == sa_family_t(sockaddr_in6.domain) {
+    if ai_addr.pointee.sa_family == sa_family_t(sockaddr_in6.domain) {
       let aiptr = UnsafePointer<sockaddr_in6>(ai_addr) // cast
-      return aiptr.memory // copies the address to the return value
+      return aiptr?.pointee // copies the address to the return value
     }
     
     return nil
@@ -415,7 +415,7 @@ extension addrinfo : CustomStringConvertible {
       if f != 0 {
         fs.append("flags[\(f)]")
       }
-      let fss = fs.joinWithSeparator(",")
+      let fss = fs.joined(separator: ",")
       s += " flags=" + fss
     }
     
@@ -452,13 +452,13 @@ extension addrinfo : CustomStringConvertible {
   }
 }
 
-extension addrinfo : SequenceType {
+extension addrinfo : Sequence {
   
-  public func generate() -> AnyGenerator<addrinfo> {
+  public func makeIterator() -> AnyIterator<addrinfo> {
     var cursor : addrinfo? = self
     
-    return AnyGenerator {
-      guard let info = cursor else { return .None }
+    return AnyIterator {
+      guard let info = cursor else { return .none }
       cursor = info.next
       return info
     }

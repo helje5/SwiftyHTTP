@@ -35,11 +35,11 @@ public typealias PassiveSocketIPv4 = PassiveSocket<sockaddr_in>
  *     print("All good, go ahead!")
  *   }
  */
-public class PassiveSocket<T: SocketAddress>: Socket<T> {
+open class PassiveSocket<T: SocketAddress>: Socket<T> {
   
-  public var backlog      : Int? = nil
-  public var isListening  : Bool { return backlog != nil }
-  public var listenSource : dispatch_source_t? = nil
+  open var backlog      : Int? = nil
+  open var isListening  : Bool { return backlog != nil }
+  open var listenSource : DispatchSource? = nil
   
   /* init */
   // The overloading behaviour gets more weird every release?
@@ -69,9 +69,9 @@ public class PassiveSocket<T: SocketAddress>: Socket<T> {
   
   /* proper close */
   
-  override public func close() {
+  override open func close() {
     if listenSource != nil {
-      dispatch_source_cancel(listenSource!)
+      listenSource!.cancel()
       listenSource = nil
     }
     super.close()
@@ -79,7 +79,7 @@ public class PassiveSocket<T: SocketAddress>: Socket<T> {
   
   /* start listening */
   
-  public func listen(backlog: Int = 5) -> Bool {
+  open func listen(_ backlog: Int = 5) -> Bool {
     guard isValid      else { return false }
     guard !isListening else { return true }
     
@@ -91,8 +91,8 @@ public class PassiveSocket<T: SocketAddress>: Socket<T> {
     return true
   }
   
-  public func listen(queue: dispatch_queue_t, backlog: Int = 5,
-                     accept: ( ActiveSocket<T> ) -> Void)
+  open func listen(_ queue: DispatchQueue, backlog: Int = 5,
+                     accept: @escaping ( ActiveSocket<T> ) -> Void)
     -> Bool
   {
     guard fd.isValid   else { return false }
@@ -108,12 +108,7 @@ public class PassiveSocket<T: SocketAddress>: Socket<T> {
       queue
     )
 #else // os(Darwin)
-    guard let listenSource = dispatch_source_create(
-      DISPATCH_SOURCE_TYPE_READ,
-      UInt(fd.fd), // is this going to bite us?
-      0,
-      queue
-    )
+    guard let listenSource = DispatchSource.makeReadSource(fileDescriptor: fd.fd, queue: queue) /*Migrator FIXME: Use DispatchSourceRead to avoid the cast*/ as! DispatchSource
     else {
       return false
     }
@@ -128,7 +123,7 @@ public class PassiveSocket<T: SocketAddress>: Socket<T> {
         var baddr    = T()
         var baddrlen = socklen_t(baddr.len)
         
-        let newFD = withUnsafeMutablePointer(&baddr) {
+        let newFD = withUnsafeMutablePointer(to: &baddr) {
           ptr -> Int32 in
           let bptr = UnsafeMutablePointer<sockaddr>(ptr) // cast
           return sysAccept(lfd, bptr, &baddrlen);// buflenptr)
@@ -159,11 +154,11 @@ public class PassiveSocket<T: SocketAddress>: Socket<T> {
     // TBD: what is the better way?
     dispatch_resume(unsafeBitCast(listenSource, dispatch_object_t.self))
 #else /* os(Darwin) */
-    dispatch_resume(listenSource)
+    listenSource.resume()
 #endif /* os(Darwin) */
     
     guard listen(backlog) else {
-      dispatch_source_cancel(listenSource)
+      listenSource.cancel()
       return false
     }
     
