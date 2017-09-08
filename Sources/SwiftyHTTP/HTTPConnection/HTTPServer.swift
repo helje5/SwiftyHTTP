@@ -16,6 +16,7 @@ open class HTTPServer : HTTPConnectionPool {
   var handler      : ((HTTPRequest, HTTPResponse, HTTPConnection)->Void)? = nil
   var handlerQueue : DispatchQueue? = nil
   
+  @discardableResult
   open func onRequest
     (_ cb:@escaping (HTTPRequest, HTTPResponse, HTTPConnection)->Void) -> Self
   {
@@ -51,7 +52,7 @@ open class HTTPServer : HTTPConnectionPool {
         "Content-Type": "text/html"
       ])
       response.bodyAsString = "No handler configured in HTTP server!\r\n"
-      con.sendResponse(response)
+      _ = con.sendResponse(response)
       con.close()
     }
   }

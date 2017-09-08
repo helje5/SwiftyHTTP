@@ -90,10 +90,9 @@ open class RawByteBuffer {
   }
   
   open func asString() -> String? {
-    guard buffer != nil else { return nil }
+    guard let buffer = buffer else { return nil }
     
-    let cptr = UnsafeMutablePointer<CChar>(buffer)
-    cptr?[count] = 0 // null terminate, buffer is always bigger than it claims
-    return String(cString: cptr!)
+    buffer[count] = 0 // null terminate, buffer is always bigger than it claims
+    return String(cString: buffer)
   }
 }

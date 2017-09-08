@@ -367,24 +367,27 @@ public extension addrinfo {
   public var addressIPv6 : sockaddr_in6? { return address() }
    */
   
-  public func address<T: SocketAddress>() -> T? {
+  internal func address<T: SocketAddress>() -> T? {
     guard ai_addr != nil else { return nil }
     guard ai_addr.pointee.sa_family == sa_family_t(T.domain) else { return nil }
     
-    let aiptr = UnsafePointer<T>(ai_addr) // cast
+    let airptr = UnsafeRawPointer(ai_addr)
+    let aiptr  = airptr?.assumingMemoryBound(to: T.self) // cast
     return aiptr?.pointee // copies the address to the return value
   }
   
-  public var dynamicAddress : SocketAddress? {
+  internal var dynamicAddress : SocketAddress? {
     guard hasAddress else { return nil }
     
+    let airptr = UnsafeRawPointer(ai_addr)
+    
     if ai_addr.pointee.sa_family == sa_family_t(sockaddr_in.domain) {
-      let aiptr = UnsafePointer<sockaddr_in>(ai_addr) // cast
+      let aiptr  = airptr?.assumingMemoryBound(to: sockaddr_in.self) // cast
       return aiptr?.pointee // copies the address to the return value
     }
     
     if ai_addr.pointee.sa_family == sa_family_t(sockaddr_in6.domain) {
-      let aiptr = UnsafePointer<sockaddr_in6>(ai_addr) // cast
+      let aiptr  = airptr?.assumingMemoryBound(to: sockaddr_in6.self) // cast
       return aiptr?.pointee // copies the address to the return value
     }
     

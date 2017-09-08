@@ -72,6 +72,7 @@ open class Socket<T: SocketAddress> {
     boundAddress = nil
   }
   
+  @discardableResult
   open func onClose(_ cb: ((FileDescriptor) -> Void)?) -> Self {
     if let fd = closedFD { // socket got closed before event-handler attached
       if let lcb = cb {
@@ -102,8 +103,10 @@ open class Socket<T: SocketAddress> {
     var addr = address
 
     let rc = withUnsafePointer(to: &addr) { ptr -> Int32 in
-      let bptr = UnsafePointer<sockaddr>(ptr) // cast
-      return sysBind(fd.fd, bptr, socklen_t(addr.len))
+      return ptr.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+        bptr in
+        return sysBind(fd.fd, bptr, socklen_t(addr.len))
+      }
     }
     
     if rc == 0 {
@@ -113,7 +116,7 @@ open class Socket<T: SocketAddress> {
       // boundAddress = addr.isWildcardPort ? getsockname() : addr
     }
     
-    return rc == 0 ? true : false
+    return rc == 0
   }
   
   open func getsockname() -> T? {
@@ -135,10 +138,11 @@ open class Socket<T: SocketAddress> {
     
     // Note: we are not interested in the length here, would be relevant
     //       for AF_UNIX sockets
-    let rc = withUnsafeMutablePointer(to: &baddr) {
-      ptr -> Int32 in
-      let bptr = UnsafeMutablePointer<sockaddr>(ptr) // cast
-      return nfn(fd.fd, bptr, &baddrlen)
+    let rc = withUnsafeMutablePointer(to: &baddr) { ptr -> Int32 in
+      return ptr.withMemoryRebound(to: Darwin.sockaddr.self, capacity: 1) {
+        bptr in
+        return nfn(fd.fd, bptr, &baddrlen)
+      }
     }
     
     guard rc == 0 else {
@@ -158,7 +162,7 @@ open class Socket<T: SocketAddress> {
   func descriptionAttributes() -> String {
     var s = fd.isValid
       ? " fd=\(fd.fd)"
-      : (closedFD != nil ? " closed[\(closedFD)]" :" not-open")
+      : (closedFD != nil ? " closed[\(closedFD!)]" :" not-open")
     if boundAddress != nil {
       s += " \(boundAddress!)"
     }
@@ -186,7 +190,7 @@ extension Socket { // Socket Options
 
   public var reuseAddress: Bool {
     get { return getSocketOption(SO_REUSEADDR) }
-    set { setSocketOption(SO_REUSEADDR, value: newValue) }
+    set { _ = setSocketOption(SO_REUSEADDR, value: newValue) }
   }
 
 #if os(Linux)
@@ -198,37 +202,36 @@ extension Socket { // Socket Options
 #else
   public var isSigPipeDisabled: Bool {
     get { return getSocketOption(SO_NOSIGPIPE) }
-    set { setSocketOption(SO_NOSIGPIPE, value: newValue) }
+    set { _ = setSocketOption(SO_NOSIGPIPE, value: newValue) }
   }
 #endif
 
   public var keepAlive: Bool {
     get { return getSocketOption(SO_KEEPALIVE) }
-    set { setSocketOption(SO_KEEPALIVE, value: newValue) }
+    set { _ = setSocketOption(SO_KEEPALIVE, value: newValue) }
   }
   public var dontRoute: Bool {
     get { return getSocketOption(SO_DONTROUTE) }
-    set { setSocketOption(SO_DONTROUTE, value: newValue) }
+    set { _ = setSocketOption(SO_DONTROUTE, value: newValue) }
   }
   public var socketDebug: Bool {
     get { return getSocketOption(SO_DEBUG) }
-    set { setSocketOption(SO_DEBUG, value: newValue) }
+    set { _ = setSocketOption(SO_DEBUG, value: newValue) }
   }
   
   public var sendBufferSize: Int32 {
     get { return getSocketOption(SO_SNDBUF) ?? -42    }
-    set { setSocketOption(SO_SNDBUF, value: newValue) }
+    set { _ = setSocketOption(SO_SNDBUF, value: newValue) }
   }
   public var receiveBufferSize: Int32 {
     get { return getSocketOption(SO_RCVBUF) ?? -42    }
-    set { setSocketOption(SO_RCVBUF, value: newValue) }
+    set { _ = setSocketOption(SO_RCVBUF, value: newValue) }
   }
   public var socketError: Int32 {
     return getSocketOption(SO_ERROR) ?? -42
   }
   
   /* socket options (TBD: would we use subscripts for such?) */
-  
   
   public func setSocketOption(_ option: Int32, value: Int32) -> Bool {
     if !isValid {

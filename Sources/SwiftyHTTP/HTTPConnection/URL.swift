@@ -338,13 +338,13 @@ func percentUnescape(_ src: String) -> String {
   
   while cursor != endIdx {
     if src[cursor] == "%" { // %40 = @
-      let   v0idx = <#T##Collection corresponding to `cursor`##Collection#>.index(after: cursor)
+      let   v0idx = src.index(after: cursor)
       guard v0idx != endIdx else {
         dest += src[cursor..<endIdx]
         break
       }
       
-      let   v1idx = <#T##String.CharacterView corresponding to `v0idx`##String.CharacterView#>.index(after: v0idx)
+      let   v1idx = src.index(after: v0idx)
       guard v1idx != endIdx else {
         dest += src[cursor..<endIdx]
         break
@@ -363,11 +363,11 @@ func percentUnescape(_ src: String) -> String {
         }
         dest.append(String(UnicodeScalar(code)))
       }
-      cursor = <#T##String.CharacterView corresponding to `v1idx`##String.CharacterView#>.index(after: v1idx)
+      cursor = src.index(after: v1idx)
     }
     else {
       dest.append(src[cursor])
-      cursor =  <#T##Collection corresponding to `cursor`##Collection#>.index(after: cursor)
+      cursor =  src.index(after: cursor)
     }
   }
   return dest

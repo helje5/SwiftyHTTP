@@ -8,25 +8,6 @@
 
 import Darwin
 
-// This allows you to do: str[str.startIndex..idx+4] (TBD: still req with S2?)
-public func +<T: Comparable>(idx: T, distance: T.Distance) -> T {
-  return <#T##Collection corresponding to `idx`##Collection#>.index(idx, offsetBy: distance)
-}
-public func +<T: Comparable>(distance: T.Distance, idx: T) -> T {
-  return <#T##Collection corresponding to `idx`##Collection#>.index(idx, offsetBy: distance)
-}
-
-public func -<T:Comparable>
-  (idx: T, distance: T.Distance) -> T where T.Distance : SignedInteger
-{
-  var cursor = idx
-  for _ in 0..<distance {
-    cursor = <#T##BidirectionalCollection corresponding to `cursor`##BidirectionalCollection#>.index(before: cursor)
-  }
-  return cursor
-}
-
-
 // Hack to compare values if we don't have access to the members of the struct,
 // eg http_errno in v0.0.4
 public func isByteEqual<T>(_ lhs: T, rhs: T) -> Bool {
@@ -95,7 +76,7 @@ extension String {
       if subString.hasPrefix(other) {
         return start
       }
-      start = <#T##Collection corresponding to `start`##Collection#>.index(after: start)
+      start = self.index(after: start)
     } while start != endIndex
     
     return nil

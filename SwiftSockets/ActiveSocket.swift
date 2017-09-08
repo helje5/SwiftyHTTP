@@ -166,8 +166,10 @@ open class ActiveSocket<T: SocketAddress>: Socket<T> {
     
     let lfd = fd.fd
     let rc = withUnsafePointer(to: &addr) { ptr -> Int32 in
-      let bptr = UnsafePointer<sockaddr>(ptr) // cast
-      return sysConnect(lfd, bptr, socklen_t(addr.len)) //only returns block
+      return ptr.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+        bptr in
+        return sysConnect(lfd, bptr, socklen_t(addr.len)) // only returns block
+      }
     }
     
     guard rc == 0 else {
@@ -183,6 +185,7 @@ open class ActiveSocket<T: SocketAddress>: Socket<T> {
   
   /* read */
   
+  @discardableResult
   open func onRead(_ cb: ((ActiveSocket, Int) -> Void)?) -> Self {
     let hadCB    = readCB != nil
     let hasNewCB = cb != nil
@@ -194,7 +197,7 @@ open class ActiveSocket<T: SocketAddress>: Socket<T> {
     readCB = cb
     
     if hasNewCB && !hadCB {
-      startEventHandler()
+      _ = startEventHandler()
     }
     
     return self
@@ -217,7 +220,7 @@ open class ActiveSocket<T: SocketAddress>: Socket<T> {
   }
 }
 
-extension ActiveSocket : OutputStream { // writing
+extension ActiveSocket : TextOutputStream { // writing
   
   public func write(_ string: String) {
     string.withCString { (cstr: UnsafePointer<Int8>) -> Void in

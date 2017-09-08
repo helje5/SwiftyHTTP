@@ -65,6 +65,7 @@ open class HTTPConnectionPool {
     log("")
   }
 
+  @discardableResult
   open func onLog(_ cb: @escaping (String) -> Void) -> Self {
     logger = cb
     return self

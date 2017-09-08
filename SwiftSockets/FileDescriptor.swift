@@ -53,7 +53,7 @@ public struct FileDescriptor: ExpressibleByIntegerLiteral, ExpressibleByNilLiter
   }
   
   public func close() {
-    sysClose(fd)
+    _ = sysClose(fd)
   }
   
   public func read(_ count: Int) -> ( Error?, [ UInt8 ]? ) {

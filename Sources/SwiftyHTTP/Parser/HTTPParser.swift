@@ -48,18 +48,22 @@ public final class HTTPParser {
   
   /* callbacks */
   
+  @discardableResult
   public func onRequest(_ cb: ((HTTPRequest) -> Void)?) -> Self {
     requestCB = cb
     return self
   }
+  @discardableResult
   public func onResponse(_ cb: ((HTTPResponse) -> Void)?) -> Self {
     responseCB = cb
     return self
   }
+  @discardableResult
   public func onHeaders(_ cb: ((HTTPMessage) -> Bool)?) -> Self {
     headersCB = cb
     return self
   }
+  @discardableResult
   public func onBodyData
     (_ cb: ((HTTPMessage, UnsafePointer<CChar>, UInt) -> Bool)?) -> Self
   {

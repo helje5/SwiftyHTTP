@@ -59,10 +59,12 @@ open class HTTPConnection {
   
   /* callbacks */
   
+  @discardableResult
   open func onRequest(_ cb: ((HTTPRequest, HTTPConnection) -> Void)?) -> Self {
     requestQueue.on = cb
     return self
   }
+  @discardableResult
   open func onResponse(_ cb: ((HTTPResponse, HTTPConnection) -> Void)?) -> Self {
     responseQueue.on = cb
     return self
@@ -85,6 +87,7 @@ open class HTTPConnection {
   }
   */
   
+  @discardableResult
   open func onClose(_ cb: ((FileDescriptor) -> Void)?) -> Self {
     // FIXME: what if the socket was closed already? Need to check for isValid?
     socket.onClose(cb)
@@ -105,7 +108,7 @@ open class HTTPConnection {
   }
   open func close() {
     // cannot assign default-arg to reason, makes it a kw arg
-    close(nil)
+    _ = close(nil)
   }
   
   
@@ -127,14 +130,14 @@ open class HTTPConnection {
       }
     
       if count < 0 {
-        close("Some socket error \(count): \(errno) ...")
+        _ = close("Some socket error \(count): \(errno) ...")
         return
       }
       
       /* feed HTTP parser */
       let rc = parser.write(block, count)
       if rc != .ok {
-        close("Got parser error: \(rc)")
+        _ = close("Got parser error: \(rc)")
         return
       }
       
@@ -157,6 +160,7 @@ extension HTTPConnection { /* send HTTP messages */
     }
   }
   
+  @discardableResult
   func sendHeaders(_ m: HTTPMessage) -> Self {
     // this sends things as UTF-8 which is only right in the very lastest
     // HTTP revision (before HTTP headers have been Latin1)
@@ -173,10 +177,11 @@ extension HTTPConnection { /* send HTTP messages */
   func sendBody(_ r: HTTPMessage) {
     let bodyBuffer = r.bodyAsByteArray
     if let bb = bodyBuffer {
-      socket.asyncWrite(bb);
+      _ = socket.asyncWrite(bb);
     }
   }
   
+  @discardableResult
   public func sendRequest(_ rq: HTTPRequest, cb: (()->Void)? = nil) -> Self {
     // FIXME: it's inefficient to do that many writes
     fixupHeaders(rq)
@@ -197,6 +202,7 @@ extension HTTPConnection { /* send HTTP messages */
     return self
   }
   
+  @discardableResult
   public func sendResponse(_ res: HTTPResponse, cb: (()->Void)? = nil) -> Self {
     // FIXME: it's inefficient to do that many writes
     fixupHeaders(res)
