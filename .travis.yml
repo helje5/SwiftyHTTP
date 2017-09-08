@@ -1,0 +1,21 @@
+language:  generic
+
+#notifications:
+#  slack:
+#    rooms:
+#      - nozeio:LIFY1Jtkx0FRcLq3u1WliHRZ
+
+matrix:
+    include:
+        - os:   osx
+          osx_image: xcode8.2
+
+before_install:
+    - ./.travis.d/before-install.sh
+
+install:
+    - ./.travis.d/install.sh
+
+script:
+    - export PATH="$HOME/usr/bin:$PATH"
+    - xcodebuild -scheme SwiftyHTTP
