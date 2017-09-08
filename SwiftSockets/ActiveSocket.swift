@@ -46,13 +46,13 @@ public typealias ActiveSocketIPv4 = ActiveSocket<sockaddr_in>
  */
 open class ActiveSocket<T: SocketAddress>: Socket<T> {
   
-  open var remoteAddress  : T?                 = nil
+  open var remoteAddress  : T?              = nil
   open var queue          : DispatchQueue?  = nil
   
-  var readSource     : DispatchSource? = nil
-  var sendCount      : Int                = 0
-  var closeRequested : Bool               = false
-  var didCloseRead   : Bool               = false
+  var readSource     : DispatchSourceRead? = nil
+  var sendCount      : Int                 = 0
+  var closeRequested : Bool                = false
+  var didCloseRead   : Bool                = false
   var readCB         : ((ActiveSocket, Int) -> Void)? = nil
   
   // let the socket own the read buffer, what is the best buffer type?
@@ -131,7 +131,7 @@ open class ActiveSocket<T: SocketAddress>: Socket<T> {
       // Seen this crash - if close() is called from within the readCB?
       readCB = nil // break potential cycles
       if debugClose { debugPrint("   shutdown read channel ...") }
-      sysShutdown(fd.fd, sys_SHUT_RD);
+      _ = sysShutdown(fd.fd, sys_SHUT_RD);
       
       didCloseRead = true
     }
@@ -226,7 +226,7 @@ extension ActiveSocket : TextOutputStream { // writing
     string.withCString { (cstr: UnsafePointer<Int8>) -> Void in
       let len = Int(strlen(cstr))
       if len > 0 {
-        self.asyncWrite(cstr, length: len)
+        _ = self.asyncWrite(cstr, length: len)
       }
     }
   }

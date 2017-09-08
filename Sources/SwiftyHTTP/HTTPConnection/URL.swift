@@ -117,7 +117,7 @@ public extension URL { // String representation
       
       us += host!
       
-      if let _ = port {
+      if let port = port {
         us += ":\(port)"
       }
     }

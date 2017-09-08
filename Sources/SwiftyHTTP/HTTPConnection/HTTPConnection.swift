@@ -144,7 +144,7 @@ open class HTTPConnection {
       // if parser.bodyIsFinal { // I don't really know what this is :-)
 
       if count == 0 {
-        close("EOF")
+        _ = close("EOF")
         return
       }
     } while true

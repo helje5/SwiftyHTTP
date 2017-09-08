@@ -53,20 +53,20 @@ open class Socket<T: SocketAddress> {
   open func close() {
     if fd.isValid {
       closedFD = fd
-      if debugClose { print("Closing socket \(closedFD) for good ...") }
+      if debugClose { print("Closing socket", closedFD as Any, "for good ...") }
       fd.close()
       fd       = nil
       
       if let cb = closeCB {
         // can be used to unregister socket etc when the socket is really closed
-        if debugClose { print("  let closeCB \(closedFD) know ...") }
+        if debugClose { print("  let closeCB", closedFD as Any, "know ...") }
         cb(closedFD!)
         closeCB = nil // break potential cycles
       }
-      if debugClose { print("done closing \(closedFD)") }
+      if debugClose { print("done closing", closedFD as Any) }
     }
     else if debugClose {
-      print("socket \(closedFD) already closed.")
+      print("socket", closedFD as Any, "already closed.")
     }
     
     boundAddress = nil

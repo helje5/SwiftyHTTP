@@ -13,7 +13,7 @@ public enum HTTPMethod : Equatable {
   
   case propfind, proppatch, mkcol
   
-  case report((String?, String?)) // tuple: ns, tag
+  case report((String?, String?)) // tuple: ns, tag (FIXME: why optional?)
   
   case mkcalendar
   
@@ -165,7 +165,12 @@ extension HTTPMethod : CustomStringConvertible {
   public var description: String {
     switch self {
       case .report(let ns, let tag):
-        return "REPORT[{\(ns)}\(tag)]"
+        switch ( ns, tag ) {
+          case ( .none,         .none): return "REPORT[-]"
+          case ( .some(let ns), .none): return "REPORT[{\(ns)}]"
+          case ( .none,         .some(let tag)): return "REPORT[\(tag)]"
+          case ( .some(let ns), .some(let tag)): return "REPORT[{\(ns)}\(tag)]"
+        }
       
       default:
         return method

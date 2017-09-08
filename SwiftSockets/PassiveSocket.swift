@@ -39,7 +39,7 @@ open class PassiveSocket<T: SocketAddress>: Socket<T> {
   
   open var backlog      : Int? = nil
   open var isListening  : Bool { return backlog != nil }
-  open var listenSource : DispatchSource? = nil
+  open var listenSource : DispatchSourceRead? = nil
   
   /* init */
   // The overloading behaviour gets more weird every release?
@@ -108,25 +108,24 @@ open class PassiveSocket<T: SocketAddress>: Socket<T> {
       queue
     )
 #else // os(Darwin)
-    guard let listenSource = DispatchSource.makeReadSource(fileDescriptor: fd.fd, queue: queue) /*Migrator FIXME: Use DispatchSourceRead to avoid the cast*/ as! DispatchSource
-    else {
-      return false
-    }
+    listenSource =
+      DispatchSource.makeReadSource(fileDescriptor: fd.fd, queue: queue)
 #endif // os(Darwin)
     
     let lfd = fd.fd
     
-    listenSource.onEvent { _, _ in
+    listenSource?.setEventHandler { [unowned self] in
       repeat {
         // FIXME: tried to encapsulate this in a sockaddrbuf which does all
         //        the ptr handling, but it ain't work (autoreleasepool issue?)
         var baddr    = T()
         var baddrlen = socklen_t(baddr.len)
         
-        let newFD = withUnsafeMutablePointer(to: &baddr) {
-          ptr -> Int32 in
-          let bptr = UnsafeMutablePointer<sockaddr>(ptr) // cast
-          return sysAccept(lfd, bptr, &baddrlen);// buflenptr)
+        let newFD = withUnsafeMutablePointer(to: &baddr) { ptr -> Int32 in
+          return ptr.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+            bptr -> Int32 in
+            return Darwin.accept(lfd, bptr, &baddrlen)
+          }
         }
         
         if newFD != -1 {

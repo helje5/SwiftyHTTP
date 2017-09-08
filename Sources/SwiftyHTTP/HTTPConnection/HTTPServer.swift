@@ -70,7 +70,7 @@ open class HTTPServer : HTTPConnectionPool {
     
     log("Listen socket \(socket) reuse=\(socket.reuseAddress)")
     
-    let queue = DispatchQueue.global(priority: 0)
+    let queue = DispatchQueue.global()
     
     
     socket.listen(queue, backlog: 5) {

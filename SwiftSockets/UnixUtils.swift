@@ -39,21 +39,6 @@ let FIONREAD : CUnsignedLong =
 let sysFIONREAD = FIONREAD
 #endif /* os(Darwin) */
 
-// MARK: - dispatch convenience
-
-import Dispatch
-
-extension DispatchSource {
-  
-  
-  func onEvent(_ cb: @escaping (DispatchSource, CUnsignedLong) -> Void) {
-    self.setEventHandler {
-      let data = self.data
-      cb(self, data)
-    }
-  }
-}
-
 
 // MARK: - Replicate C shims - BAD HACK
 // TODO: not required anymore? varargs work on Linux?
