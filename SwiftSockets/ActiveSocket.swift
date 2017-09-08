@@ -287,16 +287,16 @@ public extension ActiveSocket { // writing
       debugPrint("No queue set, using main queue")
       queue = DispatchQueue.main
     }
-    
-    // the default destructor is supposed to copy the data. Not good, but
-    // handling ownership is going to be messy
-#if os(Linux)
-    let asyncData = dispatch_data_create(buffer, bufsize, queue!, nil)
-#else /* os(Darwin) */ // TBD
-    guard let asyncData = DispatchData(bytesNoCopy: buffer, deallocator: nil) else {
-      return false
+
+    // Urks. Also: copies, which is lame
+    let asyncData : DispatchData = buffer.withUnsafeBufferPointer { bp in
+      return bp.baseAddress!
+        .withMemoryRebound(to: UInt8.self, capacity: bufsize) { bbp in
+        
+        return DispatchData(bytes: UnsafeBufferPointer(start: bbp,
+                                                       count: bufsize))
+      }
     }
-#endif /* os(Darwin) */
     
     write(asyncData)
     return true
@@ -317,15 +317,12 @@ public extension ActiveSocket { // writing
       queue = DispatchQueue.main
     }
     
-    // the default destructor is supposed to copy the data. Not good, but
-    // handling ownership is going to be messy
-#if os(Linux)
-    let asyncData = dispatch_data_create(buffer, bufsize, queue!, nil);
-#else /* os(Darwin) */
-    guard let asyncData = DispatchData(bytesNoCopy: buffer, deallocator: nil) else {
-      return false
-    }
-#endif /* os(Darwin) */
+    // Urks. Also: copies, which is lame
+    let asyncData : DispatchData =
+      buffer.withMemoryRebound(to: UInt8.self, capacity: bufsize) { bbp in
+        return DispatchData(bytes: UnsafeBufferPointer(start: bbp,
+                                                       count: bufsize))
+      }
 
     write(asyncData)
     return true
