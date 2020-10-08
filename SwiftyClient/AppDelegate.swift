@@ -36,7 +36,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   @IBOutlet var logViewParent : NSScrollView!
   @IBOutlet var urlField      : NSTextField!
   
-  @IBAction func fetch(sender: AnyObject!) {
+  @IBAction func fetch(_ sender: AnyObject!) {
     //logView.string = ""
     doStuff()
   }
