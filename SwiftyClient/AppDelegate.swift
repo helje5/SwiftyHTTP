@@ -10,7 +10,7 @@ import Dispatch
 import Cocoa
 import SwiftyHTTP
 
-
+@NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
   
   func doStuff() {
@@ -21,7 +21,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.log()
         self.log("request  \(rq)")
         self.log("response \(res)")
-        self.log("body:\n\(res.bodyAsString)")
+        self.log("body:\n\(res.bodyAsString ?? "-")")
       }
       .fail { rq, err in
         self.log("failed \(rq): \(err)")
@@ -54,12 +54,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   }
   
   
-  func log(string: String) {
+  func log(_ string: String) {
     // log to shell
     print(string)
     
     // log to view. Careful, must run in main thread!
-    dispatch_async(dispatch_get_main_queue()) {
+    DispatchQueue.main.async {
       self.logView.appendString(string + "\n")
     }
   }
@@ -70,16 +70,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 extension NSTextView {
   
-  func appendString(string: String) {
+  func appendString(_ string: String) {
     if let ts = textStorage {
       let ls = NSAttributedString(string: string)
-      ts.appendAttributedString(ls)
+      ts.append(ls)
     }
-    if let s = self.string {
-      let charCount = (s as NSString).length
-      self.scrollRangeToVisible(NSMakeRange(charCount, 0))
-    }
+    let s = self.string
+    let charCount = (s as NSString).length
+    self.scrollRangeToVisible(NSMakeRange(charCount, 0))
     needsDisplay = true
   }
-  
 }

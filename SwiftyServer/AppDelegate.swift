@@ -3,12 +3,13 @@
 //  SwiftyServer
 //
 //  Created by Helge Heß on 6/25/14.
-//  Copyright (c) 2014 Always Right Institute. All rights reserved.
+//  Copyright (c) 2014-2020 Always Right Institute. All rights reserved.
 //
 
 import Cocoa
 import SwiftyHTTP
 
+@NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
   
   /* our server */
@@ -22,7 +23,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         [unowned self] in
         self.log($0)
       }
-      .useQueue(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0))
+      .useQueue(DispatchQueue.global(qos: .default))
     
     /* request counter middleware */
     httpd.use { _, _, _, next in
@@ -81,15 +82,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     startServer()
     
     label.allowsEditingTextAttributes = true
-    label.selectable = true
+    label.isSelectable = true
     
     if let address = httpd.socket.boundAddress {
       let url = "http://127.0.0.1:\(address.port)"
       let s   = "<pre>Connect in your browser via " +
                 "'<a href='\(url)'>\(url)</a>'</pre>"
 
-      let utf8 = s.dataUsingEncoding(NSUTF8StringEncoding)!
-      let aS   = NSAttributedString(HTML: utf8, documentAttributes: nil)
+      let utf8 = s.data(using: .utf8)!
+      let aS   = NSAttributedString(html: utf8, documentAttributes: nil)
       label.attributedStringValue = aS!
     }
   }
@@ -100,12 +101,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   }
   
   
-  func log(string: String) {
+  func log(_ string: String) {
     // log to shell
     print(string)
     
     // log to view. Careful, must run in main thread!
-    dispatch_async(dispatch_get_main_queue()) {
+    DispatchQueue.main.async {
       self.logView.appendString(string + "\n")
     }
   }
@@ -114,16 +115,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 extension NSTextView {
   
-  func appendString(string: String) {
+  func appendString(_ string: String) {
     if let ts = textStorage {
       let ls = NSAttributedString(string: string)
-      ts.appendAttributedString(ls)
+      ts.append(ls)
     }
-    if let s = self.string {
-      let charCount = (s as NSString).length
-      self.scrollRangeToVisible(NSMakeRange(charCount, 0))
-    }
+    let s = self.string
+    let charCount = (s as NSString).length
+    self.scrollRangeToVisible(NSMakeRange(charCount, 0))
     needsDisplay = true
   }
-  
 }
