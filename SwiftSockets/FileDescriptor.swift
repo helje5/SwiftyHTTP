@@ -162,9 +162,9 @@ extension FileDescriptor { // Socket Flags
 
 public extension FileDescriptor {
   
-  public var isDataAvailable: Bool { return pollFlag(POLLRDNORM) }
+  var isDataAvailable: Bool { return pollFlag(POLLRDNORM) }
   
-  public func pollFlag(_ flag: Int32) -> Bool {
+  func pollFlag(_ flag: Int32) -> Bool {
     let rc: Int32? = poll(flag, timeout: 0)
     if let flags = rc {
       if (flags & flag) != 0 {
@@ -184,7 +184,7 @@ public extension FileDescriptor {
   // Swift doesn't allow let's in here?!
   var debugPoll : Bool { return false }
   
-  public func poll(_ events: Int32, timeout: UInt? = 0) -> Int32? {
+  func poll(_ events: Int32, timeout: UInt? = 0) -> Int32? {
     // This is declared as Int32 because the POLLRDNORM and such are
     guard isValid else { return nil }
     
@@ -235,8 +235,9 @@ private func pollMaskToString(_ mask16: Int16) -> String {
 
 extension FileDescriptor: Equatable, Hashable {
 
-  public var hashValue: Int { return fd.hashValue }
-  
+  public func hash(into hasher: inout Hasher) {
+    fd.hash(into: &hasher)
+  }
 }
 
 public func ==(lhs: FileDescriptor, rhs: FileDescriptor) -> Bool {

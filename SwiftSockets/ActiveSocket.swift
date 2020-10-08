@@ -3,7 +3,7 @@
 //  SwiftSockets
 //
 //  Created by Helge Hess on 6/11/14.
-//  Copyright (c) 2014-2015 Always Right Institute. All rights reserved.
+//  Copyright (c) 2014-2020 Always Right Institute. All rights reserved.
 //
 
 #if os(Linux)
@@ -61,7 +61,7 @@ open class ActiveSocket<T: SocketAddress>: Socket<T> {
   var readBufferSize : Int = 4096 { // available space, a bit more for '\0'
     didSet {
       if readBufferSize != oldValue {
-        readBufferPtr.deallocate(capacity: oldValue + 2)
+        readBufferPtr.deallocate()
         readBufferPtr = UnsafeMutablePointer<CChar>.allocate(capacity: readBufferSize + 2)
       }
     }
@@ -108,7 +108,7 @@ open class ActiveSocket<T: SocketAddress>: Socket<T> {
     isSigPipeDisabled = fd.isValid // hm, hm?
   }
   deinit {
-    readBufferPtr.deallocate(capacity: readBufferSize + 2)
+    readBufferPtr.deallocate()
   }
   
   
@@ -163,12 +163,13 @@ open class ActiveSocket<T: SocketAddress>: Socket<T> {
     
     // Note: must be 'var' for ptr stuff, can't use let
     var addr = address
+    let len  = socklen_t(addr.len)
     
     let lfd = fd.fd
     let rc = withUnsafePointer(to: &addr) { ptr -> Int32 in
       return ptr.withMemoryRebound(to: sockaddr.self, capacity: 1) {
         bptr in
-        return sysConnect(lfd, bptr, socklen_t(addr.len)) // only returns block
+        return sysConnect(lfd, bptr, len) // only returns block
       }
     }
     
@@ -237,7 +238,7 @@ public extension ActiveSocket { // writing
   // no let in extensions: let debugAsyncWrites = false
   var debugAsyncWrites : Bool { return false }
   
-  public var canWrite : Bool {
+  var canWrite : Bool {
     guard isValid else {
       assert(isValid, "Socket closed, can't do async writes anymore")
       return false
@@ -249,7 +250,7 @@ public extension ActiveSocket { // writing
     return true
   }
   
-  public func write(_ data: DispatchData) {
+  func write(_ data: DispatchData) {
     sendCount += 1
     if debugAsyncWrites { debugPrint("async send[\(data)]") }
     
@@ -272,7 +273,7 @@ public extension ActiveSocket { // writing
     
   }
   
-  public func asyncWrite<T>(_ buffer: [T]) -> Bool {
+  func asyncWrite<T>(_ buffer: [T]) -> Bool {
     // While [T] seems to convert to ConstUnsafePointer<T>, this method
     // has the added benefit of being able to derive the buffer length
     guard canWrite else { return false }
@@ -292,9 +293,9 @@ public extension ActiveSocket { // writing
     let asyncData : DispatchData = buffer.withUnsafeBufferPointer { bp in
       return bp.baseAddress!
         .withMemoryRebound(to: UInt8.self, capacity: bufsize) { bbp in
-        
-        return DispatchData(bytes: UnsafeBufferPointer(start: bbp,
-                                                       count: bufsize))
+
+        return DispatchData(bytes: UnsafeRawBufferPointer(start: bbp,
+                                                          count: bufsize))
       }
     }
     
@@ -302,7 +303,7 @@ public extension ActiveSocket { // writing
     return true
   }
   
-  public func asyncWrite<T>(_ buffer: UnsafePointer<T>, length:Int) -> Bool {
+  func asyncWrite<T>(_ buffer: UnsafePointer<T>, length:Int) -> Bool {
     // FIXME: can we remove this dupe of the [T] version?
     guard canWrite else { return false }
     
@@ -320,15 +321,15 @@ public extension ActiveSocket { // writing
     // Urks. Also: copies, which is lame
     let asyncData : DispatchData =
       buffer.withMemoryRebound(to: UInt8.self, capacity: bufsize) { bbp in
-        return DispatchData(bytes: UnsafeBufferPointer(start: bbp,
-                                                       count: bufsize))
+        return DispatchData(bytes: UnsafeRawBufferPointer(start: bbp,
+                                                          count: bufsize))
       }
 
     write(asyncData)
     return true
   }
   
-  public func send<T>(_ buffer: [T], length: Int? = nil) -> Int {
+  func send<T>(_ buffer: [T], length: Int? = nil) -> Int {
     // var writeCount : Int = 0
     let bufsize    = length ?? buffer.count
     
@@ -337,7 +338,6 @@ public extension ActiveSocket { // writing
 
     return writeCount
   }
-  
 }
 
 
@@ -345,7 +345,7 @@ public extension ActiveSocket { // Reading
   
   // Note: Swift doesn't allow the readBuffer in here.
   
-  public func read() -> ( size: Int, block: UnsafePointer<CChar>, error: Int32){
+  func read() -> ( size: Int, block: UnsafePointer<CChar>, error: Int32){
     let bptr = UnsafePointer<CChar>(readBufferPtr)
     
     guard fd.isValid else {

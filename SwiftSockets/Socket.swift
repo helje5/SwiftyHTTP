@@ -101,11 +101,12 @@ open class Socket<T: SocketAddress> {
     
     // Note: must be 'var' for ptr stuff, can't use let
     var addr = address
+    let len  = socklen_t(addr.len)
 
     let rc = withUnsafePointer(to: &addr) { ptr -> Int32 in
       return ptr.withMemoryRebound(to: sockaddr.self, capacity: 1) {
         bptr in
-        return sysBind(fd.fd, bptr, socklen_t(addr.len))
+        return sysBind(fd.fd, bptr, len)
       }
     }
     

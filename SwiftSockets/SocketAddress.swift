@@ -3,19 +3,19 @@
 //  SwiftSockets
 //
 //  Created by Helge Heß on 6/12/14.
-//  Copyright (c) 2014-2015 Always Right Institute. All rights reserved.
+//  Copyright (c) 2014-2020 Always Right Institute. All rights reserved.
 //
 
 #if os(Linux)
-import Glibc
+  import Glibc
 #else
-import Darwin
+  import Darwin
 #endif
 
 // import Darwin.POSIX.netinet.`in` - this doesn't seem to work
 // import struct Darwin.POSIX.netinet.`in`.sockaddr_in - neither
 
-let INADDR_ANY = in_addr(s_addr: 0)
+public let INADDR_ANY = in_addr(s_addr: 0)
 
 /**
  * in_addr represents an IPv4 address in Unix. We extend that a little bit
@@ -23,11 +23,8 @@ let INADDR_ANY = in_addr(s_addr: 0)
  */
 public extension in_addr {
 
-  public init() {
-    s_addr = INADDR_ANY.s_addr
-  }
-  
-  public init(string: String?) {
+  init(string: String?) {
+    self.init()
     if let s = string {
       if s.isEmpty {
         s_addr = INADDR_ANY.s_addr
@@ -35,7 +32,7 @@ public extension in_addr {
       else {
         var buf = INADDR_ANY // Swift wants some initialization
         
-        s.withCString { cs in inet_pton(AF_INET, cs, &buf) }
+        _ = s.withCString { cs in inet_pton(AF_INET, cs, &buf) }
         s_addr = buf.s_addr
       }
     }
@@ -44,7 +41,7 @@ public extension in_addr {
     }
   }
   
-  public var asString: String {
+  var asString: String {
     if self == INADDR_ANY {
       return "*.*.*.*"
     }
@@ -66,9 +63,9 @@ public func ==(lhs: in_addr, rhs: in_addr) -> Bool {
 
 extension in_addr : Equatable, Hashable {
   
-  public var hashValue: Int {
+  public func hash(into hasher: inout Hasher) {
     // Knuth?
-    return Int(UInt32(s_addr) * 2654435761 % (2^32))
+    UInt32(s_addr).hash(into: &hasher)
   }
   
 }
@@ -113,6 +110,7 @@ extension sockaddr_in: SocketAddress {
   public static var size   = __uint8_t(MemoryLayout<sockaddr_in>.size)
     // how to refer to self?
   
+  #if false // 2020-10-08 Swift 5: doesn't work anymore?
   public init() {
 #if os(Linux) // no sin_len on Linux
 #else
@@ -123,12 +121,19 @@ extension sockaddr_in: SocketAddress {
     sin_addr   = INADDR_ANY
     sin_zero   = (0,0,0,0,0,0,0,0)
   }
+  #endif
   
   public init(address: in_addr = INADDR_ANY, port: Int?) {
     self.init()
     
-    sin_port = port != nil ? in_port_t(htons(CUnsignedShort(port!))) : 0
-    sin_addr = address
+    #if os(Linux) // no sin_len on Linux
+    #else
+        sin_len    = sockaddr_in.size
+    #endif
+    sin_family = sa_family_t(sockaddr_in.domain)
+    sin_port   = port != nil ? in_port_t(htons(CUnsignedShort(port!))) : 0
+    sin_addr   = address
+    sin_zero   = (0,0,0,0,0,0,0,0)
   }
   
   public init(address: String?, port: Int?) {
@@ -146,7 +151,8 @@ extension sockaddr_in: SocketAddress {
       }
       else {
         // split string at colon
-        let components = s.characters.split(separator: ":", maxSplits: 1).map { String($0) }
+        let components = s.split(separator: ":", maxSplits: 1)
+                          .map { String($0) }
         if components.count == 2 {
           self.init(address: components[0], port: Int(components[1]))
         }
@@ -202,10 +208,10 @@ public func == (lhs: sockaddr_in, rhs: sockaddr_in) -> Bool {
 
 extension sockaddr_in: Equatable, Hashable {
   
-  public var hashValue: Int {
-    return sin_addr.hashValue + sin_port.hashValue
+  public func hash(into hasher: inout Hasher) {
+    sin_addr.hash(into: &hasher)
+    sin_port.hash(into: &hasher)
   }
-  
 }
 
 /**
@@ -247,6 +253,7 @@ extension sockaddr_in6: SocketAddress {
   public static var domain = AF_INET6
   public static var size   = __uint8_t(MemoryLayout<sockaddr_in6>.size)
   
+  #if false // 2020-10-08 Swift 5: doesn't work anymore?
   public init() {
 #if os(Linux) // no sin_len on Linux
 #else
@@ -258,6 +265,7 @@ extension sockaddr_in6: SocketAddress {
     sin6_addr     = in6addr_any
     sin6_scope_id = 0
   }
+  #endif
   
   public var port: Int {
     get {
@@ -280,6 +288,7 @@ extension sockaddr_un: SocketAddress {
   public static var domain = AF_UNIX
   public static var size   = __uint8_t(MemoryLayout<sockaddr_un>.size) // CAREFUL
   
+  #if false // 2020-10-08 Swift 5: doesn't work anymore?
   public init() {
 #if os(Linux) // no sin_len on Linux
 #else // os(Darwin)
@@ -310,6 +319,7 @@ extension sockaddr_un: SocketAddress {
     );
 #endif
   }
+  #endif
   
   public var len: __uint8_t {
     // FIXME?: this is wrong. It needs to be the base size + string length in
@@ -323,7 +333,8 @@ extension sockaddr_un: SocketAddress {
 
 public extension addrinfo {
   
-  public init() {
+  #if false // 2020-10-08 Swift 5: doesn't work anymore?
+  init() {
     ai_flags     = 0 // AI_CANONNAME, AI_PASSIVE, AI_NUMERICHOST
     ai_family    = AF_UNSPEC // AF_INET or AF_INET6 or AF_UNSPEC
     ai_socktype  = sys_SOCK_STREAM
@@ -333,36 +344,44 @@ public extension addrinfo {
     ai_addr      = nil // UnsafePointer<sockaddr>
     ai_next      = nil // UnsafePointer<addrinfo>
   }
+  #endif
   
-  public init(flags: Int32, family: Int32) {
+  init(flags: Int32, family: Int32) {
     self.init()
+    ai_socktype  = sys_SOCK_STREAM
+    ai_protocol  = 0   // or IPPROTO_xxx for IPv4
+    ai_addrlen   = 0   // length of ai_addr below
+    ai_canonname = nil // UnsafePointer<Int8>
+    ai_addr      = nil // UnsafePointer<sockaddr>
+    ai_next      = nil // UnsafePointer<addrinfo>
+    
     ai_flags  = flags
     ai_family = family
   }
   
-  public var hasNext : Bool {
+  var hasNext : Bool {
     return ai_next != nil
   }
-  public var next : addrinfo? {
+  var next : addrinfo? {
     return hasNext ? ai_next.pointee : nil
   }
   
-  public var canonicalName : String? {
+  var canonicalName : String? {
     guard ai_canonname != nil && ai_canonname[0] != 0 else { return nil }
     
     return String(cString: ai_canonname)
   }
   
-  public var hasAddress : Bool {
+  var hasAddress : Bool {
     return ai_addr != nil
   }
   
-  public var isIPv4 : Bool {
+  var isIPv4 : Bool {
     return hasAddress &&
            (ai_addr.pointee.sa_family == sa_family_t(sockaddr_in.domain))
   }
   
-  public var addressIPv4 : sockaddr_in?  { return address() }
+  var addressIPv4 : sockaddr_in?  { return address() }
   /* Not working anymore in b4
   public var addressIPv6 : sockaddr_in6? { return address() }
    */
@@ -471,7 +490,7 @@ extension addrinfo : Sequence {
 public extension sa_family_t { // Swift 2 : CustomStringConvertible, already imp?!
   
   // TBD: does Swift 2 still pick this up?
-  public var description : String {
+  var description : String {
     switch Int32(self) {
       case AF_UNSPEC: return ""
       case AF_INET:   return "IPv4"
@@ -480,5 +499,4 @@ public extension sa_family_t { // Swift 2 : CustomStringConvertible, already imp
       default:        return "family[\(self)]"
     }
   }
-  
 }

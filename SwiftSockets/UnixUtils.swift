@@ -122,7 +122,7 @@ let sysDlopen      = Darwin.dlopen
 
 var sysErrno : Int32 { return Darwin.errno }
 
-let sys_SOCK_STREAM = SOCK_STREAM
+public let sys_SOCK_STREAM = SOCK_STREAM
 let sys_SOCK_DGRAM  = SOCK_DGRAM
 let sys_SHUT_RD     = SHUT_RD
 

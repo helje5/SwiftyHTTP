@@ -91,6 +91,7 @@ open class PassiveSocket<T: SocketAddress>: Socket<T> {
     return true
   }
   
+  @discardableResult
   open func listen(_ queue: DispatchQueue, backlog: Int = 5,
                      accept: @escaping ( ActiveSocket<T> ) -> Void)
     -> Bool
