@@ -78,7 +78,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     return logViewParent.contentView.documentView as! NSTextView
   }
   
-  func applicationDidFinishLaunching(aNotification: NSNotification) {
+  func applicationDidFinishLaunching(_ aNotification: Notification) {
     startServer()
     
     label.allowsEditingTextAttributes = true
@@ -95,7 +95,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
   }
   
-  func applicationWillTerminate(aNotification: NSNotification) {
+  func applicationWillTerminate(_ aNotification: Notification) {
     httpd?.stop()
     httpd = nil
   }
