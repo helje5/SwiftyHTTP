@@ -3,7 +3,7 @@
 //  SwiftyHTTP
 //
 //  Created by Helge Hess on 6/26/14.
-//  Copyright (c) 2014 Always Right Institute. All rights reserved.
+//  Copyright (c) 2014-2020 Always Right Institute. All rights reserved.
 //
 
 /**
@@ -24,10 +24,12 @@ open class Connect : HTTPServer {
     }
   }
   
+  @discardableResult
   open func use(_ cb: @escaping Middleware) -> Self {
     middlewarez.append(MiddlewareEntry(middleware: cb))
     return self
   }
+  @discardableResult
   open func use(_ prefix: String, _ cb: @escaping Middleware) -> Self {
     middlewarez.append(MiddlewareEntry(urlPrefix: prefix, middleware: cb))
     return self
@@ -40,12 +42,14 @@ open class Connect : HTTPServer {
     // matches)
     let matchingMiddleware = middlewarez.filter { $0.matchesRequest(request) }
     
-    let endNext : Next = { _ in } // a noop middleware next-block handle
-    var next    : Next = { _ in } // cannot be let as it's self-referencing
+    // FIXME: this is a retain cycle
+    let endNext : Next = { (args : String...) in }
+      // a noop middleware next-block handle
+    var next    : Next = { (args : String...) in }
+      // cannot be let as it's self-referencing
     
     var i = 0 // capture position in matching-middleware array (shared)
-    next = {
-      args in
+    next = { ( args: String... ) in
       
       // grab next item from matching middleware array
       let middleware = matchingMiddleware[i].middleware

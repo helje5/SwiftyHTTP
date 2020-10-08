@@ -3,14 +3,14 @@
 //  SwiftyHTTP
 //
 //  Created by Helge Hess on 6/5/14.
-//  Copyright (c) 2014 Always Right Institute. All rights reserved.
+//  Copyright (c) 2014-2020 Always Right Institute. All rights reserved.
 //
 
 import Darwin
 
 open class HTTPConnection {
   
-  open let socket : ActiveSocketIPv4
+  public let socket : ActiveSocketIPv4
   
   let debugOn = false
   let parser  : HTTPParser

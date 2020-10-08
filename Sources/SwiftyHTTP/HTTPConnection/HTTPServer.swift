@@ -3,7 +3,7 @@
 //  SwiftyHTTP
 //
 //  Created by Helge Hess on 6/5/14.
-//  Copyright (c) 2014 Always Right Institute. All rights reserved.
+//  Copyright (c) 2014-2020 Always Right Institute. All rights reserved.
 //
 
 import Dispatch
@@ -57,6 +57,7 @@ open class HTTPServer : HTTPConnectionPool {
     }
   }
   
+  @discardableResult
   open func listen(_ port: Int) -> HTTPServer {
     // using Self or Self? seems to crash the compiler
     
@@ -68,7 +69,7 @@ open class HTTPServer : HTTPConnectionPool {
     }
     socket.reuseAddress = true
     
-    log("Listen socket \(socket) reuse=\(socket.reuseAddress)")
+    log("Listen socket \(socket as Any) reuse=\(socket.reuseAddress)")
     
     let queue = DispatchQueue.global()
     
@@ -86,7 +87,7 @@ open class HTTPServer : HTTPConnectionPool {
       self.registerConnection(con)
     }
     
-    log("Started running listen socket \(socket)")
+    log("Started running listen socket \(socket as Any)")
     
     return self
   }

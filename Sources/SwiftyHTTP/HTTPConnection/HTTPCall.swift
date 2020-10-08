@@ -3,7 +3,7 @@
 //  SwiftyHTTP
 //
 //  Created by Helge Heß on 7/7/14.
-//  Copyright (c) 2014 Always Right Institute. All rights reserved.
+//  Copyright (c) 2014-2020 Always Right Institute. All rights reserved.
 //
 
 import Dispatch
@@ -65,9 +65,9 @@ public func GET(_ url: String, headers: Dictionary<String, String> = [:],
 
 
 
-let dnsQueue     = DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.default)
+let dnsQueue     = DispatchQueue.global(qos: .default)
 let lockQueue    = DispatchQueue(label: "com.ari.SwiftyHTTPCall", attributes: [])
-var runningCalls = [HTTPCall]()
+var runningCalls = [ HTTPCall ]()
 let userAgent    = "AlwaysRightInstitute-SwiftyHTTP/0.42 (Macintozh) (Roxx)"
 
 var callCounter  = 0
@@ -99,8 +99,8 @@ open class HTTPCall : Equatable {
     }
   }
   
-  open let url     : URL
-  open let request : HTTPRequest
+  public let url     : URL
+  public let request : HTTPRequest
   let debugOn        = true
   let callID         : Int
   
@@ -170,15 +170,19 @@ open class HTTPCall : Equatable {
   
   /* convenience callbacks with less arguments */
   
+  @discardableResult
   open func done(_ cb: @escaping ( HTTPResponse ) -> Void) -> Self {
     return done { _, res in cb(res) }
   }
+  @discardableResult
   open func fail(_ cb: @escaping ( Error ) -> Void) -> Self {
     return fail { _, res in cb(res) }
   }
+  @discardableResult
   open func always(_ cb: @escaping ( HTTPResponse?, Error? ) -> Void) -> Self {
     return always { _, res, error in cb(res, error) }
   }
+  @discardableResult
   open func always(_ cb: @escaping () -> Void) -> Self {
     return always { _, _, _ in cb() }
   }
@@ -203,7 +207,7 @@ open class HTTPCall : Equatable {
       print("HC(\(callID)) unregister ...")
     }
     lockQueue.async {
-      let idxOrNot = runningCalls.index(of: self)
+      let idxOrNot = runningCalls.firstIndex(of: self)
       // assert(idxOrNot != nil)
       if let idx = idxOrNot {
         runningCalls.remove(at: idx)
@@ -216,7 +220,7 @@ open class HTTPCall : Equatable {
   
   func stopWithError(_ error: Error) {
     if self.debugOn {
-      print("HC(\(callID)) stop on error \(self.error)")
+      print("HC(\(callID)) stop on error \(self.error as Any)")
     }
     
     // would like: state = .Fail(error)
@@ -250,8 +254,8 @@ open class HTTPCall : Equatable {
     dnsQueue.async { () -> Void in
       gethoztbyname(self.url.host!, flags: AI_CANONNAME) {
         ( name, _, address : sockaddr_in? ) -> Void in
-        if address != nil {
-          var addr = address!
+        if let address = address {
+          var addr = address
           addr.port = self.url.portOrDefault!
           if self.debugOn {
             print("HC(\(self.callID)) resolved host \(name): \(address)")
@@ -275,7 +279,8 @@ open class HTTPCall : Equatable {
     // this callback setup is not quite right yet, we need to pass over errors
     let ok = socket.connect(address) {_ in
       if self.debugOn {
-        debugPrint("HC(\(self.callID)) connected to \(socket.remoteAddress)")
+        debugPrint(
+          "HC(\(self.callID)) connected to \(socket.remoteAddress as Any)")
       }
       
       self.connection = HTTPConnection(socket)

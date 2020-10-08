@@ -3,7 +3,7 @@
 //  TestSwiftyCocoa
 //
 //  Created by Helge Heß on 6/18/14.
-//  Copyright (c) 2014 Always Right Institute. All rights reserved.
+//  Copyright (c) 2014-2020 Always Right Institute. All rights reserved.
 //
 
 import Darwin
@@ -32,7 +32,7 @@ public extension String {
     memcpy(buf, cs, length)
     buf[length] = 0 // zero terminate
     let s = String(cString: buf)
-    buf.deallocate(capacity: buflen)
+    buf.deallocate()
     return s
   }
   
@@ -132,7 +132,7 @@ extension String {
   var isHexDigit : Bool {
     if self == "" { return false }
     
-    for c in self.characters {
+    for c in self {
       if isxdigit(Int32(c.unicodeScalarCodePoint)) == 0 {
         return false
       }

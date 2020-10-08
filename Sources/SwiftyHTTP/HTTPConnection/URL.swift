@@ -3,7 +3,7 @@
 //  SwiftyHTTP
 //
 //  Created by Helge Hess on 7/4/14.
-//  Copyright (c) 2014 Always Right Institute. All rights reserved.
+//  Copyright (c) 2014-2020 Always Right Institute. All rights reserved.
 //
 
 import Darwin
@@ -99,7 +99,7 @@ public struct URL {
 
 public extension URL { // String representation
   
-  public func toString() -> String? {
+  func toString() -> String? {
     var us = ""
     
     var scheme = self.scheme
@@ -154,8 +154,7 @@ public extension URL { // String representation
 
 public extension String {
   
-  public var withoutPercentEscapes : String { return percentUnescape(self) }
-  
+  var withoutPercentEscapes : String { return percentUnescape(self) }
 }
 
 
@@ -172,8 +171,8 @@ public extension URL {
     guard uPath != ""      else { return nil }
     
     let isAbsolute = uPath.hasPrefix("/")
-    let pathComps  = uPath.characters.split(separator: "/", omittingEmptySubsequences: false)
-                                     .map { String($0) }
+    let pathComps  = uPath.split(separator: "/", omittingEmptySubsequences: false)
+                          .map { String($0) }
     
     /* Note: we cannot just return a leading slash for absolute pathes as we
      *       wouldn't be able to distinguish between an absolute path and a
@@ -196,7 +195,7 @@ public extension URL {
 
 public extension URL { // /etc/services
   
-  public static func schemeForPort(_ port: Int) -> String? {
+  static func schemeForPort(_ port: Int) -> String? {
     // read /etc/services? but this doesn't have a proper 1337?
     switch port {
       case    7: return "echo"
@@ -212,7 +211,7 @@ public extension URL { // /etc/services
     }
   }
   
-  public static func portForScheme(_ scheme: String) -> Int? {
+  static func portForScheme(_ scheme: String) -> Int? {
     // read /etc/services? but this doesn't have a proper 1337?
     switch scheme {
       case "echo":   return 7;
@@ -268,7 +267,7 @@ extension String {
 }
 
 private func index(string: String, c: Character) -> String.Index? {
-  return string.characters.index(of: c)
+  return string.firstIndex(of: c)
 }
 
 func parse_url(_ us: String) -> URL {
@@ -278,24 +277,24 @@ func parse_url(_ us: String) -> URL {
   var ps  = "" // path part
   
   if let idx = s.strstr("://") {
-    url.scheme = s[s.startIndex..<idx]
-    s = s[s.index(idx, offsetBy:3)..<s.endIndex]
+    url.scheme = String(s[s.startIndex..<idx])
+    s = String(s[s.index(idx, offsetBy:3)..<s.endIndex])
     
     // cut off path
     if let idx = index(string: s, c: "/") {
-      ps = s[idx..<s.endIndex] // path part
-      s  = s[s.startIndex..<idx]
+      ps = String(s[idx..<s.endIndex]) // path part
+      s  = String(s[s.startIndex..<idx])
     }
     
     // s: joe:pwd@host:port
     if let idx = index(string: s, c: "@") {
-      url.userInfo = s[s.startIndex..<idx]
-      s = s[s.index(after:idx)..<s.endIndex]
+      url.userInfo = String(s[s.startIndex..<idx])
+      s = String(s[s.index(after:idx)..<s.endIndex])
     }
     
     // s: host:port
     if let idx = index(string: s, c: ":") {
-      url.host = s[s.startIndex..<idx]
+      url.host = String(s[s.startIndex..<idx])
       let portS = s[s.index(after:idx)..<s.endIndex]
       let portO = Int(portS)
       debugPrint("ports \(portS) is \(portO as Optional)")
@@ -314,13 +313,13 @@ func parse_url(_ us: String) -> URL {
   
   if ps != "" {
     if let idx = index(string: ps, c: "?") {
-      url.query = ps[ps.index(after:idx)..<ps.endIndex]
-      ps = ps[ps.startIndex..<idx]
+      url.query = String(ps[ps.index(after:idx)..<ps.endIndex])
+      ps = String(ps[ps.startIndex..<idx])
     }
     
     if let idx = index(string: ps, c: "#") {
-      url.fragment = ps[ps.index(after:idx)..<ps.endIndex]
-      ps = ps[ps.startIndex..<idx]
+      url.fragment = String(ps[ps.index(after:idx)..<ps.endIndex])
+      ps = String(ps[ps.startIndex..<idx])
     }
     
     url.path = ps
@@ -331,7 +330,7 @@ func parse_url(_ us: String) -> URL {
 }
 
 
-func percentUnescape(string src: String) -> String {
+func percentUnescape(_ src: String) -> String {
   // Lame implementation. Likely really slow.
   guard src != "" else { return "" }
   
