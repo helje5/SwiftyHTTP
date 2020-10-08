@@ -3,7 +3,7 @@
 //  SwiftyHTTP
 //
 //  Created by Helge Heß on 6/19/14.
-//  Copyright (c) 2014 Always Right Institute. All rights reserved.
+//  Copyright (c) 2014-2020 Always Right Institute. All rights reserved.
 //
 
 public enum HTTPMethod : Equatable {
@@ -81,7 +81,7 @@ public enum HTTPMethod : Equatable {
 
 public extension HTTPMethod {
 
-  public var method: String {
+  var method: String {
     switch self {
       case .get:        return "GET"
       case .head:       return "HEAD"
@@ -127,7 +127,7 @@ public extension HTTPMethod {
     }
   }
   
-  public var isSafe: Bool? { // can't say for extension methods
+  var isSafe: Bool? { // can't say for extension methods
     switch self {
       case .get, .head, .options:
         return true
@@ -142,7 +142,7 @@ public extension HTTPMethod {
     }
   }
   
-  public var isIdempotent: Bool? { // can't say for extension methods
+  var isIdempotent: Bool? { // can't say for extension methods
     switch self {
       case .get, .head, .put, .delete, .options:
         return true
@@ -164,7 +164,7 @@ extension HTTPMethod : CustomStringConvertible {
   
   public var description: String {
     switch self {
-      case .report(let ns, let tag):
+      case .report( ( let ns, let tag) ):
         switch ( ns, tag ) {
           case ( .none,         .none): return "REPORT[-]"
           case ( .some(let ns), .none): return "REPORT[{\(ns)}]"

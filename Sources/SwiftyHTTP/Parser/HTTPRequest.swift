@@ -3,7 +3,7 @@
 //  SwiftyHTTP
 //
 //  Created by Helge Heß on 6/25/14.
-//  Copyright (c) 2014 Always Right Institute. All rights reserved.
+//  Copyright (c) 2014-2020 Always Right Institute. All rights reserved.
 //
 
 public let HTTPv11 = ( major: 1, minor: 1 )
@@ -12,8 +12,8 @@ public let HTTPv09 = ( major: 0, minor: 9 )
 
 open class HTTPRequest : HTTPMessage {
   
-  open let method : HTTPMethod
-  open let url    : URL
+  public let method : HTTPMethod
+  public let url    : URL
   
   open var path : String {
     assert(url.path != nil, "HTTP request URL has no path?!")

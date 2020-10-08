@@ -3,7 +3,7 @@
 //  SwiftyHTTP
 //
 //  Created by Helge Heß on 6/19/14.
-//  Copyright (c) 2014 Always Right Institute. All rights reserved.
+//  Copyright (c) 2014-2020 Always Right Institute. All rights reserved.
 //
 
 public enum HTTPStatus : Equatable {
@@ -62,7 +62,7 @@ extension HTTPStatus : RawRepresentable {
 
 public extension HTTPStatus {
   
-  public init(_ status: Int, _ text: String? = nil) {
+  init(_ status: Int, _ text: String? = nil) {
     switch status {
       case 200: self = .ok
       case 201: self = .created
@@ -129,7 +129,7 @@ public extension HTTPStatus {
     }
   }
   
-  public var status : Int {
+  var status : Int {
     // You ask: How to maintain the reverse list of the above? Emacs macro!
   
     switch self {
@@ -194,7 +194,7 @@ public extension HTTPStatus {
     }
   }
   
-  public var statusText : String {
+  var statusText : String {
     switch self {
       case .extension(_, let text):
         return text
@@ -203,7 +203,7 @@ public extension HTTPStatus {
     }
   }
   
-  public static func textForStatus(_ status: Int) -> String {
+  static func textForStatus(_ status: Int) -> String {
     // FIXME: complete me for type safety ;-)
     
     switch status {

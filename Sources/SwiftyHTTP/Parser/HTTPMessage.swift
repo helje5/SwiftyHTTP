@@ -3,7 +3,7 @@
 //  SwiftyHTTP
 //
 //  Created by Helge Heß on 6/19/14.
-//  Copyright (c) 2014 Always Right Institute. All rights reserved.
+//  Copyright (c) 2014-2020 Always Right Institute. All rights reserved.
 //
 
 open class HTTPMessage {
@@ -160,7 +160,7 @@ open class HTTPMessage {
       s += " body=#\(b.count)"
     }
     else if let b = _stringBodyCache {
-      s += " body=c#\(b.characters.count)"
+      s += " body=c#\(b.count)"
     }
     
     s += " H: \(headers)"

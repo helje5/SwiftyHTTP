@@ -3,7 +3,7 @@
 //  SwiftyHTTP
 //
 //  Created by Helge Heß on 6/18/14.
-//  Copyright (c) 2014 Always Right Institute. All rights reserved.
+//  Copyright (c) 2014-2020 Always Right Institute. All rights reserved.
 //
 
 public enum HTTPParserType {
@@ -108,7 +108,7 @@ public final class HTTPParser {
       let s = http_errno_name(errno)
       let d = http_errno_description(errno)
       debugPrint("BYTES consumed \(bytesConsumed) from \(buffer)[\(len)] " +
-                 "ERRNO: \(err) \(s) \(d)")
+                 "ERRNO: \(err) \(s as Any) \(d as Any)")
     }
     return err
   }
@@ -138,6 +138,7 @@ public final class HTTPParser {
     return 0
   }
   
+  @discardableResult
   func processDataForState
     (_ state: ParseState, d: UnsafePointer<Int8>, l: Int) -> Int32
   {
@@ -234,6 +235,7 @@ public final class HTTPParser {
     return method
   }
   
+  @discardableResult
   func headerFinished() -> Int32 {
     self.processDataForState(.body, d: "", l: 0)
     
@@ -273,8 +275,9 @@ public final class HTTPParser {
     return 0
   }
   
+  @discardableResult
   func messageFinished() -> Int32 {
-    self.processDataForState(.idle, d: "", l: 0)
+    _ = self.processDataForState(.idle, d: "", l: 0)
     
     if let m = message {
       m.bodyAsByteArray = body
