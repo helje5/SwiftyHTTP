@@ -16,7 +16,7 @@ public final class HTTPParser {
     case idle, url, headerName, headerValue, body
   }
   
-  var parser     = http_parser()
+  var parser     = UnsafeMutablePointer<http_parser>.allocate(capacity: 1)
   var settings   = http_parser_settings()
   let buffer     = RawByteBuffer(capacity: 4096)
   var parseState = ParseState.idle
@@ -36,13 +36,16 @@ public final class HTTPParser {
       case .response: cType = HTTP_RESPONSE
       case .both:     cType = HTTP_BOTH
     }
-    http_parser_init(&parser, cType)
+    http_parser_init(parser, cType)
     
     /* configure callbacks */
     
     // TBD: what is the better way to do this?
     let ud = unsafeBitCast(self, to: UnsafeMutableRawPointer.self)
-    parser.data = ud
+    parser.pointee.data = ud
+  }
+  deinit {
+    parser.deallocate()
   }
   
   
@@ -85,7 +88,7 @@ public final class HTTPParser {
   /* write */
   
   public var bodyIsFinal: Bool {
-    return http_body_is_final(&parser) == 0 ? false:true
+    return http_body_is_final(parser) == 0 ? false:true
   }
   
   public func write
@@ -98,9 +101,9 @@ public final class HTTPParser {
       wireUpCallbacks()
     }
     
-    let bytesConsumed = http_parser_execute(&parser, &settings, buffer, len)
+    let bytesConsumed = http_parser_execute(parser, &settings, buffer, len)
     
-    let errno = http_errno(parser.http_errno)
+    let errno = http_errno(parser.pointee.http_errno)
     let err   = HTTPParserError(errno)
     
     if err != .ok {
@@ -183,8 +186,8 @@ public final class HTTPParser {
     return addData(d, length: l)
   }
   
-  public var isRequest  : Bool { return parser.type == 0 }
-  public var isResponse : Bool { return parser.type == 1 }
+  public var isRequest  : Bool { return parser.pointee.type == 0 }
+  public var isResponse : Bool { return parser.pointee.type == 1 }
   
   public class func parserCodeToMethod(_ rq: UInt8) -> HTTPMethod? {
     return parserCodeToMethod(http_method(CUnsignedInt(rq)))
@@ -241,11 +244,11 @@ public final class HTTPParser {
     
     message = nil
     
-    let major = parser.http_major
-    let minor = parser.http_minor
+    let major = parser.pointee.http_major
+    let minor = parser.pointee.http_minor
     
     if isRequest {
-      let method  = HTTPParser.parserCodeToMethod(http_method(parser.method))
+      let method = HTTPParser.parserCodeToMethod(.init(parser.pointee.method))
       
       message = HTTPRequest(method: method!, url: url!,
                             version: ( Int(major), Int(minor) ),
@@ -253,7 +256,7 @@ public final class HTTPParser {
       self.clearState()
     }
     else if isResponse {
-      let status = parser.status_code
+      let status = parser.pointee.status_code
       
       // TBD: also grab status text? Doesn't matter in the real world ...
       message = HTTPResponse(status: HTTPStatus(rawValue: Int(status))!,
@@ -262,8 +265,8 @@ public final class HTTPParser {
       self.clearState()
     }
     else { // FIXME: PS style great error handling
-      debugPrint("Unexpected message? \(parser.type)")
-      assert(parser.type == 0 || parser.type == 1)
+      debugPrint("Unexpected message? \(parser.pointee.type)")
+      assert(parser.pointee.type == 0 || parser.pointee.type == 1)
     }
     
     if let m = message {
