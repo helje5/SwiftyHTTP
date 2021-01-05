@@ -3,7 +3,7 @@ SwiftyHTTP
 
 Note: I'm probably not going to update this any further - 
 If you need a Swift networking toolset for the server side,
-consider: [**Noze.io**](http://noze.io/).
+consider: [**Macro**](https://github.com/Macro-swift/Macro/).swift.
 
 A simple GCD based HTTP library for Swift. This project is 'pure' Swift/C,
 it does not use any bridged Objective-C classes.
